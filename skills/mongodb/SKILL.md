@@ -1,7 +1,7 @@
 ---
 name: ymp-mongodb
-description: YMP框架MongoDB模块，针对MongoDB数据存取操作的专业封装，支持多数据源、会话管理、事务、GridFS等
-version: 2.1.4
+description: YMP框架MongoDB持久化模块，基于会话机制的NoSQL数据存取封装，支持多数据源、事务、GridFS文件存储、聚合查询
+version: 2.1.4-dev
 author: YMP Team
 category: persistence
 tags:
@@ -10,933 +10,507 @@ tags:
   - nosql
   - persistence
   - gridfs
-trigger: 当用户需要使用MongoDB数据库、实现NoSQL持久化、使用GridFS文件存储等场景时触发
+trigger: 当用户需要使用MongoDB数据库、NoSQL持久化、GridFS文件存储、MongoDB聚合查询、MongoDB事务等场景时触发
 tools:
   - mongodb
   - nosql-database
   - gridfs
 examples:
-  - 配置MongoDB数据源
-  - 插入文档数据
-  - 查询文档数据
-  - 更新文档数据
-  - 删除文档数据
-  - 使用GridFS存储文件
+  - MongoDB配置数据源并插入文档
+  - MongoDB实体类@Entity映射查询更新删除
+  - MongoDB Query+Operator条件查询分页排序
+  - MongoDB Aggregation聚合分组统计
+  - MongoDB GridFS文件上传下载
 ---
 
-# YMP MongoDB 模块技能文档
+# MongoDB 技能包
 
-## 模块概述
+> AI读取指引：本模块专注MongoDB NoSQL持久化。关系型数据库请跳转persistence-jdbc；缓存层业务缓存请跳转cache；核心容器注解请跳转core。
 
-MongoDB 持久化模块是 YMP 框架中针对 MongoDB 数据存取操作的专业封装，以 JDBC 持久化模块的设计思想为基础，采用会话机制，简化事务处理逻辑，支持多数据源配置和实体操作，基于操作器（IOperator）对象化拼装查询条件，并集成 MapReduce、GridFS、聚合及函数表达式等高级特性。
+---
 
-## 核心功能
-
-- **多数据源支持**：支持配置多个 MongoDB 数据源，灵活切换
-- **会话管理**：提供会话机制，统一管理连接资源
-- **事务支持**：支持 MongoDB 事务操作，确保数据一致性
-- **GridFS 文件存储**：支持大文件存储和管理
-- **丰富的查询表达式**：提供多种查询表达式，支持复杂查询条件构建
-- **实体映射**：支持对象与 MongoDB 文档之间的映射
-- **操作器 API**：提供流畅的操作器 API，简化查询条件构建
-- **聚合操作**：支持 MongoDB 聚合操作
-- **表达式系统**：内置丰富的表达式类型，支持各种查询场景
-
-## 架构设计
-
-### 核心架构
-
-MongoDB 模块采用分层架构设计，主要包含以下核心组件：
-
-1. **模块核心**：`MongoDB` 类，实现 `IMongo` 接口，负责模块初始化和管理
-2. **会话层**：`IMongoSession` 和 `IGridFsSession` 接口，提供操作方法
-3. **连接层**：`IMongoConnectionHolder` 接口，管理数据库连接
-4. **数据源层**：`IMongoDataSourceAdapter` 接口，适配不同数据源
-5. **表达式层**：各种表达式实现，如 `Query`、`Operator` 等
-6. **事务层**：`ITransaction` 接口，管理事务操作
-
-### 组件关系
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                     MongoDB (模块核心)                 │
-├─────────────────────────────────────────────────────────┤
-│ ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
-│ │ IMongoSession │  │ IGridFsSession │  │ ITransaction │    │
-│ └─────────────┘  └─────────────┘  └─────────────┘    │
-├─────────────────────────────────────────────────────────┤
-│ ┌───────────────────────────────────────────────────┐  │
-│ │                IMongoConnectionHolder             │  │
-│ └───────────────────────────────────────────────────┘  │
-├─────────────────────────────────────────────────────────┤
-│ ┌───────────────────────────────────────────────────┐  │
-│ │             IMongoDataSourceAdapter              │  │
-│ └───────────────────────────────────────────────────┘  │
-├─────────────────────────────────────────────────────────┤
-│ ┌───────────────────────┐  ┌───────────────────────┐  │
-│ │        表达式系统       │  │        实体映射        │  │
-│ └───────────────────────┘  └───────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-```
-
-## 核心 API
-
-### 模块核心 API
-
-#### MongoDB 类
-
-**获取模块实例**
+## 0. 快速索引
+- Maven artifactId：`ymate-platform-persistence-mongodb`
+- 静态入口类全限定名：`net.ymate.platform.persistence.mongodb.MongoDB`
+- 必备注解（启动类）：`@EnableAutoScan` + `@EnableBeanProxy`
+- 5行最简调用代码：
 
 ```java
-IMongo mongo = MongoDB.get();
+UserEntity u = new UserEntity();
+u.setNickname("test");
+u.setAge(20);
+u = MongoDB.get().openSession(session -> session.insert(u));
+UserEntity found = MongoDB.get().openSession(session -> session.find(UserEntity.class, u.getId()));
 ```
 
-**开启会话**
-
-```java
-// 开启默认数据源会话
-IMongoSession session = mongo.openSession();
-
-// 开启指定数据源会话
-IMongoSession session = mongo.openSession("dataSourceName");
-
-// 使用会话执行器
-T result = mongo.openSession(new IMongoSessionExecutor<T>() {
-    @Override
-    public T execute(IMongoSession session) throws Exception {
-        // 执行操作
-        return result;
-    }
-});
-```
-
-**开启 GridFS 会话**
-
-```java
-// 开启默认桶的 GridFS 会话
-IGridFsSession gridFsSession = mongo.openGridFsSession();
-
-// 开启指定桶的 GridFS 会话
-IGridFsSession gridFsSession = mongo.openGridFsSession("bucketName");
-
-// 使用 GridFS 会话执行器
-T result = mongo.openGridFsSession("bucketName", new IGridFsSessionExecutor<T>() {
-    @Override
-    public T execute(IGridFsSession session) throws Exception {
-        // 执行文件操作
-        return result;
-    }
-});
-```
-
-**开启事务**
-
-```java
-// 开启无返回值事务
-mongo.openTransaction(new ITrade() {
-    @Override
-    public void deal() throws Throwable {
-        // 事务操作
-    }
-});
-
-// 开启有返回值事务
-T result = mongo.openTransaction(new AbstractTrade<T>() {
-    @Override
-    public T dealing() throws Throwable {
-        // 事务操作
-        return result;
-    }
-});
-```
-
-### 会话 API
-
-#### IMongoSession 接口
-
-**插入操作**
-
-```java
-// 插入单个实体
-UserEntity user = new UserEntity();
-user.setUsername("admin");
-user.setPassword("123456");
-user = session.insert(user);
-
-// 批量插入
-List<UserEntity> users = new ArrayList<>();
-// 添加用户...
-users = session.insert(users);
-```
-
-**查询操作**
-
-```java
-// 查询所有记录
-IResultSet<UserEntity> users = session.find(UserEntity.class);
-
-// 条件查询
-Query query = Query.create()
-    .cond("username", Operator.create().eq("admin"))
-    .cond("age", Operator.create().gte(18));
-IResultSet<UserEntity> users = session.find(UserEntity.class, query);
-
-// 分页查询
-Page page = Page.create(1).pageSize(10);
-IResultSet<UserEntity> users = session.find(UserEntity.class, query, page);
-
-// 排序查询
-OrderBy orderBy = OrderBy.create().asc("username").desc("createdTime");
-IResultSet<UserEntity> users = session.find(UserEntity.class, query, orderBy, page);
-
-// 根据ID查询
-UserEntity user = session.find(UserEntity.class, "5f9e1a7b9c9d4e5f6a7b8c9d");
-```
-
-**更新操作**
-
-```java
-// 更新单个实体
-UserEntity user = session.find(UserEntity.class, "5f9e1a7b9c9d4e5f6a7b8c9d");
-user.setUsername("updatedAdmin");
-session.update(user);
-
-// 批量更新
-List<UserEntity> users = new ArrayList<>();
-// 添加要更新的用户...
-session.update(users);
-
-// 指定字段更新
-Fields fields = Fields.create("username", "password");
-session.update(user, fields);
-```
-
-**删除操作**
-
-```java
-// 删除单个实体
-UserEntity user = new UserEntity();
-user.setId("5f9e1a7b9c9d4e5f6a7b8c9d");
-session.delete(user);
-
-// 根据ID删除
-session.delete(UserEntity.class, "5f9e1a7b9c9d4e5f6a7b8c9d");
-
-// 批量删除
-List<String> ids = Arrays.asList("id1", "id2");
-session.delete(UserEntity.class, ids);
-
-// 条件删除
-Query query = Query.create().cond("age", Operator.create().lt(18));
-session.delete(UserEntity.class, query);
-```
-
-**统计操作**
-
-```java
-// 统计所有记录
-long count = session.count(UserEntity.class);
-
-// 条件统计
-Query query = Query.create().cond("age", Operator.create().gte(18));
-long count = session.count(UserEntity.class, query);
-
-// 检查记录是否存在
-boolean exists = session.exists(UserEntity.class, "5f9e1a7b9c9d4e5f6a7b8c9d");
-
-// 条件检查
-boolean exists = session.exists(UserEntity.class, query);
-```
-
-#### IGridFsSession 接口
-
-**文件上传**
-
-```java
-// 从文件上传
-String fileId = session.upload(new File("localFile.txt"), new GridFSUploadOptions());
-
-// 从输入流上传
-InputStream inputStream = new FileInputStream("localFile.txt");
-String fileId = session.upload("fileName.txt", inputStream, new GridFSUploadOptions());
-
-// 自定义文件ID上传
-String fileId = session.upload("customId", new File("localFile.txt"), new GridFSUploadOptions());
-```
-
-**文件下载**
-
-```java
-// 下载到输出流
-OutputStream outputStream = new FileOutputStream("downloadedFile.txt");
-session.download("fileId", outputStream);
-
-// 下载到文件
-File destFile = new File("downloadedFile.txt");
-session.download("fileId", destFile);
-```
-
-**文件查询**
-
-```java
-// 查询所有文件
-IResultSet<GridFSFile> files = session.find();
-
-// 根据文件名查询
-IResultSet<GridFSFile> files = session.find("fileName.txt");
-
-// 条件查询
-Query query = Query.create()
-    .cond("length", Operator.create().lte(1024 * 1024)); // 小于1MB
-IResultSet<GridFSFile> files = session.find(query);
-
-// 分页查询
-Page page = Page.create(1).pageSize(10);
-IResultSet<GridFSFile> files = session.find(query, page);
-
-// 根据ID查询
-GridFSFile file = session.find("fileId");
-```
-
-**文件操作**
-
-```java
-// 检查文件是否存在
-boolean exists = session.exists("fileId");
-
-// 重命名文件
-session.rename("fileId", "newFileName.txt");
-
-// 删除文件
-session.remove("fileId");
-
-// 批量删除
-List<String> fileIds = Arrays.asList("id1", "id2");
-session.remove(fileIds);
-```
-
-### 表达式 API
-
-#### Query 类
-
-```java
-// 创建查询对象
-Query query = Query.create();
-
-// 添加条件
-query.cond("name", Operator.create().eq("YMP"))
-     .cond("age", Operator.create().between(18, 30))
-     .cond("tags", Operator.create().in(Arrays.asList("java", "mongodb")));
-
-// 逻辑操作
-Query query1 = Query.create().cond("age", Operator.create().gte(18));
-Query query2 = Query.create().cond("status", Operator.create().eq("active"));
-Query combinedQuery = Query.create().and(query1, query2);
-```
-
-#### Operator 类
-
-```java
-// 等于
-Operator eq = Operator.create().eq("value");
-
-// 不等于
-Operator ne = Operator.create().ne("value");
-
-// 大于
-Operator gt = Operator.create().gt(10);
-
-// 大于等于
-Operator gte = Operator.create().gte(10);
-
-// 小于
-Operator lt = Operator.create().lt(100);
-
-// 小于等于
-Operator lte = Operator.create().lte(100);
-
-// 范围
-Operator between = Operator.create().between(10, 100);
-
-// 包含
-Operator in = Operator.create().in(Arrays.asList(1, 2, 3));
-
-// 不包含
-Operator nin = Operator.create().nin(Arrays.asList(4, 5, 6));
-
-// 存在
-Operator exists = Operator.create().exists(true);
-
-// 类型
-Operator type = Operator.create().type("string");
-
-// 正则
-Operator regex = Operator.create().regex("^A.*");
-```
-
-#### 聚合操作
-
-```java
-// 聚合查询
-Aggregation aggregation = Aggregation.create()
-    .match(Query.create().cond("status", Operator.create().eq("active")))
-    .group("department",
-           Aggregation.field("count").sum(1),
-           Aggregation.field("avgAge").avg("age"))
-    .sort(OrderBy.create().desc("count"));
-
-// 执行聚合
-List<Document> results = session.aggregate("users", aggregation);
-```
-
-## 配置与使用
-
-### 模块配置
-
-#### 注解配置
-
-```java
-@MongoConf(dsDefaultName = "default", value = {
-    @MongoDataSource(
-        name = "default",
-        username = "admin",
-        password = "123456",
-        databaseName = "test",
-        servers = "localhost:27017",
-        autoConnection = true
-    ),
-    @MongoDataSource(
-        name = "secondary",
-        username = "admin",
-        password = "123456",
-        databaseName = "test",
-        servers = "192.168.1.100:27017",
-        autoConnection = true
-    )
-})
-public class AppConfig {
-    // 配置类
-}
-```
-
-#### 配置文件参数
+## 1. 模块摘要
+基于会话机制封装MongoDB Java驱动，提供实体映射、查询条件对象化拼装、多数据源切换、事务管理、GridFS文件存储及聚合管道能力。
+
+- 会话`IMongoSession`统一管理连接生命周期，自动释放资源
+- `Query`+`Operator`+`QueryBuilder`三种方式构建Bson查询条件
+- 支持`Aggregation`聚合管道（match/group/project/sort/unwind等）
+- GridFS会话`IGridFsSession`管理大文件上传下载与元数据查询
+- 手动事务`openTransaction`支持副本集PRIMARY节点多文档原子性
+
+## 2. 核心注解速查表
+
+| 注解 | 全限定名 | 作用 | 核心参数2-5个 |
+|------|----------|------|---------------|
+| @MongoConf | `net.ymate.platform.persistence.mongodb.annotation.MongoConf` | 模块注解配置，声明数据源集合 | `dsDefaultName`默认数据源名；`value`=@MongoDataSource[] |
+| @MongoDataSource | `net.ymate.platform.persistence.mongodb.annotation.MongoDataSource` | 单个MongoDB数据源定义 | `name`数据源名；`databaseName`数据库；`username`/`password`；`servers`主机数组；`autoConnection`；`connectionUrl`；`collectionPrefix`集合前缀 |
+| @Entity | `net.ymate.platform.core.persistence.annotation.Entity` | 声明类为MongoDB文档实体（集合映射） | `value`集合名（默认类名） |
+| @Id | `net.ymate.platform.core.persistence.annotation.Id` | 声明字段为主键_id | 无参数（配合@Property(name=IMongo.Opt.ID)） |
+| @Property | `net.ymate.platform.core.persistence.annotation.Property` | 文档字段映射 | `name`字段名；`nullable`；`autoincrement`；`useKeyGenerator`键生成器 |
+| @Comment | `net.ymate.platform.core.persistence.annotation.Comment` | 实体或字段注释 | `value`注释文本 |
+
+## 3. 核心API速查
+
+| API签名 | 作用 | 所在类/接口 |
+|---------|------|------------|
+| `MongoDB.get()` | 获取模块单例 | `MongoDB`静态入口 |
+| `<T> T openSession(IMongoSessionExecutor<T>)` | Lambda形式开启默认数据源会话并自动关闭 | `IMongo` |
+| `<T> T openSession(String dsName, IMongoSessionExecutor<T>)` | 指定数据源名称开启会话 | `IMongo` |
+| `IMongoSession openSession()` | 手动开启会话（需try-with-resources） | `IMongo` |
+| `<T extends IEntity> IResultSet<T> find(Class<T>, Query)` | 条件查询实体集合 | `IMongoSession` |
+| `<T extends IEntity> T find(Class<T>, String id)` | 按_id查询单条 | `IMongoSession` |
+| `<T extends IEntity> T insert(T entity)` / `List<T> insert(List<T>)` | 插入单条/批量（返回含_id） | `IMongoSession` |
+| `<T extends IEntity> T update(T, Fields)` / `List<T> update(List, Fields)` | 指定字段更新（Fields可选） | `IMongoSession` |
+| `long delete(Class, String/List<String>/Query)` / `T delete(T)` | 删除 | `IMongoSession` |
+| `long count(Class, Query)` / `boolean exists(Class, id/Query)` | 统计与存在判断 | `IMongoSession` |
+| `List<Document> aggregate(String collectionName, List<Aggregation>)` | 聚合查询 | `IMongoSession` |
+| `IGridFsSession openGridFsSession(String bucketName)` | 开启GridFS会话（默认桶fs） | `IMongo` |
+| `String gridFs.upload(File/InputStream, GridFSUploadOptions)` | 文件上传返回fileId | `IGridFsSession` |
+| `void gridFs.download(String id, OutputStream/File)` | 按_id下载 | `IGridFsSession` |
+| `GridFSFile gridFs.find(String id)` / `IResultSet<GridFSFile> gridFs.find(Query)` | 文件元数据查询 | `IGridFsSession` |
+| `Query.create().cond(field, Operator)` | 链式构建查询 | `Query` |
+| `Operator.create().eq/ne/gt/gte/lt/lte/in/nin/regex/exists/between` | 比较与元素运算 | `Operator` |
+| `Aggregation.create().match().group().project().sort().limit().skip().unwind().out()` | 聚合管道阶段 | `Aggregation` |
+| `MongoDB.get().openTransaction(ITrade/AbstractTrade<T>)` | 开启事务（副本集要求） | `IMongo` |
+
+## 4. 标准代码模板
+
+### 模板1：ymp-conf.properties一个MongoDB数据源完整配置
 
 ```properties
 #-------------------------------------
-# MongoDB持久化模块初始化参数
+# MongoDB持久化模块
 #-------------------------------------
-
-# 默认数据源名称，默认值为default
 ymp.configs.persistence.mongodb.ds_default_name=default
+ymp.configs.persistence.mongodb.ds_name_list=default
 
-# 数据源列表，多个数据源名称间用'|'分隔，默认为default
-ymp.configs.persistence.mongodb.ds_name_list=default|secondary
-
-# 默认数据源配置
-ymp.configs.persistence.mongodb.ds.default.username=admin
-ymp.configs.persistence.mongodb.ds.default.password=123456
-ymp.configs.persistence.mongodb.ds.default.database_name=test
+ymp.configs.persistence.mongodb.ds.default.username=clientuser
+ymp.configs.persistence.mongodb.ds.default.password=12345678
+ymp.configs.persistence.mongodb.ds.default.password_encrypted=false
+ymp.configs.persistence.mongodb.ds.default.database_name=demo
+ymp.configs.persistence.mongodb.ds.default.authentication_database_name=admin
 ymp.configs.persistence.mongodb.ds.default.servers=localhost:27017
+ymp.configs.persistence.mongodb.ds.default.collection_prefix=ymp_
 ymp.configs.persistence.mongodb.ds.default.auto_connection=true
-
-# 第二个数据源配置
-ymp.configs.persistence.mongodb.ds.secondary.username=admin
-ymp.configs.persistence.mongodb.ds.secondary.password=123456
-ymp.configs.persistence.mongodb.ds.secondary.database_name=test
-ymp.configs.persistence.mongodb.ds.secondary.servers=192.168.1.100:27017
-ymp.configs.persistence.mongodb.ds.secondary.auto_connection=true
 ```
 
-### 数据源配置
-
-#### @MongoDataSource 注解参数
-
-| 配置项 | 描述 |
-|-------|------|
-| name | 数据源名称 |
-| username | 数据库访问用户名称 |
-| password | 数据库访问密码 |
-| passwordEncrypted | 数据库访问密码是否已加密 |
-| passwordClass | 数据库密码处理器 |
-| collectionPrefix | 集合前缀名称 |
-| connectionUrl | 服务器主机连接字符串 |
-| autoConnection | 是否自动连接 |
-| databaseName | 数据库名称 |
-| authenticationDatabaseName | 包含用户身份验证数据的数据库名称 |
-| servers | 服务器主机集合 |
-| optionsHandlerClass | 数据源自定义配置处理器 |
-
-## 使用示例
-
-### 基本 CRUD 操作
+### 模板2：@Entity实体类 + CRUD + Query+Operator
 
 ```java
-// 插入数据
-UserEntity user = new UserEntity();
-user.setUsername("admin");
-user.setPassword("123456");
-user.setEmail("admin@example.com");
-user.setAge(25);
-user.setCreatedTime(new Date());
-
-UserEntity savedUser = MongoDB.get().openSession(session -> session.insert(user));
-
-// 查询数据
-UserEntity foundUser = MongoDB.get().openSession(session ->
-    session.find(UserEntity.class, savedUser.getId())
-);
-
-// 更新数据
-foundUser.setEmail("updated@example.com");
-MongoDB.get().openSession(session -> session.update(foundUser));
-
-// 删除数据
-MongoDB.get().openSession(session ->
-    session.delete(UserEntity.class, savedUser.getId())
-);
-```
-
-### GridFS 文件操作
-
-```java
-// 上传文件
-String fileId = MongoDB.get().openGridFsSession("files", session -> {
-    File localFile = new File("document.pdf");
-    return session.upload(localFile, new GridFSUploadOptions());
-});
-
-// 下载文件
-MongoDB.get().openGridFsSession("files", session -> {
-    File destFile = new File("downloaded.pdf");
-    session.download(fileId, destFile);
-    return null;
-});
-
-// 查询文件
-GridFSFile file = MongoDB.get().openGridFsSession("files", session ->
-    session.find(fileId)
-);
-
-// 删除文件
-MongoDB.get().openGridFsSession("files", session -> {
-    session.remove(fileId);
-    return null;
-});
-```
-
-### 事务处理
-
-```java
-// 无返回值事务
-MongoDB.get().openTransaction(() -> {
-    // 事务操作1
-    UserEntity user = new UserEntity();
-    user.setUsername("transactionUser");
-    user.setPassword("123456");
-    MongoDB.get().openSession(session -> session.insert(user));
-
-    // 事务操作2
-    OrderEntity order = new OrderEntity();
-    order.setUserId(user.getId());
-    order.setAmount(100.0);
-    MongoDB.get().openSession(session -> session.insert(order));
-});
-
-// 有返回值事务
-UserEntity result = MongoDB.get().openTransaction(new AbstractTrade<UserEntity>() {
-    @Override
-    public UserEntity dealing() throws Throwable {
-        UserEntity user = new UserEntity();
-        user.setUsername("transactionUser");
-        user.setPassword("123456");
-        return MongoDB.get().openSession(session -> session.insert(user));
-    }
-});
-```
-
-### 复杂查询
-
-```java
-// 构建复杂查询条件
-Query query = Query.create()
-    // 基本条件
-    .cond("status", Operator.create().eq("active"))
-    .cond("age", Operator.create().between(18, 35))
-    // 数组包含
-    .cond("skills", Operator.create().in(Arrays.asList("java", "mongodb")))
-    // 文本搜索
-    .cond("description", Operator.create().text("developer"))
-    // 正则匹配
-    .cond("email", Operator.create().regex("^.*@example\.com$"))
-    // 存在字段
-    .cond("profile", Operator.create().exists(true));
-
-// 排序
-OrderBy orderBy = OrderBy.create()
-    .desc("createdTime")
-    .asc("username");
-
-// 分页
-Page page = Page.create(1).pageSize(20);
-
-// 执行查询
-IResultSet<UserEntity> users = MongoDB.get().openSession(session ->
-    session.find(UserEntity.class, query, orderBy, page)
-);
-
-// 处理结果
-if (users.isResultsAvailable()) {
-    List<UserEntity> userList = users.getResultData();
-    long totalCount = users.getRecordCount();
-    int totalPages = users.getPageCount();
-    // 处理用户列表...
-}
-```
-
-### 聚合查询
-
-```java
-// 构建聚合管道
-Aggregation aggregation = Aggregation.create()
-    // 匹配条件
-    .match(Query.create().cond("status", Operator.create().eq("active")))
-    // 分组
-    .group("department",
-           Aggregation.field("employeeCount").sum(1),
-           Aggregation.field("avgSalary").avg("salary"),
-           Aggregation.field("maxAge").max("age"),
-           Aggregation.field("minAge").min("age"))
-    // 排序
-    .sort(OrderBy.create().desc("employeeCount"))
-    // 限制结果
-    .limit(10);
-
-// 执行聚合
-List<Document> results = MongoDB.get().openSession(session ->
-    session.aggregate("users", aggregation)
-);
-
-// 处理聚合结果
-for (Document doc : results) {
-    String department = doc.getString("_id");
-    int count = doc.getInteger("employeeCount");
-    double avgSalary = doc.getDouble("avgSalary");
-    // 处理结果...
-}
-```
-
-## 高级特性
-
-### 表达式系统
-
-MongoDB 模块提供了丰富的表达式系统，支持各种查询场景：
-
-#### 比较表达式
-
-```java
-// 等于
-ComparisonExp.eq("value")
-
-// 不等于
-ComparisonExp.ne("value")
-
-// 大于
-ComparisonExp.gt(10)
-
-// 大于等于
-ComparisonExp.gte(10)
-
-// 小于
-ComparisonExp.lt(100)
-
-// 小于等于
-ComparisonExp.lte(100)
-
-// 在范围内
-ComparisonExp.between(10, 100)
-
-// 在集合中
-ComparisonExp.in(Arrays.asList(1, 2, 3))
-
-// 不在集合中
-ComparisonExp.nin(Arrays.asList(4, 5, 6))
-```
-
-#### 逻辑表达式
-
-```java
-// 与
-LogicalExp.and(query1, query2)
-
-// 或
-LogicalExp.or(query1, query2)
-
-// 非
-LogicalExp.not(operator)
-
-//  nor
-LogicalExp.nor(query1, query2)
-```
-
-#### 数组表达式
-
-```java
-// 数组包含所有元素
-ArrayExp.all(Arrays.asList("java", "mongodb"))
-
-// 数组元素匹配
-ArrayExp.elemMatch(Operator.create().eq("value"))
-
-// 数组大小
-ArrayExp.size(5)
-```
-
-#### 元素表达式
-
-```java
-// 字段存在
-ElementExp.exists(true)
-
-// 字段类型
-ElementExp.type("string")
-```
-
-#### 评估表达式
-
-```java
-// 正则匹配
-EvaluationExp.regex("^A.*")
-
-// 文本搜索
-EvaluationExp.text("developer", "english")
-
-// 模式匹配
-EvaluationExp.mod(5, 0) // 能被5整除
-
-// JavaScript表达式
-EvaluationExp.where("this.age > 18")
-```
-
-#### 更新表达式
-
-```java
-// 设置字段
-UpdateExp.set("field", "value")
-
-// 递增
-UpdateExp.inc("count", 1)
-
-// 递减
-UpdateExp.inc("count", -1)
-
-// 相乘
-UpdateExp.mul("price", 1.1)
-
-// 重命名
-UpdateExp.rename("oldField", "newField")
-
-// 删除字段
-UpdateExp.unset("field")
-
-// 添加到数组
-UpdateExp.push("tags", "newTag")
-
-// 从数组删除
-UpdateExp.pull("tags", "oldTag")
-
-// 添加到集合
-UpdateExp.addToSet("uniqueTags", "tag")
-```
-
-### 实体映射
-
-#### 基本实体
-
-```java
+/*
+ * Copyright 2007-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.mongodb.entity;
+
+import net.ymate.platform.core.persistence.annotation.Comment;
+import net.ymate.platform.core.persistence.annotation.Entity;
+import net.ymate.platform.core.persistence.annotation.Property;
+import net.ymate.platform.persistence.mongodb.support.BaseEntity;
+
+import java.util.Date;
+
+/**
+ * 用户文档实体映射集合 ymp_user
+ *
+ * @author Example
+ * @since 2.1.4-dev
+ */
+@Entity("user")
+@Comment("用户集合")
 public class UserEntity extends BaseEntity {
 
-    @Property(name = "username", nullable = false)
-    private String username;
+    public interface FIELDS {
+        String NICKNAME = "nick_name";
+        String AGE = "age";
+        String GENDER = "gender";
+        String CREATE_TIME = "create_time";
+    }
 
-    @Property(name = "password", nullable = false)
-    private String password;
+    @Property(name = FIELDS.NICKNAME, nullable = false)
+    @Comment("昵称")
+    private String nickname;
 
-    @Property(name = "email")
-    private String email;
-
-    @Property(name = "age")
+    @Property(name = FIELDS.AGE)
+    @Comment("年龄")
     private Integer age;
 
-    @Property(name = "created_time")
-    @Readonly
-    private Date createdTime;
+    @Property(name = FIELDS.GENDER)
+    @Comment("性别：M男 F女")
+    private String gender;
 
-    @Property(name = "status")
-    @Default("active")
-    private String status;
+    @Property(name = FIELDS.CREATE_TIME, nullable = false)
+    @Comment("创建时间")
+    private Date createTime;
 
-    // Getter and Setter methods...
+    public String getNickname() { return nickname; }
+    public void setNickname(String nickname) { this.nickname = nickname; }
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+    public Date getCreateTime() { return createTime; }
+    public void setCreateTime(Date createTime) { this.createTime = createTime; }
 }
 ```
 
-#### 复杂实体
-
 ```java
-public class ProductEntity extends BaseEntity {
+/*
+ * Copyright 2007-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.mongodb;
 
-    @Property(name = "name", nullable = false)
-    private String name;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IResultSet;
+import net.ymate.platform.core.persistence.Page;
+import net.ymate.platform.persistence.mongodb.MongoDB;
+import net.ymate.platform.persistence.mongodb.support.OrderBy;
+import net.ymate.platform.persistence.mongodb.support.Operator;
+import net.ymate.platform.persistence.mongodb.support.Query;
+import com.example.mongodb.entity.UserEntity;
 
-    @Property(name = "price")
-    private Double price;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
-    @Property(name = "description")
-    private String description;
+/**
+ * MongoDB CRUD使用示例
+ *
+ * @author Example
+ * @since 2.1.4-dev
+ */
+public class MongoCrudExample {
 
-    @Property(name = "tags")
-    private List<String> tags;
+    /**
+     * 插入一条用户记录
+     *
+     * @param nickname 昵称
+     * @param age      年龄
+     * @return 插入后实体（含_id）
+     * @throws Exception 可能的异常
+     * @since 2.1.4-dev
+     */
+    public UserEntity insertUser(String nickname, Integer age) throws Exception {
+        return MongoDB.get().openSession(session -> {
+            UserEntity u = new UserEntity();
+            u.setNickname(nickname);
+            u.setAge(age);
+            u.setGender("F");
+            u.setCreateTime(new Date());
+            return session.insert(u);
+        });
+    }
 
-    @Property(name = "attributes")
-    private Map<String, Object> attributes;
+    /**
+     * 条件查询分页用户
+     *
+     * @param minAge   最小年龄
+     * @param gender   性别
+     * @param pageNum  页码
+     * @param pageSize 每页大小
+     * @return 分页结果
+     * @throws Exception 可能的异常
+     * @since 2.1.4-dev
+     */
+    public IResultSet<UserEntity> queryUsers(int minAge, String gender, int pageNum, int pageSize) throws Exception {
+        return MongoDB.get().openSession(session -> {
+            Query q = Query.create()
+                    .cond(UserEntity.FIELDS.AGE, Operator.create().gte(minAge))
+                    .cond(UserEntity.FIELDS.GENDER, Operator.create().eq(gender));
+            OrderBy orderBy = OrderBy.create().desc(UserEntity.FIELDS.CREATE_TIME);
+            return session.find(UserEntity.class, q, orderBy, Page.create(pageNum).pageSize(pageSize));
+        });
+    }
 
-    @Property(name = "variants")
-    private List<ProductVariant> variants;
+    /**
+     * 按_id更新性别
+     *
+     * @param id     主键_id
+     * @param gender 新性别
+     * @return 更新后实体
+     * @throws Exception 可能的异常
+     * @since 2.1.4-dev
+     */
+    public UserEntity updateGender(String id, String gender) throws Exception {
+        return MongoDB.get().openSession(session -> {
+            UserEntity u = new UserEntity();
+            u.setId(id);
+            u.setGender(gender);
+            return session.update(u, Fields.create(UserEntity.FIELDS.GENDER));
+        });
+    }
 
-    @Property(name = "created_by")
-    private String createdBy;
-
-    @Property(name = "created_time")
-    private Date createdTime;
-
-    // Getter and Setter methods...
-
-    public static class ProductVariant {
-        private String sku;
-        private String color;
-        private String size;
-        private Double price;
-        private Integer stock;
-        // Getter and Setter methods...
+    /**
+     * 批量删除
+     *
+     * @param ids 主键集合
+     * @return 删除条数
+     * @throws Exception 可能的异常
+     * @since 2.1.4-dev
+     */
+    public long deleteUsers(List<String> ids) throws Exception {
+        return MongoDB.get().openSession(session -> session.delete(UserEntity.class, ids));
     }
 }
 ```
 
-## 配置项
+### 模板3：聚合Aggregation示例（分组、投影、match）
 
-### 模块配置参数
+```java
+/*
+ * Copyright 2007-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.mongodb;
 
-| 配置项 | 描述 | 默认值 |
-|-------|------|-------|
-| ds_default_name | 默认数据源名称 | default |
-| ds_name_list | 数据源列表，多个数据源名称间用'|'分隔 | default |
+import com.mongodb.client.MongoCollection;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.persistence.mongodb.MongoDB;
+import net.ymate.platform.persistence.mongodb.support.Aggregation;
+import net.ymate.platform.persistence.mongodb.support.Operator;
+import net.ymate.platform.persistence.mongodb.support.OrderBy;
+import net.ymate.platform.persistence.mongodb.support.Query;
+import com.example.mongodb.entity.UserEntity;
+import org.bson.Document;
 
-### 数据源配置参数
+import java.util.ArrayList;
+import java.util.List;
 
-| 配置项 | 描述 | 默认值 |
-|-------|------|-------|
-| username | 数据源访问用户名称 | - |
-| password | 数据源访问密码 | - |
-| password_encrypted | 数据源访问密码是否已加密 | false |
-| password_class | 数据源密码处理器 | - |
-| collection_prefix | 集合前缀名称 | - |
-| connection_url | 服务器主机连接字符串 | - |
-| auto_connection | 是否自动连接 | false |
-| database_name | 数据库名称 | - |
-| authentication_database_name | 包含用户身份验证数据的数据库名称 | admin |
-| servers | 服务器主机集合，格式：<IP地址[:端口]>，多个主机之间用'|'分隔 | - |
-| options_handler_class | 自定义MongoDB客户端参数配置处理器 | - |
+/**
+ * MongoDB聚合查询示例
+ *
+ * @author Example
+ * @since 2.1.4-dev
+ */
+public class MongoAggregationExample {
 
-## 最佳实践
+    /**
+     * 按性别分组，统计人数与平均年龄，取前5个分组
+     *
+     * @return 聚合结果列表（_id=gender, count, avgAge）
+     * @throws Exception 可能的异常
+     * @since 2.1.4-dev
+     */
+    public List<Document> groupByGenderStats() throws Exception {
+        return MongoDB.get().openSession(session -> {
+            MongoCollection<Document> col = session.getCollection(UserEntity.class);
+            List<Aggregation> pipeline = new ArrayList<>();
+            // $match 过滤年龄>=18
+            pipeline.add(Aggregation.create()
+                    .match(Query.create().cond(UserEntity.FIELDS.AGE, Operator.create().gte(18))));
+            // $group 分组
+            pipeline.add(Aggregation.create().group(
+                    Operator.create().field(UserEntity.FIELDS.GENDER),
+                    Query.create()
+                            .cond("count", Operator.create().sum(1))
+                            .cond("avgAge", Operator.create().avg(UserEntity.FIELDS.AGE))
+                            .cond("maxAge", Operator.create().max(UserEntity.FIELDS.AGE))
+            ));
+            // $project 投影输出字段（排除_id或重命名）
+            pipeline.add(Aggregation.create().project(Fields.create("count", "avgAge", "maxAge")));
+            // $sort 按count倒序
+            pipeline.add(Aggregation.create().sort(OrderBy.create().desc("count")));
+            // $limit 前5
+            pipeline.add(Aggregation.create().limit(5));
+            // 转为Bson列表执行
+            List<org.bson.conversions.Bson> stages = new ArrayList<>();
+            pipeline.forEach(a -> stages.add(a.toBson()));
+            return col.aggregate(stages).into(new ArrayList<>());
+        });
+    }
+}
+```
 
-1. **会话管理**：使用 try-with-resources 或会话执行器模式，确保会话正确关闭
+### 模板4：GridFS上传/下载
 
-2. **连接池配置**：根据应用需求合理配置连接池参数，避免连接泄漏
+```java
+/*
+ * Copyright 2007-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.mongodb;
 
-3. **索引优化**：为频繁查询的字段创建索引，提高查询性能
+import com.mongodb.client.gridfs.model.GridFSFile;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import net.ymate.platform.persistence.mongodb.MongoDB;
+import org.bson.Document;
 
-4. **批量操作**：对于大量数据操作，使用批量插入和更新，减少网络往返
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-5. **分页查询**：使用分页查询，避免一次性加载过多数据
+/**
+ * GridFS文件存储示例
+ *
+ * @author Example
+ * @since 2.1.4-dev
+ */
+public class MongoGridFsExample {
 
-6. **事务使用**：仅在需要保证数据一致性的场景下使用事务，因为事务会影响性能
+    private static final String BUCKET = "my_files";
 
-7. **GridFS 使用**：对于大于 16MB 的文件，使用 GridFS 存储
+    /**
+     * 从本地文件上传到GridFS
+     *
+     * @param localFile 本地文件
+     * @return 文件唯一标识fileId
+     * @throws Exception 可能的异常
+     * @since 2.1.4-dev
+     */
+    public String uploadFile(File localFile) throws Exception {
+        return MongoDB.get().openGridFsSession(BUCKET, session -> {
+            GridFSUploadOptions opts = new GridFSUploadOptions()
+                    .metadata(new Document("contentType", "application/octet-stream")
+                            .append("uploader", "ymp-example"));
+            return session.upload(localFile, opts);
+        });
+    }
 
-8. **查询优化**：使用合适的查询条件，避免全表扫描
+    /**
+     * 从输入流上传指定文件名
+     *
+     * @param fileName 显示文件名
+     * @param in       输入流
+     * @return 文件唯一标识fileId
+     * @throws Exception 可能的异常
+     * @since 2.1.4-dev
+     */
+    public String uploadStream(String fileName, InputStream in) throws Exception {
+        return MongoDB.get().openGridFsSession(BUCKET, session ->
+                session.upload(fileName, in, new GridFSUploadOptions()));
+    }
 
-9. **错误处理**：妥善处理 MongoDB 异常，提供友好的错误信息
+    /**
+     * 按fileId下载到目标文件
+     *
+     * @param fileId  文件ID
+     * @param destFile 目标本地文件
+     * @throws Exception 可能的异常
+     * @since 2.1.4-dev
+     */
+    public void downloadFile(String fileId, File destFile) throws Exception {
+        try (OutputStream out = new FileOutputStream(destFile)) {
+            MongoDB.get().openGridFsSession(BUCKET, session -> {
+                session.download(fileId, out);
+                return null;
+            });
+        }
+    }
 
-10. **监控与日志**：监控 MongoDB 性能指标，记录关键操作日志
+    /**
+     * 查询文件元信息
+     *
+     * @param fileId 文件ID
+     * @return GridFS文件元信息（含filename、length、uploadDate、metadata）
+     * @throws Exception 可能的异常
+     * @since 2.1.4-dev
+     */
+    public GridFSFile findFile(String fileId) throws Exception {
+        return MongoDB.get().openGridFsSession(BUCKET, session -> session.find(fileId));
+    }
+}
+```
 
-## 常见问题与解决方案
+## 5. 配置速查
 
-### 1. 连接失败
+### 5.1 配置文件最常改项
 
-**问题**：无法连接到 MongoDB 服务器
+| Key | 默认值 | 说明 |
+|-----|--------|------|
+| `ymp.configs.persistence.mongodb.ds_default_name` | default | 默认数据源名称 |
+| `ymp.configs.persistence.mongodb.ds_name_list` | default | 多数据源列表，竖线分隔 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.database_name` | - | 必选，MongoDB数据库名 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.servers` | - | 主机列表，格式 host:port，多个竖线分隔 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.username` | - | 认证用户名 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.password` | - | 认证密码 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.authentication_database_name` | admin | 认证数据库 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.connection_url` | - | 完整MongoDB连接URI（提供则忽略用户名/密码/主机等） |
+| `ymp.configs.persistence.mongodb.ds.<ds>.collection_prefix` | - | 集合统一前缀 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.auto_connection` | false | 模块初始化即建立连接 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.password_encrypted` | false | 密码是否已加密 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.password_class` | - | 密码解密处理器`IPasswordProcessor`实现类 |
+| `ymp.configs.persistence.mongodb.ds.<ds>.options_handler_class` | - | `IMongoClientOptionsHandler`自定义客户端参数 |
 
-**解决方案**：
-- 检查网络连接
-- 确认 MongoDB 服务是否运行
-- 验证连接字符串和认证信息
-- 检查防火墙设置
+### 5.2 注解配置核心参数
 
-### 2. 性能问题
+**@MongoDataSource核心参数：**
+- `name`：数据源名（必填）
+- `databaseName`：数据库名（必填）
+- `servers`：`String[]`主机列表
+- `username`/`password`/`authenticationDatabaseName`
+- `connectionUrl`：二选一，提供则覆盖独立参数
+- `autoConnection`/`collectionPrefix`
+- `passwordEncrypted`/`passwordClass`
+- `optionsHandlerClass`
 
-**问题**：查询速度慢
+## 6. 常见坑点排查
 
-**解决方案**：
-- 创建合适的索引
-- 优化查询条件
-- 使用投影减少返回字段
-- 考虑使用聚合管道
-- 检查 MongoDB 服务器资源使用情况
-
-### 3. 事务失败
-
-**问题**：事务操作失败
-
-**解决方案**：
-- 确认 MongoDB 版本支持事务（4.0+）
-- 确认使用了副本集
-- 检查事务超时设置
-- 避免在事务中执行长时间操作
-
-### 4. 内存溢出
-
-**问题**：处理大量数据时内存溢出
-
-**解决方案**：
-- 使用游标分批处理数据
-- 限制查询结果数量
-- 增加 JVM 内存配置
-- 优化数据处理逻辑
-
-### 5. 索引丢失
-
-**问题**：索引不生效
-
-**解决方案**：
-- 检查索引是否存在
-- 验证查询条件是否使用了索引字段
-- 避免在索引字段上使用函数
-- 检查复合索引顺序
-
-### 6. 数据一致性
-
-**问题**：数据不一致
-
-**解决方案**：
-- 使用事务保证操作原子性
-- 实现乐观锁机制
-- 检查应用逻辑中的并发处理
-- 考虑使用 MongoDB 事务
-
-## 总结
-
-MongoDB 模块是 YMP 框架中一个功能强大、设计灵活的 MongoDB 持久化解决方案，它提供了丰富的特性和友好的 API，使开发者能够轻松操作 MongoDB 数据库。
-
-通过会话管理、事务支持、GridFS 文件存储、丰富的查询表达式等特性，MongoDB 模块满足了各种 MongoDB 操作场景的需求。同时，其流畅的 API 设计和强大的表达式系统，大大简化了复杂查询条件的构建。
-
-MongoDB 模块不仅支持基本的 CRUD 操作，还支持高级特性如聚合查询、文本搜索、地理空间查询等，为开发者提供了全面的 MongoDB 操作能力。
-
-通过本文档的介绍，相信开发者能够快速掌握 MongoDB 模块的使用方法，并在实际项目中灵活应用，构建高性能、可靠的 MongoDB 应用。
+| 现象 | 原因 | 解决 |
+|------|------|------|
+| `Transaction numbers are only allowed on a replica set member` 事务异常 | MongoDB未开启副本集或未连到PRIMARY节点 | 启用副本集；确保写入连接到PRIMARY；测试可使用单节点副本集 `mongod --replSet rs0` |
+| `Cannot run 'listIndexes' in a multi-document transaction` GridFS在事务内失败 | MongoDB事务不支持GridFS等管理类命令 | GridFS上传下载移出事务；事务内仅做文档CRUD |
+| 实体查询全部返回null字段 | @Property未指定`name`或集合前缀不一致 | 对照MongoDB实际字段名；检查`collection_prefix`与@Entity配合 |
+| `Query.cond(Operator.eq(...))` 查不到但手动Bson可以 | `Operator.create()`要紧跟具体操作，空Operator导致$eq对null | 使用 `Operator.create().eq(val)` 链式写法；调试 `Query.toBson().toString()` |
+| GridFS首次上传抛异常但文件仍上传成功 | MongoDB懒建桶时listCollections警告 | 忽略首次异常或手动`mongofiles`预先创建桶；后续正常 |
+| 多数据源切换`openSession(dsName)`返回仍为默认 | `dsName`字符串与`ds_name_list`注册名不一致 | 检查properties或@MongoDataSource中name大小写；`ds_name_list`必须显式列出 |

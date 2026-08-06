@@ -1,270 +1,403 @@
 ---
 name: ymp-test
-description: YMP框架测试模块，集成了JUnit 5和JUnit 4的测试开发支持，提供模拟工具和测试生命周期管理
-version: 2.1.4
+description: YMP框架单元测试工具包，集成JUnit5(@ExtendWith YMPJUnit5Extension)与JUnit4(@RunWith YMPJUnit4ClassRunner)，支持@Inject依赖注入、组合套件测试、MockWebRequestHelper模拟WebMVC控制器请求、MockHttpServletRequest/Response
+version: 2.1.4-dev
 author: YMP Team
-category: testing
+category: framework
 tags:
   - java
-  - testing
-  - junit
-  - unit-test
-trigger: 当用户需要编写单元测试、集成测试、模拟HTTP请求等场景时触发
-tools:
-  - junit
-  - testing-framework
+  - framework
+  - test
+  - junit5
+  - junit4
   - mock
+  - webmvc
+  - integration-test
+trigger: 当用户需要写YMP单元测试、@ExtendWith(YMPJUnit5Extension)/@RunWith(YMPJUnit4ClassRunner)、@Inject注入Bean到测试类、MockWebRequestHelper模拟控制器请求、套件@YMPJUnit5Suite组合测试时触发
+tools:
+  - junit5
+  - junit4
+  - mock-web-request
+  - test-suite
+  - dependency-injection-test
 examples:
-  - 使用JUnit 5测试
-  - 使用JUnit 4测试
-  - 模拟控制器请求
-  - 测试存储器接口
-  - 组合单元测试
+  - JUnit5: @ExtendWith + @Inject WebMVC/JDBC + @Test断言
+  - MockWebRequestHelper.create(webmvc).post().parameter().doFilter()模拟登录请求
+  - JUnit4 @RunWith(YMPJUnit4ClassRunner.class)兼容旧项目
+  - @YMPJUnit5Suite组合多个测试类一次初始化
+  - 存储器Repository接口方法调用集成测试
 ---
 
-# 测试模块（Test）
+# Test 单元测试技能包
 
-## 1. 模块概述
+> AI读取指引：本模块边界=JUnit集成+Mock请求；所有类路径前缀`net.ymate.platform.test`(扩展)与`net.ymate.platform.mock`(Mock工具)；Mock控制器请求需配合webmvc模块(跳转webmvc/SKILL.md)；持久化测试跳转persistence-jdbc/mongodb/redis子模块。
 
-测试模块是 YMP 框架中的单元测试工具包，集成了 JUnit 5 和 JUnit 4 的测试开发支持，分别提供了对应的单测、套件扩展类及专属注解与使用方式，封装了核心工具类 YMPTestUtils 统一管理应用初始化逻辑，同时给出了两类 JUnit 版本下模拟控制器请求、存储器接口调用和组合单元测试的具体使用示例，整体支持依赖注入、测试生命周期管理、Bean 工厂注册等功能。
+---
 
-## 2. 核心功能
+## 0. 快速索引
 
-### 2.1 JUnit 5 支持
+- Maven artifactId：`ymate-platform-test`（需另外依赖单元测试框架junit-jupiter-api:5.x或junit:4.12）
+- 静态入口类：`net.ymate.platform.test.YMPTestUtils`(initializeYMP/InitConfig)；Mock入口`net.ymate.platform.mock.MockWebRequestHelper`
+- 必备注解：JUnit5=`@ExtendWith(YMPJUnit5Extension.class)`；JUnit4=`@RunWith(YMPJUnit4ClassRunner.class)`；配合`@EnableAutoScan`+`@EnableBeanProxy`(需AOP时)
+- 5行最简JUnit5测试（5行内）：
+```java
+@ExtendWith(YMPJUnit5Extension.class)
+@EnableAutoScan
+class MyTest {
+    @Inject private MyService svc;
+    @Test void t(){ Assertions.assertNotNull(svc); }
+}
+```
 
-- **YMPJUnit5Extension**：实现了 TestInstanceFactory、ParameterResolver 和 AfterAllCallback 接口，支持通过 YMP 容器创建测试实例，支持在测试方法中注入 IApplication 参数，支持测试完成后清理缓存和销毁应用，完善的应用生命周期管理。
-- **YMPJUnit5Suite**：基于 JUnit 5 的 @Suite 注解，支持组合多个测试类，使用独立的 YMPJUnit5SuiteExtension 扩展，确保 YMP 应用仅初始化一次，整个测试套件执行完毕后自动销毁应用。
+## 1. 模块摘要
 
-### 2.2 JUnit 4 支持
+YMP单元测试工具包封装JUnit5与JUnit4的容器生命周期：自动初始化IApplication、注册测试类到BeanFactory支持@Inject注入、测试后自动销毁避免内存泄漏；提供MockWebRequestHelper走完整WebMVC过滤器链模拟HTTP请求（含参数/响应/Json解析）；支持Suite套件一次初始化，多个测试类共享应用容器。
 
-- **YMPJUnit4ClassRunner**：实现了 JUnit 4 的 Runner 接口，为单个测试类提供 YMP 集成，使用 YMPTestUtils 统一管理应用初始化，测试执行完毕后自动销毁应用。
-- **YMPJUnit4Suite**：基于 JUnit 4 的 Suite 运行器，支持组合多个测试类，使用独立的 YMPJUnit4RunnerBuilder 类管理测试运行，整个测试套件执行完毕后自动销毁应用。
+- **JUnit5集成**：`@ExtendWith(YMPJUnit5Extension.class)` 支持TestInstanceFactory创建实例+ParameterResolver注入IApplication参数+AfterAll清理
+- **JUnit4集成**：`@RunWith(YMPJUnit4ClassRunner.class)` 兼容老项目，Runner内部调用YMPTestUtils统一初始化逻辑
+- **套件组合测试**：`@YMPJUnit5Suite({A.class,B.class})` / `@RunWith(YMPJUnit4Suite.class)+@SuiteClasses` 多测试类共享同一个YMP应用
+- **Mock WebMVC请求**：`MockWebRequestHelper.create(webmvc).get/post(path).parameter(k,v).doFilter()` 走DispatcherServlet真实流程，返回MockHttpServletResponse断言status+body
+- **YMPTestUtils底层API**：`initializeYMP(testClass)` / `InitConfig` 设置主类名/测试类列表/SystemProperties，可手动初始化
 
-### 2.3 核心工具类
+## 2. 核心注解/类速查表（全限定名）
 
-- **YMPTestUtils**：统一管理 YMP 应用初始化逻辑，减少代码重复，提供 InitConfig 配置类，支持自定义应用初始化参数。
+| 类/注解 | 全限定名 | 核心作用 |
+|---|---|---|
+| YMPJUnit5Extension | `net.ymate.platform.test.YMPJUnit5Extension` | JUnit5扩展，@ExtendWith(Class)引用，实现TestInstanceFactory/ParameterResolver/AfterAllCallback |
+| @YMPJUnit5Suite | `net.ymate.platform.test.YMPJUnit5Suite` | JUnit5套件注解，value=Class[]为测试类列表；整个Suite初始化一次YMP应用 |
+| YMPJUnit5SuiteExtension | `net.ymate.platform.test.YMPJUnit5SuiteExtension` | 套件内部扩展（配合@YMPJUnit5Suite使用，一般不显式引用） |
+| YMPJUnit4ClassRunner | `net.ymate.platform.test.YMPJUnit4ClassRunner` | JUnit4 Runner，@RunWith(YMPJUnit4ClassRunner.class)引用 |
+| YMPJUnit4Suite | `net.ymate.platform.test.YMPJUnit4Suite` | JUnit4套件Runner：@RunWith(YMPJUnit4Suite.class)+@SuiteClasses({A.class,B.class}) |
+| YMPTestUtils | `net.ymate.platform.test.YMPTestUtils` | 底层初始化工具：initializeYMP(InitConfig) / initializeYMP(testClass) / initializeYMP(suiteClass, testClasses) |
+| YMPTestUtils.InitConfig | `net.ymate.platform.test.YMPTestUtils$InitConfig` | 初始化配置Builder：setMainClassName/setTestClasses/setSystemProperties |
+| MockWebRequestHelper | `net.ymate.platform.mock.MockWebRequestHelper` | Mock请求助手：create(WebMVC)→RequestBuilder→链式.parameter/header/doFilter |
+| MockWebRequestHelper.RequestBuilder | `net.ymate.platform.mock.MockWebRequestHelper$RequestBuilder` | 链式Builder：get/post/put/delete(path) / parameter(k,v) / header(k,v) / doFilter()→MockHttpServletResponse |
+| MockHttpServletRequest | `net.ymate.platform.mock.web.MockHttpServletRequest` | Servlet API Mock请求实现（HttpServletRequest接口），可手动构造 |
+| MockHttpServletResponse | `net.ymate.platform.mock.web.MockHttpServletResponse` | Servlet API Mock响应实现：getStatus()/getContentAsString()/getHeader()等 |
+| @Inject（复用core） | `net.ymate.platform.core.beans.annotation.Inject` | 测试类字段注入Bean（WebMVC/JDBC/自定义Service等） |
+| @EnableAutoScan / @EnableBeanProxy / @EnableDevMode | `net.ymate.platform.core.annotation.*` | 启动类/测试类上启用扫描/AOP/开发模式（与正式启动类一致） |
+| JsonWrapper | `net.ymate.platform.commons.json.JsonWrapper` | JSON工具：JsonWrapper.fromJson(response.getContentAsString())解析响应body |
 
-### 2.4 模拟工具
+## 3. 核心API速查（≤8条最常用）
 
-- **MockWebRequestHelper**：用于模拟控制器方法请求，支持 HTTP 方法、参数设置、请求头设置等。
-- **MockHttpServletRequest/Response**：模拟 HTTP 请求和响应对象，支持各种 HTTP 相关操作。
+- `@ExtendWith(YMPJUnit5Extension.class)` （JUnit5类上注解）：自动初始化YMP+支持@Inject
+- `@RunWith(YMPJUnit4ClassRunner.class)` （JUnit4类上注解）：同上，兼容JUnit4
+- `@Inject WebMVC webmvc / @Inject JDBC database`：测试字段注入框架模块或自定义Bean
+- `MockWebRequestHelper.create(webmvc).post("/login").parameter("uname","admin").parameter("passwd","xxx").doFilter()` → `MockHttpServletResponse`：模拟HTTP请求
+- `response.getStatus()` → `int`：断言HTTP状态码（HttpServletResponse.SC_OK=200）
+- `response.getContentAsString()` → `String`：获取响应体字符串，JsonWrapper.fromJson()解析
+- `YMPTestUtils.initializeYMP(YMPTestUtils.InitConfig cfg)` → `IApplication`：手动初始化应用（非常规场景）
+- `@YMPJUnit5Suite({LoginTest.class, OrderTest.class})` + @EnableAutoScan：JUnit5套件组合测试一次启动
 
-## 3. 技术架构
+## 4. 标准代码模板
 
-测试模块采用分层架构设计，主要包含以下核心组件：
-
-1. **JUnit 集成层**：包含 JUnit 5 和 JUnit 4 的扩展类和运行器，负责与测试框架的集成。
-2. **核心工具层**：包含 YMPTestUtils 等核心工具类，负责应用初始化和管理。
-3. **模拟层**：包含 MockWebRequestHelper 和各种 Mock 类，负责模拟 HTTP 请求和响应。
-4. **集成层**：与 YMP 框架的其他模块无缝集成，支持依赖注入等特性。
-
-## 4. 核心 API
-
-### 4.1 JUnit 5 相关
-
-- **YMPJUnit5Extension**：JUnit 5 扩展类，用于集成 YMP 框架。
-- **YMPJUnit5Suite**：JUnit 5 测试套件注解，用于组合多个测试类。
-- **YMPJUnit5SuiteExtension**：JUnit 5 测试套件扩展类，确保 YMP 应用仅初始化一次。
-
-### 4.2 JUnit 4 相关
-
-- **YMPJUnit4ClassRunner**：JUnit 4 运行器，用于集成 YMP 框架。
-- **YMPJUnit4Suite**：JUnit 4 测试套件运行器，用于组合多个测试类。
-- **YMPJUnit4RunnerBuilder**：JUnit 4 运行器构建器，用于管理测试运行。
-
-### 4.3 核心工具
-
-- **YMPTestUtils**：测试工具类，负责 YMP 应用的初始化和管理。
-- **YMPTestUtils.InitConfig**：初始化配置类，用于自定义应用初始化参数。
-
-### 4.4 模拟工具
-
-- **MockWebRequestHelper**：用于模拟控制器方法请求的工具类。
-- **MockHttpServletRequest**：模拟 HTTP 请求对象。
-- **MockHttpServletResponse**：模拟 HTTP 响应对象。
-
-## 5. 依赖关系
-
-测试模块依赖以下 YMP 框架模块：
-
-- **core**：核心模块，提供应用容器和依赖注入功能。
-- **webmvc**（可选）：WebMVC 模块，用于模拟控制器请求。
-- **persistence-jdbc**（可选）：JDBC 持久化模块，用于测试存储器接口。
-
-## 6. 使用示例
-
-### 6.1 JUnit 5 使用示例
-
-#### 示例一：模拟控制器方法请求
+### 模板1：JUnit5 @ExtendWith(YMPJUnit5Extension) + @Inject注入 + @Test基本断言
 
 ```java
+/*
+ * Copyright 2007-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.test;
+
+import net.ymate.platform.core.annotation.EnableAutoScan;
+import net.ymate.platform.core.annotation.EnableBeanProxy;
+import net.ymate.platform.core.annotation.EnableDevMode;
+import net.ymate.platform.core.beans.annotation.Inject;
+import net.ymate.platform.test.YMPJUnit5Extension;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+/**
+ * JUnit5基础测试示例：@ExtendWith启用扩展，@Inject注入Service，JUnit5生命周期注解+断言
+ *
+ * @author YMP Team
+ * @since 2.1.4-dev
+ */
 @ExtendWith(YMPJUnit5Extension.class)
 @EnableAutoScan
 @EnableBeanProxy
 @EnableDevMode
-public class LoginControllerTest {
+class JUnit5BasicTest {
 
+    /**
+     * 注入自定义业务Service（需@Bean注册或被扫描到）
+     */
+    @Inject
+    private DemoUserService userService;
+
+    /**
+     * 也可直接注入框架模块（如JDBC/WebMVC等，需对应artifactId依赖）
+     * @Inject private net.ymate.platform.persistence.jdbc.JDBC database;
+     */
+
+    @BeforeAll
+    static void setUpClass() {
+        // 所有测试执行前一次初始化（静态方法，JUnit5标准）
+        System.out.println("@BeforeAll - 测试套件前置");
+    }
+
+    @AfterAll
+    static void tearDownClass() {
+        // 所有测试执行后一次清理（YMPJUnit5Extension内部已自动销毁应用容器）
+        System.out.println("@AfterAll - 测试套件后置");
+    }
+
+    @BeforeEach
+    void setUp() {
+        // 每个@Test前执行
+        Assertions.assertNotNull(userService, "注入失败，检查@EnableAutoScan包范围是否覆盖DemoUserService");
+    }
+
+    @AfterEach
+    void tearDown() {
+        // 每个@Test后执行
+    }
+
+    /**
+     * 用例1：注入对象非空 + 业务方法返回预期
+     * @since 2.1.4-dev
+     */
+    @Test
+    @DisplayName("用户服务-创建用户正常流程")
+    void testCreateUser() {
+        String userId = userService.createUser("Alice", "alice@example.com");
+        Assertions.assertNotNull(userId, "返回userId不应空");
+        Assertions.assertTrue(userId.startsWith("U_"), "userId前缀应为U_");
+    }
+
+    /**
+     * 用例2：IApplication作为测试方法参数（ParameterResolver自动注入）
+     *
+     * @param application YMP应用容器实例（由YMPJUnit5Extension.ParameterResolver自动注入）
+     * @since 2.1.4-dev
+     */
+    @Test
+    @DisplayName("IApplication方法参数注入验证")
+    void testApplicationInjected(net.ymate.platform.core.IApplication application) {
+        Assertions.assertNotNull(application);
+        Assertions.assertTrue(application.isInitialized(), "应用容器必须已初始化");
+        // 也可通过application.getBeanFactory().getBean()获取
+        DemoUserService svc2 = application.getBeanFactory().getBean(DemoUserService.class);
+        Assertions.assertSame(userService, svc2, "同一Bean在单例下应为同一引用");
+    }
+
+    /**
+     * 示例业务Service（实际项目中单独放在src/main/java下，此处仅为模板演示）
+     */
+    @net.ymate.platform.core.beans.annotation.Bean
+    public static class DemoUserService {
+        public String createUser(String name, String email) {
+            return "U_" + System.currentTimeMillis() + "_" + name;
+        }
+    }
+}
+```
+
+### 模板2：MockWebRequestHelper模拟登录请求 + SC_OK断言 + JsonWrapper解析响应
+
+```java
+/*
+ * Copyright 2007-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.test;
+
+import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.core.annotation.EnableAutoScan;
+import net.ymate.platform.core.annotation.EnableBeanProxy;
+import net.ymate.platform.core.annotation.EnableDevMode;
+import net.ymate.platform.core.beans.annotation.Inject;
+import net.ymate.platform.mock.MockWebRequestHelper;
+import net.ymate.platform.mock.web.MockHttpServletResponse;
+import net.ymate.platform.test.YMPJUnit5Extension;
+import net.ymate.platform.webmvc.WebMVC;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Mock WebMVC控制器请求示例：走完整过滤器链模拟登录POST请求，断言状态码+解析JSON返回体
+ *
+ * @author YMP Team
+ * @since 2.1.4-dev
+ */
+@ExtendWith(YMPJUnit5Extension.class)
+@EnableAutoScan
+@EnableBeanProxy
+@EnableDevMode
+class LoginControllerMockTest {
+
+    /**
+     * 注入WebMVC模块（MockWebRequestHelper.create必须传入此实例）
+     * 需确保pom依赖了ymate-platform-webmvc
+     */
     @Inject
     private WebMVC webmvc;
 
+    @BeforeEach
+    void setUp() {
+        Assumptions.assumeTrue(webmvc != null, "WebMVC未初始化，跳过WebMock相关测试");
+    }
+
+    /**
+     * 模拟登录控制器POST请求：参数+密码MD5+format=json，断言200+解析响应JSON
+     *
+     * @throws Exception Mock请求执行异常
+     * @since 2.1.4-dev
+     */
     @Test
-    public void testLogin() throws Exception {
+    @DisplayName("登录接口-管理员正确账号密码返回成功")
+    void testLoginSuccess() throws Exception {
+        // 1. 构造Mock请求并执行doFilter（走真实WebMVC DispatcherServlet+拦截器链）
         MockHttpServletResponse response = MockWebRequestHelper.create(webmvc)
-            .post("/login")
-            .parameter("uname", "admin")
-            .parameter("passwd", DigestUtils.md5Hex("admin"))
-            .parameter("format", "json")
-            .doFilter();
+                .post("/login")
+                .parameter("uname", "admin")
+                .parameter("passwd", DigestUtils.md5Hex("admin"))
+                .parameter("format", "json")
+                // 可选：.header("Authorization","Bearer xxx")
+                // 可选：.contentType("application/x-www-form-urlencoded")
+                .doFilter();
+
+        // 2. 断言HTTP状态码=200
+        Assertions.assertEquals(HttpServletResponse.SC_OK, response.getStatus(),
+                "登录接口HTTP状态应为200，响应body=" + response.getContentAsString());
+
+        // 3. 解析JSON响应（假设接口返回{ret:0, msg:"ok", data:{token:"xxx"}}）
+        String body = response.getContentAsString();
+        Assertions.assertNotNull(body, "响应体不应空");
+        JsonWrapper jsonWrapper = JsonWrapper.fromJson(body);
+        Assertions.assertNotNull(jsonWrapper, "响应JSON解析失败：" + body);
+        // 打印格式化JSON便于调试
+        System.out.println("登录接口响应JSON:\n" + jsonWrapper.getAsJsonObject().toString(true, true));
+
+        // 4. 业务断言（根据实际接口字段调整）
+        int ret = jsonWrapper.getAsJsonObject().getInt("ret", -1);
+        Assertions.assertEquals(0, ret, "业务ret=0表示成功");
+        String token = jsonWrapper.getAsJsonObject().getAsJsonObject("data").getString("token");
+        Assertions.assertNotNull(token, "登录成功应返回token");
+    }
+
+    /**
+     * 模拟登录失败：错误密码应返回ret非0
+     *
+     * @throws Exception 异常
+     * @since 2.1.4-dev
+     */
+    @Test
+    @DisplayName("登录接口-错误密码返回业务失败")
+    void testLoginFail() throws Exception {
+        MockHttpServletResponse response = MockWebRequestHelper.create(webmvc)
+                .post("/login")
+                .parameter("uname", "admin")
+                .parameter("passwd", DigestUtils.md5Hex("wrong_password"))
+                .parameter("format", "json")
+                .doFilter();
         Assertions.assertEquals(HttpServletResponse.SC_OK, response.getStatus());
         JsonWrapper jsonWrapper = JsonWrapper.fromJson(response.getContentAsString());
-        Assertions.assertNotNull(jsonWrapper);
+        int ret = jsonWrapper.getAsJsonObject().getInt("ret", -1);
+        Assertions.assertNotEquals(0, ret, "错误密码应返回非0业务码");
     }
 }
+
+/*
+需要的pom依赖片段（除ymate-platform-test外）：
+<dependencies>
+    <!-- JUnit 5 (任选其一JUnit版本) -->
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.9.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.9.2</version>
+        <scope>test</scope>
+    </dependency>
+    <!-- JUnit 4 (兼容老项目，二选一)
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+        <scope>test</scope>
+    </dependency> -->
+    <!-- Commons Codec (DigestUtils.md5Hex示例依赖，若已存在可略) -->
+    <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.15</version>
+    </dependency>
+</dependencies>
+*/
 ```
 
-#### 示例二：存储器接口方法调用
+## 5. 配置速查
 
-```java
-@ExtendWith(YMPJUnit5Extension.class)
-@EnableAutoScan
-@EnableBeanProxy
-@EnableDevMode
-public class SystemConfigRepositoryTest {
+### 5.1 配置文件最常改项（≤12条 key|默认值|说明）
 
-    @Inject
-    private JDBC database;
+| 配置/依赖项 | 默认值/推荐 | 说明 |
+|---|---|---|
+| junit-jupiter-api version | 5.9.x | JUnit5 API依赖（scope=test） |
+| junit-jupiter-engine version | 5.9.x | JUnit5运行引擎（Surefire/Maven Failsafe需匹配） |
+| junit:junit version | 4.13.2 | JUnit4兼容包（新项目推荐JUnit5） |
+| @EnableDevMode在测试类 | 必加 | 开开发模式便于定位，生产勿加 |
+| @EnableAutoScan value | 测试类所在包 | 需覆盖src/main下被测试Bean的包，否则@Inject失败 |
+| @EnableBeanProxy | 按需 | 测试AOP拦截/事务时必加 |
+| ymp-conf.properties放置 | src/test/resources | 测试环境独立配置：测试DB/缓存/登录白名单等 |
+| ymate-platform-webmvc artifactId | 依赖 | MockWebRequestHelper需要WebMVC模块 |
+| ymate-platform-persistence-jdbc artifactId | 依赖 | 集成测试JDBC/JPA Repository时需要 |
+| ymate-platform-commons (JsonWrapper) | 传递依赖 | 一般由webmvc/jdbc传递引入 |
 
-    @Inject
-    private ISystemConfigRepository repository;
+### 5.2 注解配置核心参数
 
-    @Test
-    public void testQuerySystemConfigs() throws Exception {
-        SystemConfigBean systemConfigBean = SystemConfigBean.builder()
-            .siteId("ymate.net")
-            .build();
-        IResultSet<SystemConfigVO> systemConfigs = repository.querySystemConfigs(database, systemConfigBean, Page.create());
-        Assertions.assertNotNull(systemConfigs);
-    }
-}
-```
+| 注解/方法参数 | 类型 | 说明 |
+|---|---|---|
+| @ExtendWith.value | Class<? extends Extension> | 固定填YMPJUnit5Extension.class |
+| @RunWith.value | Class<? extends Runner> | JUnit4固定填YMPJUnit4ClassRunner.class |
+| @YMPJUnit5Suite.value | Class<?>[] | 套件包含的测试类数组，顺序执行 |
+| @SuiteClasses.value | Class<?>[] | JUnit4套件包含的测试类数组（org.junit.runners.Suite.SuiteClasses） |
+| MockWebRequestHelper.create(WebMVC webmvc) | WebMVC实例 | 必须通过@Inject注入的WebMVC模块实例（非手动new） |
+| RequestBuilder.post/get/put/delete(path) | String path | 控制器@RequestMapping路径，包含contextPath部分 |
+| RequestBuilder.parameter(name, value) | String, String | 表单参数（多次调用叠加）；文件上传需MockMultipartFile（高级） |
+| RequestBuilder.header(name, value) | String, String | HTTP请求头（如Authorization/Content-Type） |
+| RequestBuilder.doFilter() | MockHttpServletResponse | 执行请求并返回响应（阻塞式，同步等待MVC处理完） |
+| YMPTestUtils.InitConfig.setMainClassName(String) | String | 设置IApplication.SYSTEM_MAIN_CLASS（默认读取测试类所在包） |
+| YMPTestUtils.InitConfig.setSystemProperties(Map) | Map<String,String> | 启动前注入System属性（替代-D参数） |
 
-#### 示例三：组合单元测试
+## 6. 常见坑点排查
 
-```java
-@YMPJUnit5Suite({
-    LoginControllerTest.class,
-    SystemConfigRepositoryTest.class
-})
-@EnableAutoScan
-@EnableBeanProxy
-@EnableDevMode
-public class ControllersTest {
-}
-```
-
-### 6.2 JUnit 4 使用示例
-
-#### 示例一：模拟控制器方法请求
-
-```java
-@RunWith(YMPJUnit4ClassRunner.class)
-@EnableAutoScan
-@EnableBeanProxy
-@EnableDevMode
-public class LoginControllerTest {
-
-    @Inject
-    private WebMVC webmvc;
-
-    @Test
-    public void testLogin() throws Exception {
-        MockHttpServletResponse response = MockWebRequestHelper.create(webmvc)
-            .post("/login")
-            .parameter("uname", "admin")
-            .parameter("passwd", DigestUtils.md5Hex("admin"))
-            .parameter("format", "json")
-            .doFilter();
-        Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-        JsonWrapper jsonWrapper = JsonWrapper.fromJson(response.getContentAsString());
-        Assert.assertNotNull(jsonWrapper);
-    }
-}
-```
-
-#### 示例二：存储器接口方法调用
-
-```java
-@RunWith(YMPJUnit4ClassRunner.class)
-@EnableAutoScan
-@EnableBeanProxy
-@EnableDevMode
-public class SystemConfigRepositoryTest {
-
-    @Inject
-    private JDBC database;
-
-    @Inject
-    private ISystemConfigRepository repository;
-
-    @Test
-    public void testQuerySystemConfigs() throws Exception {
-        SystemConfigBean systemConfigBean = SystemConfigBean.builder()
-            .siteId("ymate.net")
-            .build();
-        IResultSet<SystemConfigVO> systemConfigs = repository.querySystemConfigs(database, systemConfigBean, Page.create());
-        Assert.assertNotNull(systemConfigs);
-    }
-}
-```
-
-#### 示例三：组合单元测试
-
-```java
-@RunWith(YMPJUnit4Suite.class)
-@SuiteClasses({
-    LoginControllerTest.class,
-    SystemConfigRepositoryTest.class
-})
-@EnableAutoScan
-@EnableBeanProxy
-@EnableDevMode
-public class ControllersTest {
-}
-```
-
-## 7. 配置说明
-
-### 7.1 Maven 依赖配置
-
-```xml
-<dependency>
-    <groupId>net.ymate.platform</groupId>
-    <artifactId>ymate-platform-test</artifactId>
-    <version>2.1.4-dev</version>
-</dependency>
-```
-
-### 7.2 应用初始化配置
-
-测试模块支持通过 YMPTestUtils.InitConfig 类自定义应用初始化参数，包括：
-
-- **mainClassName**：主类名称，用于指定应用的主类。
-- **testClasses**：测试类列表，用于指定需要注册到 Bean 工厂的测试类。
-- **systemProperties**：系统属性，用于设置应用的系统属性。
-
-## 8. 技术特点
-
-- **无缝集成**：与 JUnit 5 和 JUnit 4 无缝集成，支持两种测试框架的所有特性。
-- **统一管理**：通过 YMPTestUtils 统一管理应用初始化逻辑，减少代码重复。
-- **模拟功能**：提供丰富的模拟工具，支持模拟 HTTP 请求和响应。
-- **依赖注入**：支持依赖注入，便于测试对象的创建和管理。
-- **灵活配置**：支持多种配置方式，适应不同的测试场景。
-- **生命周期管理**：完善的应用生命周期管理，测试执行完毕后自动销毁应用，避免资源泄漏。
-
-## 9. 最佳实践
-
-1. **选择合适的测试框架**：根据项目需求选择 JUnit 5 或 JUnit 4。
-2. **使用套件测试**：对于多个相关的测试类，使用套件测试可以减少应用初始化次数，提高测试效率。
-3. **模拟 HTTP 请求**：对于控制器测试，使用 MockWebRequestHelper 模拟 HTTP 请求，避免启动真实的 Web 服务器。
-4. **依赖注入**：使用 @Inject 注解注入测试所需的依赖对象，提高测试的可维护性。
-5. **合理配置**：根据测试需要，合理配置应用初始化参数，确保测试环境的一致性。
+| 现象 | 可能原因 | 排查/修复 |
+|---|---|---|
+| @Inject字段为null/NPE | 测试类未加@ExtendWith/@RunWith；测试类所在包未被@EnableAutoScan扫描；目标Bean缺少@Bean注解 | 确认类头注解存在；@EnableAutoScan(value={"com.example"})扩大包范围；被测试类加@Bean或被同包其它@Bean依赖触发扫描 |
+| MockWebRequestHelper.doFilter()无响应/空指针/报WebMVC未初始化 | 未引入ymate-platform-webmvc；webmvc字段为null（inject失败）；yml-conf.properties缺WebMVC配置 | pom加webmvc依赖；Assertions.assertNotNull(webmvc)；ymp.configs.webmvc.enabled=true（默认true） |
+| JUnit4 vs JUnit5注解混用冲突导致@Test不执行 | 包导入错误：导入org.junit.Test（JUnit4）却用@ExtendWith（JUnit5） | 统一：JUnit5→org.junit.jupiter.api.Test；JUnit4→org.junit.Test+@RunWith。不要在同一项目跨版本，避免Surefire双引擎 |
+| Mock请求报404 SC_NOT_FOUND | post("/login")路径与@RequestMapping不一致；contextPath前缀是否多余；控制器未@Controller且未被扫描 | 先单独启动正式服务访问接口路径确认；@EnableAutoScan必须覆盖控制器所在包；必要时用webmvc.getOwner().getBeanFactory().getBean(LoginController.class)确认控制器已注册 |
+| JsonWrapper.fromJson抛解析异常/响应body为HTML | format参数未传json；全局异常堆栈；Mock响应为404/500错误页 | .parameter("format","json")；response.getStatus()优先断言；body以text/html开头说明走了错误页→检查response.getContentAsString()中的异常栈定位 |
+| 重复初始化应用/测试间互相干扰（Suite失败但单独通过） | 未用Suite却手动初始化多次；static资源未清理；多个@ExtendWith同时启用 | 组合测试用@YMPJUnit5Suite或@RunWith(YMPJUnit4Suite.class)统一共享；避免@BeforeAll写静态全局状态；扩展内置WeakReference已尽力防泄漏 |
+| 静态资源找不到/cfgs/*.properties | src/test/resources未放测试配置；classpath优先级 | 测试配置放src/test/resources优先于main；或YMPTestUtils.InitConfig.setSystemProperties设置ymp.configFile指向绝对路径 |

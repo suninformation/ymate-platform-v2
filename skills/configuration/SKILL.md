@@ -1,7 +1,7 @@
 ---
 name: ymp-configuration
-description: YMP框架配置模块，提供统一的配置文件管理，支持XML、Properties、JSON等多种格式，支持注解驱动配置和动态配置重载
-version: 2.1.4
+description: 配置体系模块，统一管理XML/Properties/JSON配置文件，支持注解驱动配置注入、动态重载
+version: 2.1.4-dev
 author: YMP Team
 category: configuration
 tags:
@@ -10,641 +10,295 @@ tags:
   - xml
   - properties
   - json
-  - dynamic-config
-trigger: 当用户需要管理配置文件、加载配置、实现动态配置等功能时触发
+  - dynamic-reload
+trigger: 当需要管理配置文件、@Configuration配置类、@ConfigValue注入、动态配置重载、配置体系目录结构时触发
 tools:
   - configuration-management
   - file-parsing
   - dynamic-reload
 examples:
-  - 加载XML配置文件
-  - 加载Properties配置文件
-  - 加载JSON配置文件
-  - 使用注解注入配置
-  - 实现动态配置重载
+  - 创建@Configuration配置类并开启reload自动重载
+  - 在@Bean服务中用@Configs和@ConfigValue注入配置值
+  - 加载XML/Properties/JSON格式配置文件
+  - 通过Cfgs.searchAsFile搜索配置体系中的文件
+  - 设置ConfigurationConf的configHome和checkTimeInterval
 ---
 
-# YMP框架配置模块技能文档
+# Configuration 配置体系技能包
 
-## 1. 模块概述
+> AI读取指引：需要统一管理多格式配置文件、注解式配置声明、配置值自动注入时使用；常配合core模块的@Bean/@ConfigValue/@Configs做依赖注入，独立使用通过Cfgs静态入口。
 
-配置体系模块，是通过简单的目录结构实现在项目开发以及维护过程中，对配置文件等各种资源的统一管理，为模块化开发和部署提供灵活的、简单有效的解决方案。
+---
 
-## 2. 核心功能
+## 0. 快速索引
 
-### 2.1 统一资源管理
-- 规范化的目录结构，便于资源的组织和管理
-- 模块间资源共享，模块（modules）可以共用所属项目（projects）的配置、类和包等资源文件
-- 清晰的资源文件分类结构，可快速定位所需资源
-
-### 2.2 多格式配置支持
-- 默认支持对 XML、Properties 和 JSON 配置文件的解析
-- 可通过 IConfigurationProvider 接口自定义文件格式
-- 支持缓存，避免重复加载配置文件
-
-### 2.3 注解驱动配置
-- 配置对象支持 @Configuration 注解方式声明，无需编码即可自动加载并填充配置内容到类对象
-- 支持通过 @ConfigValue 注解直接注入配置值到类成员变量
-- 支持通过 @Configs 注解设置配置类集合
-
-### 2.4 动态配置
-- 修改配置文件无需重启服务，支持自动重新加载
-- 配置文件检查时间间隔可配置，确保及时发现配置变更
-
-### 2.5 灵活的配置路径
-- 支持全局（configHome）> 项目（projects）> 模块（modules）的多级配置路径
-- 支持环境变量替换，如 ${root}、${user.home} 和 ${user.dir} 等
-
-## 3. 技术架构
-
-### 3.1 核心接口
-
-| 接口名称 | 描述 | 实现类 |
-|---------|------|-------|
-| `IConfiguration` | 配置对象接口，提供配置值的获取方法 | `DefaultConfiguration` |
-| `IConfigurationProvider` | 配置文件提供者接口，负责配置文件的解析和加载 | `DefaultConfigurationProvider`, `JSONConfigurationProvider`, `PropertyConfigurationProvider` |
-| `IConfigFileParser` | 配置文件解析器接口，负责解析不同格式的配置文件 | `XMLConfigFileParser`, `PropertyConfigFileParser`, `JSONConfigFileParser` |
-| `IConfigurationConfig` | 配置模块配置接口，提供配置模块的配置信息 | `DefaultConfigurationConfig` |
-
-### 3.2 架构层次
-
-1. **API层**：提供 `Cfgs` 静态工具类，简化配置操作
-2. **核心层**：包含配置对象、配置提供者、配置文件解析器等核心组件
-3. **实现层**：包含不同格式配置文件的解析器实现
-4. **集成层**：与YMP框架集成，支持注解驱动配置
-
-## 4. API接口
-
-### 4.1 核心接口
-
-#### IConfiguration 接口
+- Maven artifactId：`ymate-platform-configuration`
+- 静态入口类（全限定名）：`net.ymate.platform.configuration.Cfgs`
+- 必备注解：`@Configuration` / `@ConfigurationConf` / `@Configs` / `@ConfigValue`
+- 3行最简调用示例：
 
 ```java
-// 获取指定分类下的所有属性名称
-Set<String> getPropertyNames(String category);
+@Configuration(value = "cfgs/app.xml", reload = true)
+public class AppConfig extends DefaultConfiguration {}
 
-// 获取指定分类下的所有属性映射
-Map<String, Object> getProperties(String category);
-
-// 获取指定分类下的指定属性值
-Object getProperty(String category, String key);
-
-// 获取默认分类下的指定属性值
-Object getProperty(String key);
-
-// 获取指定分类下的指定属性值，并转换为字符串
-String getString(String category, String key);
-
-// 获取默认分类下的指定属性值，并转换为字符串
-String getString(String key);
-
-// 获取指定分类下的指定属性值，并转换为字符串列表
-List<String> getList(String category, String key);
-
-// 获取默认分类下的指定属性值，并转换为字符串列表
-List<String> getList(String key);
-
-// 获取指定分类下的指定属性值，并转换为映射
-Map<String, String> getMap(String category, String key);
-
-// 获取默认分类下的指定属性值，并转换为映射
-Map<String, String> getMap(String key);
-
-// 获取配置文件最后修改时间
-long getLastModified();
-
-// 检查配置文件是否已被修改
-boolean isModified();
-
-// 重新加载配置文件
-void reload();
+Cfgs.get().fillCfg(new AppConfig());
 ```
 
-#### IConfigurationProvider 接口
+## 1. 模块摘要
+
+通过规范的目录结构（全局>项目>模块三级优先级）实现配置文件等资源的统一管理，为模块化开发提供灵活部署方案。核心能力：
+- 默认支持 XML、Properties、JSON 三种配置文件解析，可通过 `IConfigurationProvider` 自定义扩展
+- `@Configuration` 注解声明配置类，无需编码即可自动加载填充
+- `@Configs` + `@ConfigValue` 直接向 Bean 字段或方法参数注入配置值
+- 修改配置文件无需重启，支持 `checkTimeInterval` 定时检查自动重新加载
+- 配置搜索支持 `searchAsFile` / `searchAsPath` / `searchAsStream` 三种定位方式
+
+## 2. 核心注解/类 速查表（必须带全限定名）
+
+### 注解
+
+| 注解 | 全限定名 | 作用 | 核心参数（只列2-5个） |
+|---|---|---|---|
+| `@Configuration` | `net.ymate.platform.configuration.annotation.Configuration` | 声明类为配置类，绑定配置文件路径 | `value`(路径)、`reload`(是否自动重载)、`provider`(自定义解析器) |
+| `@ConfigurationConf` | `net.ymate.platform.configuration.annotation.ConfigurationConf` | 配置模块全局参数（启动类上用） | `configHome`、`projectName`、`moduleName`、`checkTimeInterval`、`providerClass` |
+| `@Configs` | `net.ymate.platform.configuration.annotation.Configs` | 配合@ConfigValue全局声明配置类集合和category | `value`(配置类Class[])、`category`(分类名，默认default) |
+| `@ConfigValue` | `net.ymate.platform.configuration.annotation.ConfigValue` | 字段/参数级配置值注入 | `value`(配置项名)、`defaultValue`、`category`、`configs`(配置类数组) |
+
+### 常用类
+
+| 类名 | 全限定名 | 核心用途 | 最常用的2-3个方法签名 |
+|---|---|---|---|
+| `Cfgs` | `net.ymate.platform.configuration.Cfgs` | 配置体系静态入口 | `fillCfg(IConfiguration cfg)` / `loadCfg(String path)` / `searchAsFile(String path)` |
+| `DefaultConfiguration` | `net.ymate.platform.configuration.impl.DefaultConfiguration` | 配置对象默认基类，所有@Configuration类继承它 | `getString(String key)` / `getList(String key)` / `getMap(String key)` |
+| `DefaultConfigurationProvider` | `net.ymate.platform.configuration.impl.DefaultConfigurationProvider` | XML格式默认解析器 | 无需直接调用，@Configuration的provider默认值 |
+| `PropertyConfigurationProvider` | `net.ymate.platform.configuration.impl.PropertyConfigurationProvider` | Properties格式解析器 | @Configuration的provider设为此Class |
+| `JSONConfigurationProvider` | `net.ymate.platform.configuration.impl.JSONConfigurationProvider` | JSON格式解析器 | @Configuration的provider设为此Class |
+| `IConfiguration` | `net.ymate.platform.core.configuration.IConfiguration` | 配置对象接口 | `getString(String category, String key)` / `reload()` / `isModified()` |
+
+## 3. 核心API速查（≤8条最常用调用）
+
+1. **填充配置对象**：`Cfgs.get().fillCfg(new DemoConfig())` → 返回boolean表示是否成功
+2. **直接加载配置**：`IConfiguration cfg = Cfgs.get().loadCfg("cfgs/configuration.properties")`
+3. **获取路径**：`Cfgs.get().getConfigHome()` / `getProjectHome()` / `getModuleHome()` / `getUserDir()`
+4. **搜索文件**：`Cfgs.get().searchAsFile("cfgs/db.xml")` / `searchAsPath(...)` / `searchAsStream(...)`
+5. **取配置值-字符串**：`cfg.getString("company_name")` → 默认category=default
+6. **取配置值-集合**：`cfg.getList("products")` 返回 `List<String>`
+7. **取配置值-Map**：`cfg.getMap("product_spec")` 返回 `Map<String, String>`
+8. **重载检查**：`cfg.isModified()` 检测文件变化 + `cfg.reload()` 强制重新加载
+
+## 4. 标准代码模板（最少可运行）
+
+### 模板1：@Configuration注解的配置类 + reload=true
 
 ```java
-// 获取配置文件搜索器
-IConfigFileSearcher getConfigFileSearcher();
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.config;
 
-// 获取配置文件检查器
-IConfigFileChecker getConfigFileChecker();
+import net.ymate.platform.configuration.annotation.Configuration;
+import net.ymate.platform.configuration.impl.DefaultConfiguration;
 
-// 加载指定路径的配置文件
-IConfiguration loadConfiguration(String cfgFileName);
-
-// 加载指定路径的配置文件，并指定字符编码
-IConfiguration loadConfiguration(String cfgFileName, String encoding);
-
-// 加载指定文件对象的配置文件
-IConfiguration loadConfiguration(File cfgFile);
-
-// 加载指定文件对象的配置文件，并指定字符编码
-IConfiguration loadConfiguration(File cfgFile, String encoding);
-
-// 解析指定输入流的配置内容
-IConfiguration loadConfiguration(InputStream inputStream, String encoding);
-```
-
-### 4.2 注解接口
-
-#### @Configuration 注解
-
-```java
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Configuration {
-    /**
-     * 配置文件路径名称，若未提供则默认使用 简单类名称小写.TAG.扩展名 作为配置文件名
-     */
-    String value() default "";
-
-    /**
-     * 是否自动重新加载
-     */
-    boolean reload() default false;
-
-    /**
-     * 配置文件自定义内容分析器
-     */
-    Class<? extends IConfigurationProvider> provider() default DefaultConfigurationProvider.class;
+/**
+ * 应用配置类，绑定XML配置文件并开启自动重载。
+ *
+ * @author AI Generated
+ * @since 2.1.4-dev
+ */
+@Configuration(value = "cfgs/app-config.xml", reload = true)
+public class AppConfig extends DefaultConfiguration {
 }
 ```
 
-#### @ConfigValue 注解
+启动类使用：
 
 ```java
-@Target({ElementType.FIELD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface ConfigValue {
-    /**
-     * 配置项名称, 若未提供则使用成员变量或方法参数名称
-     */
-    String value() default "";
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example;
 
-    /**
-     * 配置项默认值
-     */
-    String defaultValue() default "";
+import com.example.config.AppConfig;
+import net.ymate.platform.configuration.Cfgs;
+import net.ymate.platform.configuration.annotation.ConfigurationConf;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.annotation.EnableAutoScan;
 
-    /**
-     * 配置分类名称, 默认值为 default
-     */
-    String category() default "default";
-
-    /**
-     * 配置类集合
-     */
-    Class<?>[] configs() default {};
-}
-```
-
-#### @Configs 注解
-
-```java
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Configs {
-    /**
-     * 配置类集合
-     */
-    Class<?>[] value();
-
-    /**
-     * 配置分类名称, 默认值为 default
-     */
-    String category() default "default";
-}
-```
-
-#### @ConfigurationConf 注解
-
-```java
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface ConfigurationConf {
-    /**
-     * 配置体系根路径, 必须绝对路径, 前缀支持${root} ${user.home}和${user.dir}变量, 默认值: ${root}
-     */
-    String configHome() default "${root}";
-
-    /**
-     * 项目名称, 做为根路径下级子目录, 对现实项目起分类作用, 默认值: 空
-     */
-    String projectName() default "";
-
-    /**
-     * 模块名称, 此模块一般指现实项目中分拆的若干个子项目的名称, 默认为空
-     */
-    String moduleName() default "";
-
-    /**
-     * 配置文件存放的基准目录名称，不允许以'/'开头但必须以'/'结束，默认值为空
-     */
-    String configBaseDir() default "";
-
-    /**
-     * 配置文件检查时间间隔(毫秒), 默认值为0表示不开启
-     */
-    long checkTimeInterval() default 0;
-
-    /**
-     * 指定配置体系下的默认配置文件分析器, 默认值: net.ymate.platform.configuration.impl.DefaultConfigurationProvider
-     */
-    String providerClass() default "";
-}
-```
-
-## 5. 配置方式
-
-### 5.1 配置文件参数
-
-```properties
-#-------------------------------------
-# 配置体系模块初始化参数
-#-------------------------------------
-
-# 配置体系根路径, 必须绝对路径, 前缀支持${root} ${user.home}和${user.dir}变量, 默认值: ${root}
-ymp.configs.configuration.config_home=${user.dir}
-
-# 项目名称, 做为根路径下级子目录, 对现实项目起分类作用, 默认值: 空
-ymp.configs.configuration.project_name=
-
-# 模块名称, 此模块一般指现实项目中分拆的若干个子项目的名称, 默认为空
-ymp.configs.configuration.module_name=
-
-# 配置文件存放的基准目录名称，不允许以'/'开头但必须以'/'结束，默认值为空
-ymp.configs.configuration.config_base_dir=
-
-# 配置文件检查时间间隔(毫秒), 默认值为0表示不开启
-ymp.configs.configuration.config_check_time_interval=
-
-# 指定配置体系下的默认配置文件分析器, 默认值: net.ymate.platform.configuration.impl.DefaultConfigurationProvider
-ymp.configs.configuration.provider_class=
-```
-
-### 5.2 配置体系目录结构
-
-按优先级由低到高的顺序依次是：全局（configHome）> 项目（projects）> 模块（modules）：
-
-```shell
-CONFIG_HOME\
-    |--bin\
-    |--cfgs\
-    |--classes\
-    |--dist\
-    |--lib\
-    |--logs\
-    |--plugins\
-    |--projects\
-    |   |--<project_xxx>
-    |   |   |--cfgs\
-    |   |   |--classes\
-    |   |   |--lib\
-    |   |   |--logs\
-    |   |   |--modules\
-    |   |   |   |--<module_xxx>
-    |   |   |   |   |--cfgs\
-    |   |   |   |   |--classes\
-    |   |   |   |   |--lib\
-    |   |   |   |   |--logs\
-    |   |   |   |   |--plugins\
-    |   |   |   |   |--<......>
-    |   |   |   |--<......>
-    |   |   |--plugins\
-    |   |--<......>
-    |--temp\
-    |--......
-```
-
-## 6. 使用示例
-
-### 6.1 基本配置解析
-
-#### XML配置示例
-
-**配置文件（configuration.xml）：**
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- XML根节点为properties -->
-<properties>
-
-  <!-- 分类节点为category, 默认分类名称为default -->
-  <category name="default">
-
-    <!-- 属性标签为property, name代表属性名称, value代表属性值(也可以用property标签包裹) -->
-    <property name="company_name" value="Apple Inc."/>
-
-    <!-- 用属性标签表示一个数组或集合数据类型的方法 -->
-    <property name="products">
-      <!-- 集合元素必须用value标签包裹, 且value标签不要包括任何扩展属性 -->
-      <value>iphone</value>
-      <value>ipad</value>
-      <value>imac</value>
-      <value>itouch</value>
-    </property>
-
-    <!-- 用属性标签表示一个MAP数据类型的方法, abc代表扩展属性key, xyz代表扩展属性值, 扩展属性与item将被合并处理  -->
-    <property name="product_spec" abc="xzy">
-      <!-- MAP元素用item标签包裹, 且item标签必须包含name扩展属性(其它扩展属性将被忽略), 元素值由item标签包裹 -->
-      <item name="color">red</item>
-      <item name="weight">120g</item>
-      <item name="size">small</item>
-      <item name="age">2015</item>
-    </property>
-  </category>
-</properties>
-```
-
-**配置类：**
-
-```java
-@Configuration(value = "cfgs/configuration.xml", reload = true)
-public class DemoConfig extends DefaultConfiguration {
-}
-```
-
-**使用代码：**
-
-```java
+/**
+ * 配置模块启动示例。
+ *
+ * @author AI Generated
+ * @since 2.1.4-dev
+ */
 @EnableAutoScan
-@ConfigurationConf(configHome = "${user.dir}/configs", checkTimeInterval = 0)
-public class Starter {
+@ConfigurationConf(configHome = "${user.dir}/configs", checkTimeInterval = 5000)
+public class ConfigStarter {
 
     static {
-        System.setProperty(IApplication.SYSTEM_MAIN_CLASS, Starter.class.getName());
+        System.setProperty(IApplication.SYSTEM_MAIN_CLASS, ConfigStarter.class.getName());
     }
 
+    /**
+     * 程序入口，演示加载XML配置并读取值。
+     *
+     * @param args 命令行参数
+     * @throws Exception 初始化或读取异常
+     * @since 2.1.4-dev
+     */
     public static void main(String[] args) throws Exception {
         try (IApplication application = YMP.run(args)) {
-            DemoConfig _cfg = new DemoConfig();
-            if (Cfgs.get().fillCfg(_cfg)) {
-                System.out.println(_cfg.getString("company_name"));
-                System.out.println(_cfg.getMap("product_spec"));
-                System.out.println(_cfg.getList("products"));
-            }
-        }
-    }
-}
-```
-
-#### Properties配置示例
-
-**配置文件（configuration.properties）：**
-
-```properties
-#--------------------------------------------------------------------------
-# 配置文件内容格式: properties.<categoryName>.<propertyName>=[propertyValue]
-#
-# 注意: attributes将作为关键字使用, 用于表示分类, 属性, 集合和MAP的子属性集合
-#--------------------------------------------------------------------------
-
-# 举例1: 默认分类下表示公司名称, 默认分类名称为default
-properties.default.company_name=Apple Inc.
-
-#--------------------------------------------------------------------------
-# 数组和集合数据类型的表示方法: 多个值之间用'|'分隔, 如: Value1|Value2|...|ValueN
-#--------------------------------------------------------------------------
-properties.default.products=iphone|ipad|imac|itouch
-
-#--------------------------------------------------------------------------
-# MAP<K, V>数据类型的表示方法:
-# 如:产品规格(product_spec)的K分别是color|weight|size|age, 对应的V分别是red|120g|small|2015
-#--------------------------------------------------------------------------
-properties.default.product_spec.color=red
-properties.default.product_spec.weight=120g
-properties.default.product_spec.size=small
-properties.default.product_spec.age=2015
-
-# 每个MAP都有属于其自身的属性列表(深度仅为一级), 用attributes表示, abc代表属性key, xyz代表属性值
-# 注: MAP数据类型的attributes和MAP本身的表示方法达到的效果是一样的
-properties.default.product_spec.attributes.abc=xyz
-```
-
-**配置类：**
-
-```java
-@Configuration(value = "cfgs/configuration.properties", provider = PropertyConfigurationProvider.class)
-public class DemoConfig extends DefaultConfiguration {
-}
-```
-
-#### JSON配置示例
-
-**配置文件（configuration.json）：**
-
-```json
-{
-    "categories": [
-        {
-            "name": "default",
-            "properties": [
-                {
-                    "name": "company_name",
-                    "content": "Apple Inc.",
-                    "attributes": {}
-                },
-                {
-                    "name": "products",
-                    "content": [
-                        "iphone",
-                        "ipad",
-                        "imac",
-                        "itouch"
-                    ],
-                    "attributes": {}
-                },
-                {
-                    "name": "product_spec",
-                    "content": "spec.",
-                    "attributes": {
-                        "abc": "xzy",
-                        "color": "red",
-                        "weight": 120,
-                        "size": "small",
-                        "year": 2015
-                    }
-                }
-            ],
-            "attributes": {}
-        }
-    ]
-}
-```
-
-**配置类：**
-
-```java
-@Configuration(value = "cfgs/configuration.json", provider = JSONConfigurationProvider.class)
-public class DemoConfig extends DefaultConfiguration {
-}
-```
-
-### 6.2 直接加载配置文件
-
-```java
-@EnableAutoScan
-@ConfigurationConf(configHome = "${user.dir}/configs", checkTimeInterval = 0)
-public class Starter {
-
-    static {
-        System.setProperty(IApplication.SYSTEM_MAIN_CLASS, Starter.class.getName());
-    }
-
-    public static void main(String[] args) throws Exception {
-        try (IApplication application = YMP.run(args)) {
-            IConfiguration cfg = Cfgs.get().loadCfg("cfgs/configuration.properties");
-            if (cfg != null) {
+            AppConfig cfg = new AppConfig();
+            if (Cfgs.get().fillCfg(cfg)) {
                 System.out.println(cfg.getString("company_name"));
-                System.out.println(cfg.getMap("product_spec"));
                 System.out.println(cfg.getList("products"));
+                System.out.println(cfg.getMap("product_spec"));
             }
         }
     }
 }
 ```
 
-### 6.3 直接注入配置值
+### 模板2：在@Bean服务中@ConfigValue注入配置值（配合@Configs）
 
 ```java
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.service;
+
+import com.example.config.AppConfig;
+import net.ymate.platform.configuration.annotation.ConfigValue;
+import net.ymate.platform.configuration.annotation.Configs;
+import net.ymate.platform.core.beans.annotation.Bean;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 演示@Configs + @ConfigValue在Bean中注入配置值。
+ *
+ * @author AI Generated
+ * @since 2.1.4-dev
+ */
 @Bean
-@Configs(DemoConfig.class)
-public class Demo {
+@Configs(AppConfig.class)
+public class DemoConfigService {
 
     @ConfigValue("company_name")
     private String companyName;
 
-    @ConfigValue("product_spec")
+    @ConfigValue(value = "product_spec", category = "default")
     private Map<String, String> productSpec;
 
     @ConfigValue("products")
     private List<String> products;
 
+    /**
+     * 获取公司名称。
+     *
+     * @return 公司名称字符串
+     * @since 2.1.4-dev
+     */
     public String getCompanyName() {
         return companyName;
     }
 
+    /**
+     * 获取产品规格映射。
+     *
+     * @return 规格K-V映射
+     * @since 2.1.4-dev
+     */
     public Map<String, String> getProductSpec() {
         return productSpec;
     }
 
+    /**
+     * 获取产品列表。
+     *
+     * @return 产品名称集合
+     * @since 2.1.4-dev
+     */
     public List<String> getProducts() {
         return products;
     }
 }
-
-@EnableAutoScan
-@ConfigurationConf(configHome = "${user.dir}/configs", checkTimeInterval = 0)
-public class Starter {
-
-    static {
-        System.setProperty(IApplication.SYSTEM_MAIN_CLASS, Starter.class.getName());
-    }
-
-    public static void main(String[] args) throws Exception {
-        try (IApplication application = YMP.run(args)) {
-            Demo demo = application.getBeanFactory().getBean(Demo.class);
-            System.out.println(demo.getCompanyName());
-            System.out.println(demo.getProductSpec());
-            System.out.println(demo.getProducts());
-        }
-    }
-}
 ```
 
-### 6.4 配置路径操作
+## 5. 配置速查
 
-```java
-// 返回配置体系根路径
-Cfgs.get().getConfigHome();
+### 5.1 配置文件常用项（≤12条）：key | 默认值 | 说明
 
-// 返回项目根路径
-Cfgs.get().getProjectHome();
+| key | 默认值 | 说明 |
+|---|---|---|
+| `ymp.configs.configuration.config_home` | `${root}` | 配置体系根路径，支持${root}/${user.home}/${user.dir}变量 |
+| `ymp.configs.configuration.project_name` | 空 | 项目分类子目录名 |
+| `ymp.configs.configuration.module_name` | 空 | 模块子目录名 |
+| `ymp.configs.configuration.config_base_dir` | 空 | 配置文件基准目录，不能以/开头但要以/结尾 |
+| `ymp.configs.configuration.config_check_time_interval` | `0` | 配置文件检查间隔(毫秒)，0=不开启自动重载 |
+| `ymp.configs.configuration.provider_class` | `DefaultConfigurationProvider` | 默认配置文件分析器全限定名 |
+| JVM参数 `-Dymp.configHome` | - | 优先级高于配置文件的config_home |
+| 环境变量 `YMP_CONFIG_HOME` | - | JVM参数未设置时尝试读取 |
 
-// 返回项目模块根路径
-Cfgs.get().getModuleHome();
+### 5.2 注解配置核心参数
 
-// 返回user.dir所在路径
-Cfgs.get().getUserDir();
+**@Configuration：**
+- `value`：配置文件相对路径，空则使用 `简单类名小写.TAG.扩展名`
+- `reload`：boolean，是否开启文件变更自动重新加载
+- `provider`：Class<? extends IConfigurationProvider>，自定义解析器
 
-// 返回user.home所在路径
-Cfgs.get().getUserHome();
+**@ConfigurationConf：**
+- `configHome` / `projectName` / `moduleName` / `configBaseDir`：路径相关
+- `checkTimeInterval`：long，毫秒；`providerClass`：String
 
-// 在配置体系中搜索cfgs/configuration.xml文件并返回其File对象
-Cfgs.get().searchAsFile("cfgs/configuration.xml");
+**@ConfigValue：**
+- `value`：配置项名，空则用字段名/参数名
+- `defaultValue` / `category`(默认default) / `configs`(Class<?>[])
 
-// 在配置体系中搜索cfgs/configuration.properties文件并返回其绝对路径
-Cfgs.get().searchAsPath("cfgs/configuration.properties");
+## 6. 常见坑点排查（3-6条表格）：现象 | 原因 | 解决
 
-// 在配置体系中搜索cfgs/configuration.json文件并返回其文件流
-Cfgs.get().searchAsStream("cfgs/configuration.properties");
-```
-
-## 7. 注意事项
-
-1. **配置文件路径**：配置文件路径应该使用相对于配置体系根路径的相对路径
-
-2. **配置文件格式**：不同格式的配置文件有不同的语法规则，需要按照对应格式的语法编写
-
-3. **配置文件编码**：默认使用UTF-8编码，确保配置文件保存为正确的编码格式
-
-4. **环境变量**：配置文件中可以使用环境变量，如 ${root}、${user.home} 等
-
-5. **配置文件检查**：设置合理的配置文件检查时间间隔，避免频繁检查影响性能
-
-6. **配置优先级**：全局配置 < 项目配置 < 模块配置，高优先级会覆盖低优先级的配置
-
-7. **配置注入**：使用@ConfigValue注解时，需要确保配置类已经被正确初始化
-
-8. **配置类型转换**：配置值默认以字符串形式存储，需要根据需要进行类型转换
-
-9. **配置文件解析**：自定义配置文件格式时，需要实现对应的IConfigurationProvider接口
-
-10. **配置文件加载**：配置文件加载失败时，会使用默认值或抛出异常，需要做好异常处理
-
-## 8. 最佳实践
-
-1. **配置文件组织**：
-   - 按功能模块划分配置文件
-   - 使用清晰的命名规范
-   - 合理使用分类（category）组织配置项
-
-2. **配置值管理**：
-   - 对于频繁使用的配置值，使用@ConfigValue注解注入
-   - 对于复杂的配置结构，使用配置类封装
-   - 对于需要动态更新的配置，开启配置文件检查
-
-3. **配置安全性**：
-   - 敏感配置（如数据库密码）应加密存储
-   - 避免在配置文件中硬编码敏感信息
-   - 使用环境变量或外部配置源管理敏感信息
-
-4. **配置可维护性**：
-   - 添加详细的配置项注释
-   - 使用统一的配置命名规范
-   - 定期清理无用的配置项
-
-5. **配置扩展性**：
-   - 设计可扩展的配置结构
-   - 支持配置项的默认值
-   - 提供配置项的验证机制
-
-6. **性能优化**：
-   - 合理设置配置文件检查时间间隔
-   - 避免过多的配置文件和配置项
-   - 使用配置缓存减少IO操作
-
-7. **测试友好**：
-   - 支持不同环境的配置文件（dev、test、prod）
-   - 提供配置项的默认值
-   - 支持配置的程序化修改用于测试
-
-## 9. 总结
-
-配置模块是YMP框架中一个基础但重要的组件，通过提供统一的配置管理机制，简化了应用的配置管理，提高了应用的可维护性和可扩展性。合理使用配置模块，可以使应用的配置更加灵活、安全和易于管理。
-
-开发者应该根据具体的业务场景，选择合适的配置方式和组织结构，遵循最佳实践，充分发挥配置模块的优势，构建更加健壮和可维护的应用系统。
+| 现象 | 原因 | 解决 |
+|---|---|---|
+| @ConfigValue注入字段为null | 类未被@Bean托管或未加@Configs注解声明配置类 | 类加@Bean + @Configs(配置类.class)，确保被YMP扫描到 |
+| fillCfg返回false或取不到配置值 | config_home下找不到对应路径文件 / 路径拼写错误 | 用Cfgs.get().searchAsFile(path)调试是否定位到文件；检查三级目录优先级是否被覆盖 |
+| reload=true但修改后不生效 | checkTimeInterval=0（默认不开启） | 启动类@ConfigurationConf或properties中设置checkTimeInterval>0（如5000毫秒） |
+| Properties/MAP字段取出值不对 | Properties格式未按properties.<category>.<key>=value书写；MAP用`|`分隔或分级`key.subkey` | 严格按文档格式：集合用\|分隔，MAP用嵌套属性或attributes.xxx |
+| JSON配置解析异常 | JSON结构不符合categories/properties/attributes嵌套规范 | 参考文档JSON模板结构，必须有categories数组包裹category |
+| 搜索文件返回null | 文件实际放错层级（全局/项目/模块）未对应configHome/projectName/moduleName设置 | 按三级优先级检查目录：全局<项目<模块，取最近匹配 |

@@ -1,7 +1,7 @@
 ---
 name: ymp-core
-description: YMP框架核心模块，提供应用容器、依赖注入、AOP拦截、事件机制、国际化资源管理等核心功能
-version: 2.1.4
+description: YMP框架核心容器模块，提供IApplication应用容器、@Bean/@Inject依赖注入(DI)、自动扫描、事件机制、国际化(I18N)等核心基础设施
+version: 2.1.4-dev
 author: YMP Team
 category: framework
 tags:
@@ -9,285 +9,267 @@ tags:
   - framework
   - core
   - di
-  - aop
+  - ioc
   - event
   - i18n
-trigger: 当用户需要使用YMP框架核心功能、依赖注入、AOP、事件机制等时触发
+  - bean
+trigger: 当用户需要创建YMP应用启动类、@Bean注册与@Inject依赖注入、YMP.run()启动容器、@EnableAutoScan自动扫描、IApplication生命周期管理、事件监听/触发、I18N多语言时触发；AOP/拦截器问题请跳转core-aop模块
 tools:
   - dependency-injection
-  - aop
   - event-management
   - i18n
+  - application-container
 examples:
-  - 创建YMP应用
-  - 实现依赖注入
-  - 配置AOP拦截器
-  - 实现事件监听
-  - 使用国际化资源
+  - 基于注解创建标准YMP启动类Starter
+  - @Bean业务服务 + @Inject字段注入实现DI
+  - 通过application.getBeanFactory()获取容器Bean
+  - @EventListener订阅事件 + Events.fireEvent()触发事件
+  - I18N资源加载与多语言消息获取
 ---
 
-# YMP框架核心（Core）模块技能文档
+# Core 核心容器技能包
 
-## 1. 核心功能
+> AI读取指引：本模块边界=应用容器(IApplication)+Bean管理(IoC/DI)+事件广播+I18N；凡是拦截器/AOP/@Before/@After/@EnableBeanProxy相关 → 立即跳转 core-aop/SKILL.md；配置体系→configuration/SKILL.md；持久化/Web→对应子模块。
 
-YMP框架核心模块是整个框架的基础，提供了应用容器、依赖注入、AOP拦截、事件机制等核心功能，主要包括：
+---
 
-- **应用容器（IApplication）**：负责框架初始化、模块生命周期管理、事件广播与监听等核心功能
-- **自动扫描（AutoScan）**：自动扫描并注册被@Bean注解标记的类，支持自定义扫描规则
-- **依赖注入（DI）**：通过@Inject和@By注解实现对象之间的依赖注入，支持自定义注入逻辑
-- **拦截器（AOP）**：基于代理技术实现的方法拦截，支持前置、后置和环绕拦截
-- **事件服务（Events）**：通过事件的注册、订阅和广播实现模块间的解耦，支持同步和异步模式
-- **国际化资源管理（I18N）**：提供多语言支持，支持资源文件的加载和切换
-- **SPI加载机制**：支持通过SPI机制加载服务实现，提供默认实现和自定义实现的优先级管理
+## 0. 快速索引（AI一眼定位）
 
-## 2. 技术架构
-
-核心模块采用分层设计，主要包括以下组件：
-
-- **应用容器层**：由IApplication接口及其实现类组成，负责整体协调和管理
-- **对象管理层**：由IBeanFactory接口及其实现类组成，负责对象的创建、管理和依赖注入
-- **拦截器层**：由IInterceptor接口及其实现类组成，负责方法拦截和增强
-- **事件层**：由Events类和IEventListener接口组成，负责事件的注册、触发和监听
-- **国际化层**：由I18N接口及其实现类组成，负责国际化资源的管理
-- **配置层**：负责框架和模块的配置管理，支持配置文件和注解两种方式
-
-## 3. 核心API
-
-### 3.1 应用容器（IApplication）
-
-应用容器是框架的核心，提供了以下主要方法：
-
-| 方法名 | 描述 | 参数 | 返回值 |
-|-------|------|------|-------|
-| initialize() | 初始化应用容器 | 无 | void |
-| isInitialized() | 检查应用容器是否已初始化 | 无 | boolean |
-| getBeanFactory() | 获取对象工厂 | 无 | IBeanFactory |
-| getEvents() | 获取事件管理器 | 无 | Events |
-| getI18n() | 获取国际化资源管理器 | 无 | I18N |
-| getModuleManager() | 获取模块管理器 | 无 | ModuleManager |
-| getRunEnv() | 获取当前运行环境 | 无 | Environment |
-| getParam(String name) | 获取全局参数值 | name: 参数名称 | String |
-| registerInterceptor(Class<? extends IInterceptor> interceptClass) | 注册拦截器 | interceptClass: 拦截器类 | void |
-
-### 3.2 对象工厂（IBeanFactory）
-
-对象工厂负责对象的创建、管理和依赖注入，提供了以下主要方法：
-
-| 方法名 | 描述 | 参数 | 返回值 |
-|-------|------|------|-------|
-| getBean(Class<T> clazz) | 获取指定类型的对象实例 | clazz: 目标类型 | T |
-| getBeans() | 获取当前工厂管理的所有类对象映射 | 无 | Map<Class<?>, BeanMeta> |
-| registerBean(Class<?> clazz) | 注册一个类到工厂 | clazz: 预注册类型 | void |
-| registerInjector(Class<? extends Annotation> annClass, IBeanInjector injector) | 注册自定义依赖注入注解的逻辑处理器 | annClass: 目标注解类型<br>injector: 目标依赖注入注解逻辑处理器 | void |
-| getProxyFactory() | 获取代理工厂 | 无 | IProxyFactory |
-
-### 3.3 事件管理器（Events）
-
-事件管理器负责事件的注册、触发和监听，提供了以下主要方法：
-
-| 方法名 | 描述 | 参数 | 返回值 |
-|-------|------|------|-------|
-| registerListener(Class<? extends IEvent> eventClass, IEventListener<?> listener) | 注册事件监听器 | eventClass: 事件类型<br>listener: 事件监听器 | void |
-| registerListener(Events.MODE mode, Class<? extends IEvent> eventClass, IEventListener<?> listener) | 注册事件监听器，指定模式 | mode: 事件处理模式<br>eventClass: 事件类型<br>listener: 事件监听器 | void |
-| fireEvent(IEvent event) | 触发事件 | event: 事件对象 | void |
-| registerEvent(Class<? extends IEvent> eventClass) | 注册自定义事件 | eventClass: 事件类型 | void |
-
-### 3.4 拦截器（IInterceptor）
-
-拦截器用于方法的拦截和增强，提供了以下主要方法：
-
-| 方法名 | 描述 | 参数 | 返回值 |
-|-------|------|------|-------|
-| intercept(InterceptContext context) | 执行拦截逻辑 | context: 拦截上下文 | Object |
-
-### 3.5 国际化资源管理器（I18N）
-
-国际化资源管理器负责多语言资源的管理，提供了以下主要方法：
-
-| 方法名 | 描述 | 参数 | 返回值 |
-|-------|------|------|-------|
-| get(String key) | 获取指定键的国际化资源 | key: 资源键 | String |
-| get(String key, Locale locale) | 获取指定键和语言的国际化资源 | key: 资源键<br>locale: 语言 | String |
-| get(String key, Object... params) | 获取指定键并格式化的国际化资源 | key: 资源键<br>params: 格式化参数 | String |
-
-## 4. 配置与部署
-
-### 4.1 配置文件
-
-YMP框架默认使用`ymp-conf.properties`配置文件，支持根据环境加载不同的配置文件：
-
-- `-Dymp.env=test`：测试环境，优先加载`ymp-conf_TEST.properties`
-- `-Dymp.env=dev`：开发环境，优先加载`ymp-conf_DEV.properties`
-- `-Dymp.env=product`：生产环境，优先加载`ymp-conf_PRODUCT.properties`
-
-主要配置项包括：
-
-| 配置项 | 描述 | 默认值 |
-|-------|------|-------|
-| ymp.dev_mode | 是否为开发模式 | false |
-| ymp.packages | 框架自动扫描的包名称集合 | net.ymate.platform |
-| ymp.excluded_packages | 排除包名称集合 | 无 |
-| ymp.default_locale | 国际化资源默认语言设置 | 系统环境语言 |
-| ymp.configs.event.default_mode | 默认事件触发模式 | ASYNC |
-| ymp.configs.event.thread_pool_size | 初始化线程池大小 | Runtime.getRuntime().availableProcessors() |
-
-### 4.2 注解配置
-
-从2.1.0版本开始，YMP框架支持通过注解进行配置，主要注解包括：
-
-| 注解 | 描述 | 主要参数 |
-|------|------|---------|
-| @EnableAutoScan | 开启自动扫描 | value: 扫描包路径<br>excluded: 排除包路径 |
-| @EnableBeanProxy | 开启代理 | factoryClass: 代理工厂类型 |
-| @EnableDevMode | 开启开发模式 | 无 |
-| @EventsConf | 事件配置 | mode: 事件处理模式<br>threadPoolSize: 线程池大小 |
-| @I18nConf | 国际化配置 | defaultLocale: 默认语言 |
-| @Params | 自定义参数 | value: 参数数组 |
-
-### 4.3 部署方式
-
-核心模块作为框架的基础，无需单独部署，而是作为其他模块的依赖存在。在Maven项目中，通过以下依赖引入：
-
-```xml
-<dependency>
-    <groupId>net.ymate.platform</groupId>
-    <artifactId>ymate-platform-core</artifactId>
-    <version>2.1.4-dev</version>
-</dependency>
-```
-
-## 5. 使用指南
-
-### 5.1 框架初始化
-
-#### 基于配置文件初始化
-
+- Maven artifactId：`ymate-platform-core`
+- 启动入口类：`net.ymate.platform.core.YMP`（静态方法 `YMP.run(args)`）、`net.ymate.platform.core.IApplication`（容器实例接口）
+- 必须启用注解：`@EnableAutoScan`（类扫描/注册@Bean）、按需加 `@EnableBeanProxy`（需AOP时）
+- 典型调用示例（5行内）：
 ```java
+@EnableAutoScan
 public class Starter {
+    static { System.setProperty(IApplication.SYSTEM_MAIN_CLASS, Starter.class.getName()); }
     public static void main(String[] args) throws Exception {
-        try (IApplication application = YMP.run(args)) {
-            if (application.isInitialized()) {
-                System.out.println("YMP框架初始化成功！");
-            }
+        try (IApplication app = YMP.run(args)) {
+            MyService svc = app.getBeanFactory().getBean(MyService.class);
         }
     }
 }
 ```
 
-#### 基于注解初始化
+## 1. 模块摘要（1-2句 + 5条以内核心能力）
+
+YMP框架核心应用容器，负责初始化、生命周期管理、对象IoC/DI、事件广播与国际化资源。所有其它YMP模块都依赖此模块。
+
+- **应用容器**：`IApplication` + `YMP.run()` 提供启动/销毁、try-with-resources自动关闭
+- **自动扫描+Bean管理**：`@EnableAutoScan` 扫描 `@Bean` 类，`IBeanFactory` 统一注册/获取
+- **依赖注入(DI)**：`@Inject` 字段注入，`@By` 指定多实现场景下的具体类型
+- **事件机制**：`@EventListener` 订阅 / `Events.fireEvent()` 广播，同步(NORMAL)+异步(ASYNC)双模式
+- **国际化(I18N)**：`I18N.get(key, locale, params)` 多语言资源加载与格式化
+
+## 2. 核心注解速查表（最关键，必须包含全限定名）
+
+| 注解 | 全限定名 | 作用目标 | 常用参数（2-5个核心参数名+说明） |
+|---|---|---|---|
+| @Bean | `net.ymate.platform.core.beans.annotation.Bean` | 类 | singleton=true(单例)/handler=自定义IBeanHandler类型 |
+| @Inject | `net.ymate.platform.core.beans.annotation.Inject` | 字段/构造参数 | - |
+| @By | `net.ymate.platform.core.beans.annotation.By` | 字段（配合@Inject） | value=指定实现Class（多实现歧义时） |
+| @Ignored | `net.ymate.platform.core.beans.annotation.Ignored` | 类/方法/包 | -（自动扫描时跳过） |
+| @EnableAutoScan | `net.ymate.platform.core.annotation.EnableAutoScan` | 启动类 | value=扫描包数组/excluded=排除包/excludedModules=排除模块/factoryClass=IBeanLoadFactory |
+| @EnableBeanProxy | `net.ymate.platform.core.annotation.EnableBeanProxy` | 启动类 | factoryClass=IProxyFactory（Default/Javassist/ByteBuddy/NoOp） |
+| @EnableDevMode | `net.ymate.platform.core.annotation.EnableDevMode` | 启动类 | -（等价ymp.dev_mode=true） |
+| @EventListener | `net.ymate.platform.core.event.annotation.EventListener` | 监听器类 | value=监听的IEvent类型数组/mode=NORMAL/ASYNC |
+| @EventRegister | `net.ymate.platform.core.event.annotation.EventRegister` | 类（实现IEventRegister） | - |
+| @Event | `net.ymate.platform.core.event.annotation.Event` | 自定义事件类 | -（自动注册） |
+| @ParamValue | `net.ymate.platform.core.annotation.ParamValue` | 字段/方法参数 | value=参数名/defaultValue=默认值/replaceEnvVariable=是否替换环境变量 |
+| @Params/@Param | `net.ymate.platform.core.annotation.Params` + `@Param` | 启动类 | @Param.name/@Param.value（等价ymp.params.xxx） |
+| @EventsConf | `net.ymate.platform.core.annotation.EventsConf` | 启动类 | mode=默认模式/threadPoolSize/threadMaxPoolSize/threadQueueSize/providerClass |
+| @I18nConf | `net.ymate.platform.core.annotation.I18nConf` | 启动类 | defaultLocale=默认语言/eventHandlerClass=II18nEventHandler |
+| @DefaultPasswordProcessClass | `net.ymate.platform.core.annotation.DefaultPasswordProcessClass` | 启动类 | value=IPasswordProcessor实现 |
+
+## 3. 核心API速查（仅入口静态类+最常用方法）
+
+- `YMP.run(String... args)` → `IApplication`：标准启动方式，返回应用容器实例（支持try-with-resources）
+- `YMP.run(String[] args, IApplicationInitializer... initializers)` → `IApplication`：带扩展初始化处理器启动
+- `IApplication.isInitialized()` → `boolean`：判断容器是否初始化成功
+- `IApplication.getBeanFactory()` → `IBeanFactory`：获取对象工厂，用于Bean注册/获取
+- `IBeanFactory.getBean(Class<T> clazz)` → `T`：按类型获取Bean实例（接口或实现类）
+- `IBeanFactory.registerBean(Class<?> clazz)` / `registerBean(BeanMeta)`：手动注册Bean
+- `IApplication.getEvents()` → `Events`：获取事件管理器
+- `Events.fireEvent(IEvent event)` → `void`：广播事件
+- `Events.registerListener(Class<IEvent>, IEventListener)` / `registerListener(MODE, Class, IEventListener)`：手动注册监听器
+- `IApplication.getI18n()` → `I18N`
+- `I18N.get(String key)` / `get(key, Locale)` / `get(key, Object... params)` → `String`：获取国际化消息
+
+## 4. 标准代码模板（最少可运行，带import+License+类/方法注释+@since）
+
+### 模板1：最简注解配置Starter启动类
 
 ```java
-@EnableAutoScan
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example;
+
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.annotation.EnableAutoScan;
+import net.ymate.platform.core.annotation.EnableBeanProxy;
+import net.ymate.platform.core.annotation.EnableDevMode;
+import net.ymate.platform.core.annotation.EventsConf;
+import net.ymate.platform.core.annotation.I18nConf;
+import net.ymate.platform.core.event.Events;
+
+/**
+ * YMP应用标准启动类示例。
+ *
+ * @author YMP Team
+ * @since 2.1.4-dev
+ */
+@EnableAutoScan("com.example")
 @EnableBeanProxy
 @EnableDevMode
-@EventsConf(mode = Events.MODE.NORMAL, threadPoolSize = 200)
+@EventsConf(mode = Events.MODE.ASYNC, threadPoolSize = 10)
 @I18nConf(defaultLocale = "zh_CN")
 public class Starter {
+
     static {
         System.setProperty(IApplication.SYSTEM_MAIN_CLASS, Starter.class.getName());
     }
+
+    /**
+     * 应用入口方法。
+     *
+     * @param args 命令行启动参数
+     * @throws Exception 启动过程异常
+     * @since 2.1.4-dev
+     */
     public static void main(String[] args) throws Exception {
         try (IApplication application = YMP.run(args)) {
             if (application.isInitialized()) {
-                System.out.println("YMP框架初始化成功！");
+                // TODO: 在此处编写初始化后业务逻辑
             }
         }
     }
 }
 ```
 
-### 5.2 自动扫描与依赖注入
-
-#### 定义Bean
+### 模板2：@Bean业务服务 + @Inject字段注入
 
 ```java
-@Bean
-public class UserService implements IUserService {
-    @Override
-    public String getUserName(String userId) {
-        return "User: " + userId;
-    }
-}
-```
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.service;
 
-#### 依赖注入
+import net.ymate.platform.core.beans.annotation.Bean;
+import net.ymate.platform.core.beans.annotation.By;
+import net.ymate.platform.core.beans.annotation.Inject;
 
-```java
-@Bean
-public class UserController {
-    @Inject
-    private IUserService userService;
-    public String getUserInfo(String userId) {
-        return userService.getUserName(userId);
-    }
-}
-```
-
-### 5.3 拦截器使用
-
-#### 定义拦截器
-
-```java
-@Interceptor
-public class LogInterceptor extends AbstractInterceptor {
-    @Override
-    protected Object before(InterceptContext context) throws InterceptException {
-        System.out.println("方法执行前：" + context.getTargetMethod().getName());
-        return null;
-    }
-    @Override
-    protected Object after(InterceptContext context) throws InterceptException {
-        System.out.println("方法执行后：" + context.getTargetMethod().getName());
-        return null;
-    }
-}
-```
-
-#### 使用拦截器
-
-```java
+/**
+ * 用户业务服务示例（@Bean注册到容器，支持依赖注入）。
+ *
+ * @author YMP Team
+ * @since 2.1.4-dev
+ */
 @Bean
 public class UserService {
-    @Before(LogInterceptor.class)
+
+    @Inject
+    @By(OrderServiceImpl.class)
+    private IOrderService orderService;
+
+    /**
+     * 根据用户ID查询用户名称（演示调用注入的Bean）。
+     *
+     * @param userId 用户ID
+     * @return 用户名称拼接订单数
+     * @since 2.1.4-dev
+     */
     public String getUserName(String userId) {
-        return "User: " + userId;
+        int count = orderService.countByUser(userId);
+        return "User:" + userId + " -> Orders:" + count;
     }
 }
 ```
 
-### 5.4 事件使用
-
-#### 定义事件
+### 模板3：@EventListener监听器
 
 ```java
-public class UserEvent extends AbstractEventContext<Object, UserEvent.EVENT> implements IEvent {
-    public enum EVENT {
-        USER_CREATED,
-        USER_UPDATED,
-        USER_DELETED
-    }
-    public UserEvent(Object owner, EVENT eventName) {
-        super(owner, UserEvent.class, eventName);
-    }
-}
-```
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.listener;
 
-#### 订阅事件
+import net.ymate.platform.core.event.Events;
+import net.ymate.platform.core.event.IEventListener;
+import net.ymate.platform.core.event.ModuleEvent;
+import net.ymate.platform.core.event.annotation.EventListener;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-```java
-@EventListener(value = UserEvent.class)
-public class UserEventListener implements IEventListener<UserEvent> {
+/**
+ * 模块生命周期事件监听器示例（异步模式）。
+ *
+ * @author YMP Team
+ * @since 2.1.4-dev
+ */
+@EventListener(mode = Events.MODE.ASYNC, value = ModuleEvent.class)
+public class ModuleEventListener implements IEventListener<ModuleEvent> {
+
+    private static final Log LOG = LogFactory.getLog(ModuleEventListener.class);
+
+    /**
+     * 处理模块事件。
+     *
+     * @param context 模块事件上下文
+     * @return 返回true则停止后续监听器执行
+     * @since 2.1.4-dev
+     */
     @Override
-    public boolean handle(UserEvent context) {
+    public boolean handle(ModuleEvent context) {
+        String moduleName = context.getSource().getName();
         switch (context.getEventName()) {
-            case USER_CREATED:
-                System.out.println("用户创建事件触发");
+            case MODULE_STARTUP:
+                LOG.info("Module startup: " + moduleName);
                 break;
-            case USER_UPDATED:
-                System.out.println("用户更新事件触发");
+            case MODULE_INITIALIZED:
+                LOG.info("Module initialized: " + moduleName);
                 break;
-            case USER_DELETED:
-                System.out.println("用户删除事件触发");
+            case MODULE_DESTROYED:
+                LOG.info("Module destroyed: " + moduleName);
+                break;
+            default:
                 break;
         }
         return false;
@@ -295,206 +277,87 @@ public class UserEventListener implements IEventListener<UserEvent> {
 }
 ```
 
-#### 触发事件
+## 5. 配置速查（ymp-conf.properties / 注解配置）
 
-```java
-try (IApplication application = YMP.run(args)) {
-    Events events = application.getEvents();
-    UserEvent event = new UserEvent(application, UserEvent.EVENT.USER_CREATED);
-    events.fireEvent(event);
-}
-```
+### 5.1 配置文件常用项（ymp-conf.properties，放classpath根目录）
 
-### 5.5 国际化使用
+| 配置key | 默认值 | 说明 |
+|---|---|---|
+| `ymp.dev_mode` | `false` | 是否开发模式（更多日志/热加载） |
+| `ymp.packages` | `net.ymate.platform` | 自动扫描包，多包用`\|`分隔，已含主类所在包 |
+| `ymp.excluded_packages` | 无 | 扫描排除包，多包用`\|`分隔 |
+| `ymp.excluded_files` | 无 | 扫描排除JAR/ZIP文件名，`\|`分隔 |
+| `ymp.excluded_modules` | 无 | 排除加载的模块类名，`\|`分隔 |
+| `ymp.included_modules` | 无 | 仅加载包含的模块类名，`\|`分隔 |
+| `ymp.default_locale` | 系统语言 | I18N默认语言，如`zh_CN`/`en_US` |
+| `ymp.default_password_process_class` | 空 | IPasswordProcessor实现类（配置加密用） |
+| `ymp.params.xxx` | 无 | 自定义扩展参数（@ParamValue("xxx")注入） |
+| `ymp.configs.event.default_mode` | `ASYNC` | 默认事件模式：NORMAL同步/ASYNC异步 |
+| `ymp.configs.event.thread_pool_size` | CPU核心数 | 事件线程池初始化大小 |
+| `ymp.configs.event.thread_max_pool_size` | `200` | 事件线程池最大线程数 |
+| `ymp.configs.event.thread_queue_size` | `1024` | 事件线程池队列大小 |
+| `ymp.intercept.settings_enabled` | `false` | 是否开启拦截器全局规则（AOP用） |
 
-#### 资源文件
+### 5.2 启动注解配置（标注在启动类上）
 
-在resources目录下创建i18n目录，并添加资源文件：
+- `@EnableAutoScan`：value=扫描包数组、excluded=排除包、factoryClass=自定义BeanLoadFactory
+- `@EnableBeanProxy`：factoryClass=代理工厂（`DefaultProxyFactory` CGLIB / `JavassistProxyFactory` / `ByteBuddyProxyFactory` / `NoOpProxyFactory` 禁用AOP）
+- `@EventsConf`：mode=默认模式、threadPoolSize / threadMaxPoolSize / threadQueueSize、providerClass=IEventProvider
+- `@I18nConf`：defaultLocale=默认语言、eventHandlerClass=II18nEventHandler
+- `@Params({@Param(name="k",value="v")})`：自定义全局参数
+- `@DefaultPasswordProcessClass`：value=IPasswordProcessor实现
 
-- messages.properties (默认语言)
-- messages_zh_CN.properties (中文)
-- messages_en_US.properties (英文)
+## 6. 常见坑点排查（3-6条）
 
-#### 使用国际化资源
+| 坑现象 | 原因 | 解决办法 |
+|---|---|---|
+| @Inject注入字段为null | ①类无@Bean未注册 ②未@EnableAutoScan或扫描包不含该类 ③对象是new出来而非从BeanFactory获取 | 类加@Bean；启动类加@EnableAutoScan并指定正确value；通过 `app.getBeanFactory().getBean(X.class)` 获取实例 |
+| 接口多实现时注入报错/取到非期望实现 | 容器里同接口多个@Bean，按注册顺序取最后一个 | 注入字段上加`@By(具体实现Class.class)`显式指定 |
+| 启动类注解配置不生效 | ①static块未设置SYSTEM_MAIN_CLASS ②配置文件ymp-conf.properties中同key有非空值（配置文件优先） | static{System.setProperty(IApplication.SYSTEM_MAIN_CLASS, Starter.class.getName());}；需注解生效则清空配置文件对应项 |
+| @EventListener订阅APPLICATION_STARTUP/MODULE_STARTUP不触发 | 自动扫描在模块初始化后才执行，注解订阅注册太晚 | 实现 `IApplicationInitializer` 在 `afterEventInit()` 中手动 `events.registerListener(...)` 注册 |
+| 打包后找不到配置类/Bean未注册 | JVM未指定mainClass，或启动类不在扫描范围 | 启动参数加 `-Dymp.mainClass=com.example.Starter`，或static块强制设SYSTEM_MAIN_CLASS |
+| I18N.get(key)返回key本身而非值 | resources/i18n/下无对应properties文件或命名不对，或未被打包进classpath | 按 messages_zh_CN.properties 命名放 resources/i18n/，检查maven-resources配置 |
 
-```java
-try (IApplication application = YMP.run(args)) {
-    I18N i18n = application.getI18n();
-    String message = i18n.get("user.not.found", "zh_CN");
-    System.out.println(message);
-}
-```
+## 7. 本模块注解全限定名索引（AI拼import备用）
 
-## 6. 最佳实践
+| 短名 | 全限定名 |
+|---|---|
+| @Bean | `net.ymate.platform.core.beans.annotation.Bean` |
+| @Inject | `net.ymate.platform.core.beans.annotation.Inject` |
+| @By | `net.ymate.platform.core.beans.annotation.By` |
+| @Ignored | `net.ymate.platform.core.beans.annotation.Ignored` |
+| @Order | `net.ymate.platform.core.beans.annotation.Order` |
+| @Injector | `net.ymate.platform.core.beans.annotation.Injector` |
+| @PropertyState | `net.ymate.platform.core.beans.annotation.PropertyState` |
+| @Proxy | `net.ymate.platform.core.beans.annotation.Proxy` |
+| @CleanProxy | `net.ymate.platform.core.beans.annotation.CleanProxy` |
+| @EnableAutoScan | `net.ymate.platform.core.annotation.EnableAutoScan` |
+| @EnableBeanProxy | `net.ymate.platform.core.annotation.EnableBeanProxy` |
+| @EnableDevMode | `net.ymate.platform.core.annotation.EnableDevMode` |
+| @EventsConf | `net.ymate.platform.core.annotation.EventsConf` |
+| @I18nConf | `net.ymate.platform.core.annotation.I18nConf` |
+| @Param | `net.ymate.platform.core.annotation.Param` |
+| @Params | `net.ymate.platform.core.annotation.Params` |
+| @ParamValue | `net.ymate.platform.core.annotation.ParamValue` |
+| @DefaultPasswordProcessClass | `net.ymate.platform.core.annotation.DefaultPasswordProcessClass` |
+| @EventListener | `net.ymate.platform.core.event.annotation.EventListener` |
+| @EventRegister | `net.ymate.platform.core.event.annotation.EventRegister` |
+| @Event | `net.ymate.platform.core.event.annotation.Event` |
 
-### 6.1 应用容器使用
-
-- **推荐使用try-with-resources语法**：确保应用容器正确关闭，释放资源
-- **合理配置扫描路径**：避免扫描过多无关包，提高启动速度
-- **使用开发模式**：在开发环境中开启开发模式，获得更详细的日志信息
-
-### 6.2 依赖注入
-
-- **优先使用接口注入**：通过接口类型注入，而非具体实现类
-- **避免循环依赖**：设计时注意避免循环依赖，否则会导致初始化失败
-- **合理使用@By注解**：当多个实现类时，使用@By注解指定具体实现
-
-### 6.3 拦截器使用
-
-- **合理设计拦截器**：拦截器逻辑应简洁，避免耗时操作
-- **使用环绕拦截器**：对于需要同时处理前置和后置逻辑的场景，使用@Around注解
-- **注意拦截顺序**：多个拦截器的执行顺序是按照声明顺序
-
-### 6.4 事件使用
-
-- **选择合适的事件模式**：对于耗时操作，推荐使用异步模式
-- **合理设计事件结构**：事件对象应包含必要的上下文信息
-- **避免事件风暴**：避免在事件处理中触发新的事件，导致事件风暴
-
-### 6.5 性能优化
-
-- **减少反射使用**：反射操作较慢，应避免频繁使用
-- **合理使用缓存**：对于频繁访问的数据，使用缓存减少计算
-- **优化线程池配置**：根据实际需求调整事件线程池大小
-
-## 7. 常见问题与解决方案
-
-### 7.1 初始化失败
-
-**问题**：框架初始化失败，抛出异常
-
-**原因**：可能是配置错误、依赖冲突或循环依赖
-
-**解决方案**：
-- 检查配置文件是否正确
-- 检查依赖是否冲突，使用mvn dependency:tree查看依赖树
-- 检查是否存在循环依赖
-
-### 7.2 依赖注入失败
-
-**问题**：@Inject注解标记的字段为null
-
-**原因**：可能是类未被@Bean注解标记，或未被自动扫描到
-
-**解决方案**：
-- 确保类被@Bean注解标记
-- 确保类所在包被包含在扫描路径中
-- 检查是否开启了自动扫描
-
-### 7.3 拦截器不生效
-
-**问题**：拦截器逻辑未执行
-
-**原因**：可能是未开启代理，或方法不满足拦截条件
-
-**解决方案**：
-- 确保使用@EnableBeanProxy开启了代理
-- 确保方法是public的，非public方法不会被拦截
-- 确保方法不是Object类的方法，Object类方法不会被拦截
-
-### 7.4 事件监听不生效
-
-**问题**：事件监听器未接收到事件
-
-**原因**：可能是事件未注册，或监听器未注册
-
-**解决方案**：
-- 确保事件已通过registerEvent方法注册
-- 确保监听器已通过@EventListener注解或registerListener方法注册
-- 检查事件触发代码是否正确
-
-### 7.5 国际化资源未加载
-
-**问题**：国际化资源未加载，返回键名而非值
-
-**原因**：可能是资源文件路径错误，或资源文件未打包到jar中
-
-**解决方案**：
-- 确保资源文件放在正确的路径下（resources/i18n/）
-- 确保资源文件已正确打包到jar中
-- 检查资源文件编码是否正确（推荐UTF-8）
-
-## 8. 代码示例
-
-### 8.1 完整应用示例
-
-```java
-@EnableAutoScan("com.example")
-@EnableBeanProxy
-@EnableDevMode
-@EventsConf(mode = Events.MODE.ASYNC, threadPoolSize = 10)
-@I18nConf(defaultLocale = "zh_CN")
-public class Application {
-    static {
-        System.setProperty(IApplication.SYSTEM_MAIN_CLASS, Application.class.getName());
-    }
-    public static void main(String[] args) throws Exception {
-        try (IApplication application = YMP.run(args)) {
-            if (application.isInitialized()) {
-                // 获取Bean
-                UserService userService = application.getBeanFactory().getBean(UserService.class);
-                // 调用方法
-                String result = userService.getUserName("123");
-                System.out.println(result);
-                // 触发事件
-                Events events = application.getEvents();
-                UserEvent event = new UserEvent(application, UserEvent.EVENT.USER_CREATED);
-                events.fireEvent(event);
-                // 使用国际化
-                I18N i18n = application.getI18n();
-                String message = i18n.get("welcome.message");
-                System.out.println(message);
-            }
-        }
-    }
-}
-```
-
-### 8.2 自定义模块示例
-
-```java
-// 模块接口
-@Ignored
-public interface IDemoModule extends IInitialization<IApplication>, IDestroyable {
-    String MODULE_NAME = "module.demo";
-    IApplication getOwner();
-    IDemoConfig getConfig();
-    String sayHello(String name);
-}
-
-// 模块实现
-public class DemoModule implements IDemoModule {
-    private IApplication owner;
-    private IDemoConfig config;
-    @Override
-    public void initialize(IApplication owner) throws Exception {
-        this.owner = owner;
-        this.config = new DefaultDemoConfig(owner);
-        System.out.println("DemoModule initialized");
-    }
-    @Override
-    public String sayHello(String name) {
-        return "Hello, " + name + "!";
-    }
-    @Override
-    public IApplication getOwner() {
-        return owner;
-    }
-    @Override
-    public IDemoConfig getConfig() {
-        return config;
-    }
-    @Override
-    public void destroy() throws Exception {
-        System.out.println("DemoModule destroyed");
-    }
-}
-```
-
-## 9. 总结
-
-YMP框架核心模块提供了一套完整的企业级应用开发基础设施，包括应用容器、依赖注入、AOP拦截、事件机制和国际化支持等核心功能。通过简洁的API设计和灵活的配置方式，使得开发者可以专注于业务逻辑的实现，而无需关心底层基础设施的构建。
-
-核心模块的设计理念是"约定优于配置"，通过合理的默认值和注解配置，减少了繁琐的XML配置，提高了开发效率。同时，通过SPI机制和模块化设计，使得框架具有良好的扩展性和可维护性。
-
-在实际应用中，开发者应根据具体需求合理使用核心模块提供的功能，遵循最佳实践，以获得最佳的性能和可维护性。
+| 常用入口类 | 全限定名 |
+|---|---|
+| YMP | `net.ymate.platform.core.YMP` |
+| IApplication | `net.ymate.platform.core.IApplication` |
+| IBeanFactory | `net.ymate.platform.core.beans.IBeanFactory` |
+| BeanMeta | `net.ymate.platform.core.beans.BeanMeta` |
+| IBeanInitializer | `net.ymate.platform.core.beans.IBeanInitializer` |
+| IBeanInjector | `net.ymate.platform.core.beans.IBeanInjector` |
+| Events | `net.ymate.platform.core.event.Events` |
+| IEvent | `net.ymate.platform.core.event.IEvent` |
+| IEventListener | `net.ymate.platform.core.event.IEventListener` |
+| IEventRegister | `net.ymate.platform.core.event.IEventRegister` |
+| AbstractEventContext | `net.ymate.platform.core.event.AbstractEventContext` |
+| ApplicationEvent | `net.ymate.platform.core.ApplicationEvent` |
+| ModuleEvent | `net.ymate.platform.core.module.ModuleEvent` |
+| IApplicationInitializer | `net.ymate.platform.core.IApplicationInitializer` |
+| I18N | `net.ymate.platform.core.i18n.I18N` |

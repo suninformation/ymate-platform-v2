@@ -1,7 +1,7 @@
 ---
 name: ymp-core-aop
-description: YMP框架Core-AOP模块，提供强大的面向切面编程（AOP）功能，支持方法拦截、前置/后置/环绕拦截等
-version: 2.1.4
+description: YMP框架Core-AOP模块，基于代理(Proxy)技术的方法拦截体系，支持@Before前置/@After后置/@Around环绕拦截、自定义拦截器注解、包/类/方法三级拦截配置与全局规则
+version: 2.1.4-dev
 author: YMP Team
 category: aop
 tags:
@@ -9,453 +9,339 @@ tags:
   - aop
   - interceptor
   - aspect-oriented
-trigger: 当用户需要实现面向切面编程、方法拦截、日志记录、事务管理等场景时触发
+  - proxy
+  - before
+  - after
+  - around
+trigger: 当用户需要实现方法拦截、前置(@Before)/后置(@After)/环绕(@Around)切面、自定义IInterceptor拦截器、日志/权限/事务/缓存等横切逻辑、@EnableBeanProxy代理开启、自定义拦截器注解@InterceptAnnotation、全局拦截规则@InterceptSettings时触发
 tools:
   - aop
   - method-interceptor
+  - proxy-factory
 examples:
-  - 创建拦截器
-  - 实现前置拦截
-  - 实现后置拦截
-  - 实现环绕拦截
-  - 自定义拦截器注解
+  - 继承AbstractInterceptor实现自定义日志拦截器
+  - 方法级别@Before/@After/@Around配置拦截器
+  - 创建@InterceptAnnotation驱动的自定义拦截器注解
+  - package-info.java配置包级别拦截器
+  - @InterceptSettings配置全局拦截规则
 ---
 
-# Core-AOP 模块技能文档
+# Core-AOP 方法拦截技能包
 
-## 1. 模块概述
+> AI读取指引：本模块边界=代理工厂+拦截器配置+IInterceptor实现+全局拦截规则；Bean/DI/启动类基础配置 → 跳转core/SKILL.md；事务/@Transaction → persistence-jdbc；缓存/@Cacheable → cache模块。
 
-Core-AOP 模块是 YMP 框架中的核心模块之一，提供了强大的面向切面编程（AOP）功能。该模块基于代理技术实现了方法拦截机制，允许开发者在方法执行前后插入自定义逻辑，而无需修改原有代码结构。
+---
 
-**主要功能特点：**
+## 0. 快速索引（AI一眼定位）
 
-- 基于注解的拦截器配置
-- 支持前置、后置和环绕拦截
-- 支持拦截器参数传递
-- 支持多层拦截器嵌套
-- 支持拦截器全局规则设置
-- 支持自定义拦截器注解
-
-## 2. 核心功能
-
-### 2.1 拦截器机制
-
-Core-AOP 模块的核心是拦截器机制，通过实现 `IInterceptor` 接口或继承 `AbstractInterceptor` 抽象类来创建自定义拦截器。拦截器可以拦截方法的执行，在方法执行前后插入自定义逻辑。
-
-### 2.2 注解配置
-
-模块提供了丰富的注解来配置拦截器：
-
-- `@Before` - 前置拦截器配置
-- `@After` - 后置拦截器配置
-- `@Around` - 环绕拦截器配置
-- `@Clean` - 清理拦截器配置
-- `@ContextParam` - 上下文参数配置
-- `@Ignored` - 忽略拦截器配置
-- `@Interceptor` - 声明拦截器类
-
-### 2.3 拦截器执行顺序
-
-拦截器的执行顺序遵循以下规则：
-
-1. 包级别拦截器（`package-info.java` 中配置）
-2. 类级别拦截器
-3. 方法级别拦截器
-
-### 2.4 拦截器全局规则
-
-通过配置文件或 `@InterceptSettings` 注解，可以设置拦截器的全局规则，如禁用特定拦截器、为特定包添加拦截器等。
-
-## 3. API 接口
-
-### 3.1 核心接口
-
-#### IInterceptor
-
-拦截器接口，是所有拦截器的基础接口。
-
+- Maven artifactId：`ymate-platform-core`（AOP已包含在core中，无需额外依赖）
+- 启动入口注解：`net.ymate.platform.core.annotation.EnableBeanProxy`（必须标启动类，否则所有拦截器**完全不生效**）
+- 拦截器基础类：`net.ymate.platform.core.beans.intercept.AbstractInterceptor`（推荐继承）/ `IInterceptor`（接口）
+- 典型调用示例（5行内最简）：
 ```java
-public interface IInterceptor {
-
-    /**
-     * 拦截方法执行
-     * @param context 拦截上下文
-     * @return 拦截结果，非null表示方法执行被拦截
-     * @throws Exception 异常
-     */
-    Object intercept(InterceptContext context) throws Exception;
+@EnableBeanProxy  // 启动类必须！
+public class Starter {
+    // 业务方法上标拦截注解
+    @Before(LogInterceptor.class)
+    public String hello() { return "hi"; }
 }
 ```
 
-#### AbstractInterceptor
+## 1. 模块摘要（1-2句 + 5条以内核心能力）
 
-拦截器抽象类，实现了 `IInterceptor` 接口，提供了更方便的拦截器编写方式。
+基于CGLIB/Javassist/ByteBuddy动态代理技术的方法拦截(AOP)实现，为YMP容器Bean提供前置/后置/环绕拦截能力，支持包/类/方法三级声明式配置与自定义拦截器注解。
 
-```java
-public abstract class AbstractInterceptor implements IInterceptor {
+- **三级拦截配置**：package-info（包）→ 类 → 方法，执行顺序由粗到细叠加
+- **三种拦截方向**：`@Before` 前置 / `@After` 后置 / `@Around` 环绕（前后都执行）
+- **IInterceptor体系**：接口 `intercept(InterceptContext)` 或继承 `AbstractInterceptor` 覆写 `before()`/`after()`
+- **自定义拦截器注解**：`@InterceptAnnotation` 元注解标注，业务侧更简洁（一个注解替代@Before+@ContextParam等）
+- **全局规则引擎**：`ymp.intercept.settings_enabled=true` 后，通过配置文件或 `@InterceptSettings` 对拦截器批量禁用/添加/清理
 
-    /**
-     * 前置拦截
-     * @param context 拦截上下文
-     * @return 拦截结果，非null表示方法执行被拦截
-     * @throws InterceptException 拦截异常
-     */
-    protected abstract Object before(InterceptContext context) throws InterceptException;
+## 2. 核心注解速查表（最关键，必须包含全限定名）
 
-    /**
-     * 后置拦截
-     * @param context 拦截上下文
-     * @return 拦截结果
-     * @throws InterceptException 拦截异常
-     */
-    protected abstract Object after(InterceptContext context) throws InterceptException;
-}
-```
+| 注解 | 全限定名 | 作用目标 | 常用参数（2-5个核心参数名+说明） |
+|---|---|---|---|
+| @EnableBeanProxy | `net.ymate.platform.core.annotation.EnableBeanProxy` | 启动类 | factoryClass=IProxyFactory（Default/Javassist/ByteBuddy/NoOp禁用AOP） |
+| @Before | `net.ymate.platform.core.beans.annotation.Before` | 包/类/方法 | value=IInterceptor实现类数组（前置拦截） |
+| @After | `net.ymate.platform.core.beans.annotation.After` | 包/类/方法 | value=IInterceptor实现类数组（后置拦截） |
+| @Around | `net.ymate.platform.core.beans.annotation.Around` | 包/类/方法 | value=IInterceptor实现类数组（前后都拦截，等价@Before+@After） |
+| @Clean | `net.ymate.platform.core.beans.annotation.Clean` | 类/方法 | value=要清理的IInterceptor类数组；清空则清理类级全部 |
+| @ContextParam | `net.ymate.platform.core.beans.annotation.ContextParam` | 包/类/方法 | key=参数名 / value=参数值（支持`$xxx`从全局参数取） |
+| @ContextParams | `net.ymate.platform.core.beans.annotation.ContextParams` | 包/类/方法 | value=@ContextParam数组 |
+| @Ignored | `net.ymate.platform.core.beans.annotation.Ignored` | 类/方法 | -（被标注的方法完全跳过拦截；非public/Object类方法默认也跳过） |
+| @Interceptor | `net.ymate.platform.core.beans.annotation.Interceptor` | 拦截器类（实现IInterceptor） | value=关联的自定义拦截器注解Class数组（可选） |
+| @InterceptAnnotation | `net.ymate.platform.core.beans.annotation.InterceptAnnotation` | 自定义注解（元注解） | value=Direction.BEFORE/AFTER数组，空=全方向（标记一个注解为拦截器注解，可替代@Before/@After配置） |
+| @InterceptSettings | `net.ymate.platform.core.beans.annotation.InterceptSettings` | 包/类 | globals=禁用拦截器数组 / packages=@PackageSet / value=@InterceptSet（需settings_enabled=true） |
+| @Proxy | `net.ymate.platform.core.beans.annotation.Proxy` | 类 | value=IProxy实现类数组（低级代理扩展） |
+| @CleanProxy | `net.ymate.platform.core.beans.annotation.CleanProxy` | 类/方法 | value=IProxy类数组，空=全部清理 |
+| @Order | `net.ymate.platform.core.beans.annotation.Order` | 拦截器类/自定义拦截注解 | value=顺序号（同位置多拦截器执行顺序，越小越先） |
 
-### 3.2 上下文对象
+## 3. 核心API速查（仅入口静态类+最常用方法）
 
-#### InterceptContext
+- `IInterceptor.intercept(InterceptContext context)` → `Object`：拦截器唯一接口方法；返回`null`=继续后续拦截/方法执行，返回非`null`=停止并以此作为方法返回值（仅前置方向有效）
+- `AbstractInterceptor.before(InterceptContext ctx)` → `Object`：前置拦截逻辑（子类覆写）
+- `AbstractInterceptor.after(InterceptContext ctx)` → `Object`：后置拦截逻辑（子类覆写，默认return null）
+- `AbstractInterceptor.findInterceptAnnotation(ctx, Ann.class)` → `<T extends Annotation> T`：从方法→类→包三级查找自定义拦截器注解（配合@InterceptAnnotation使用）
+- `InterceptContext.getDirection()` → `IInterceptor.Direction`：当前执行方向 `BEFORE` / `AFTER`
+- `InterceptContext.getTargetClass()` / `getTargetMethod()` / `getTargetObject()` → 目标类/方法/实例
+- `InterceptContext.getParameters()` → `Object[]`：方法入参数组
+- `InterceptContext.getContextParams()` → `Map<String,Object>`：取@ContextParam传入的自定义参数（可读写，before→after传递数据用）
+- `InterceptContext.getResult()` / `setResult(Object)`：后置阶段读取/改写方法实际返回值
+- `IApplication.registerInterceptor(Class<? extends IInterceptor>)`：手动注册拦截器类
 
-拦截上下文对象，包含了拦截相关的所有信息。
+## 4. 标准代码模板（最少可运行，带import+License+类/方法注释+@since）
 
-```java
-public interface InterceptContext {
-
-    /**
-     * 获取目标类
-     * @return 目标类
-     */
-    Class<?> getTargetClass();
-
-    /**
-     * 获取目标方法
-     * @return 目标方法
-     */
-    Method getTargetMethod();
-
-    /**
-     * 获取目标对象
-     * @return 目标对象
-     */
-    Object getTargetObject();
-
-    /**
-     * 获取方法参数
-     * @return 方法参数
-     */
-    Object[] getParameters();
-
-    /**
-     * 获取上下文参数
-     * @return 上下文参数
-     */
-    Map<String, Object> getContextParams();
-
-    /**
-     * 获取方法执行结果
-     * @return 方法执行结果
-     */
-    Object getResult();
-
-    /**
-     * 设置方法执行结果
-     * @param result 方法执行结果
-     */
-    void setResult(Object result);
-}
-```
-
-### 3.3 配置注解
-
-#### @Interceptor
-
-声明一个类为拦截器。
+### 模板1：自定义拦截器（继承AbstractInterceptor + @Interceptor标记）
 
 ```java
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Interceptor {
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.intercept;
 
-    /**
-     * 拦截器注解类型
-     */
-    Class<? extends Annotation>[] value() default {};
-}
-```
+import net.ymate.platform.core.beans.annotation.Interceptor;
+import net.ymate.platform.core.beans.intercept.AbstractInterceptor;
+import net.ymate.platform.core.beans.intercept.InterceptContext;
+import net.ymate.platform.core.beans.intercept.InterceptException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-#### @Before
-
-配置前置拦截器。
-
-```java
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PACKAGE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Before {
-
-    /**
-     * 拦截器类
-     */
-    Class<? extends IInterceptor>[] value();
-}
-```
-
-#### @After
-
-配置后置拦截器。
-
-```java
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PACKAGE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface After {
-
-    /**
-     * 拦截器类
-     */
-    Class<? extends IInterceptor>[] value();
-}
-```
-
-#### @Around
-
-配置环绕拦截器。
-
-```java
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PACKAGE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Around {
-
-    /**
-     * 拦截器类
-     */
-    Class<? extends IInterceptor>[] value();
-}
-```
-
-## 4. 使用场景
-
-### 4.1 日志记录
-
-通过拦截器记录方法的执行时间、参数和返回值，实现统一的日志记录。
-
-### 4.2 权限验证
-
-通过拦截器验证用户的权限，确保只有具有相应权限的用户才能执行特定方法。
-
-### 4.3 事务管理
-
-通过拦截器实现事务的开启、提交和回滚，确保数据操作的原子性。
-
-### 4.4 缓存控制
-
-通过拦截器实现方法执行结果的缓存，提高系统性能。
-
-### 4.5 异常处理
-
-通过拦截器统一处理方法执行过程中产生的异常，提供一致的异常处理机制。
-
-## 5. 配置方式
-
-### 5.1 注解配置
-
-通过在类或方法上添加拦截器注解来配置拦截器。
-
-```java
-@Bean
-public class TestApp {
-
-    @Before(DemoInterceptor.class)
-    public String beforeTest() {
-        return "前置拦截测试";
-    }
-
-    @After(DemoInterceptor.class)
-    public String afterTest() {
-        return "后置拦截测试";
-    }
-
-    @Around(DemoInterceptor.class)
-    @ContextParam(key = "param", value = "helloworld")
-    public String allTest() {
-        return "拦截器参数传递";
-    }
-}
-```
-
-### 5.2 包级别配置
-
-在 `package-info.java` 文件中配置包级别的拦截器。
-
-```java
-@Before(DemoInterceptor.class)
-@ContextParam(key = "param", value = "helloworld")
-package net.ymate.demo.controller;
-
-import net.ymate.demo.intercept.DemoInterceptor;
-import net.ymate.platform.core.beans.annotation.Before;
-import net.ymate.platform.core.beans.annotation.ContextParam;
-```
-
-### 5.3 全局规则配置
-
-通过配置文件设置拦截器全局规则。
-
-```properties
-# 是否开启拦截器全局规则设置
-ymp.intercept.settings_enabled=true
-
-# 为包添加拦截器
-ymp.intercept.packages.net.ymate.demo.controller=before:net.ymate.demo.intercept.UserSessionInterceptor
-
-# 禁用拦截器
-ymp.intercept.globals.net.ymate.demo.intercept.UserSessionInterceptor=disabled
-
-# 为目标类配置拦截器执行规则
-ymp.intercept.settings.net.ymate.demo.controller.DemoController#=*
-```
-
-## 6. 注意事项
-
-1. **性能考虑**：拦截器会增加方法调用的开销，应避免在性能敏感的方法上使用过多拦截器。
-
-2. **异常处理**：拦截器中应妥善处理异常，避免异常影响正常的业务流程。
-
-3. **线程安全**：拦截器实例可能被多个线程共享，应确保拦截器的线程安全性。
-
-4. **拦截器顺序**：注意拦截器的执行顺序，避免因顺序问题导致的逻辑错误。
-
-5. **避免循环依赖**：避免拦截器之间的循环依赖，以免导致死循环。
-
-6. **拦截器粒度**：合理设置拦截器的粒度，避免过度使用拦截器导致代码难以理解和维护。
-
-## 7. 最佳实践
-
-1. **单一职责**：每个拦截器应只负责一项具体功能，保持拦截器的简洁性和可维护性。
-
-2. **抽象通用逻辑**：将通用的横切关注点（如日志、权限验证等）抽象为拦截器，提高代码的复用性。
-
-3. **合理使用上下文参数**：通过 `@ContextParam` 注解传递上下文参数，使拦截器更加灵活。
-
-4. **使用抽象类**：继承 `AbstractInterceptor` 抽象类来创建拦截器，简化拦截器的编写。
-
-5. **合理配置拦截器**：根据业务需求合理配置拦截器，避免不必要的拦截。
-
-6. **测试拦截器**：编写专门的测试用例来测试拦截器的功能，确保拦截器的正确性。
-
-7. **文档化**：为拦截器添加详细的文档注释，说明拦截器的功能、参数和使用方法。
-
-## 8. 示例代码
-
-### 8.1 自定义拦截器
-
-```java
+/**
+ * 方法耗时日志拦截器示例（前置+后置组合）。
+ *
+ * @author YMP Team
+ * @since 2.1.4-dev
+ */
 @Interceptor
 public class LogInterceptor extends AbstractInterceptor {
 
     private static final Log LOG = LogFactory.getLog(LogInterceptor.class);
 
+    private static final String START_TIME_KEY = "_startTime";
+
+    /**
+     * 前置拦截：记录方法开始时间戳。
+     *
+     * @param context 拦截上下文
+     * @return null表示不拦截，继续执行
+     * @throws InterceptException 拦截逻辑异常
+     * @since 2.1.4-dev
+     */
     @Override
     protected Object before(InterceptContext context) throws InterceptException {
-        long startTime = System.currentTimeMillis();
-        context.getContextParams().put("startTime", startTime);
-        LOG.info("Method " + context.getTargetMethod().getName() + " started");
+        long start = System.currentTimeMillis();
+        context.getContextParams().put(START_TIME_KEY, start);
+        LOG.info("[BEFORE] method=" + context.getTargetMethod().getName());
         return null;
     }
 
+    /**
+     * 后置拦截：计算并打印耗时。
+     *
+     * @param context 拦截上下文
+     * @return 返回null（后置返回值通常被忽略）
+     * @throws InterceptException 拦截逻辑异常
+     * @since 2.1.4-dev
+     */
     @Override
     protected Object after(InterceptContext context) throws InterceptException {
-        long startTime = (long) context.getContextParams().get("startTime");
-        long endTime = System.currentTimeMillis();
-        LOG.info("Method " + context.getTargetMethod().getName() + " completed in " + (endTime - startTime) + "ms");
+        Long start = (Long) context.getContextParams().get(START_TIME_KEY);
+        long cost = start == null ? -1 : System.currentTimeMillis() - start;
+        LOG.info("[AFTER ] method=" + context.getTargetMethod().getName()
+                + " cost=" + cost + "ms"
+                + " result=" + context.getResult());
         return null;
     }
 }
 ```
 
-### 8.2 使用拦截器
+### 模板2：在方法/类上使用 @Before + @ContextParam
 
 ```java
-@Bean
-public class UserController {
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.service;
 
-    @Before(LogInterceptor.class)
+import net.ymate.platform.core.beans.annotation.After;
+import net.ymate.platform.core.beans.annotation.Around;
+import net.ymate.platform.core.beans.annotation.Before;
+import net.ymate.platform.core.beans.annotation.Bean;
+import net.ymate.platform.core.beans.annotation.ContextParam;
+
+import com.example.intercept.LogInterceptor;
+import com.example.intercept.PermissionInterceptor;
+
+/**
+ * 业务服务类，演示拦截器在类/方法级别的使用。
+ *
+ * @author YMP Team
+ * @since 2.1.4-dev
+ */
+@Bean
+@Before(LogInterceptor.class)  // 类级别：所有public方法都前置走LogInterceptor
+public class OrderService {
+
+    /**
+     * 创建订单（类级@Before已生效，方法级再加权限拦截+上下文参数）。
+     *
+     * @param userId 用户ID
+     * @param amount 金额
+     * @return 订单号
+     * @since 2.1.4-dev
+     */
     @Before(PermissionInterceptor.class)
-    public User getUser(String id) {
-        // 业务逻辑
-        return userService.getUser(id);
+    @ContextParam(key = "permCode", value = "ORDER_CREATE")
+    public String createOrder(String userId, long amount) {
+        return "ORD_" + System.currentTimeMillis();
     }
 
-    @Around(TransactionInterceptor.class)
-    public void saveUser(User user) {
-        // 业务逻辑
-        userService.saveUser(user);
+    /**
+     * 查询订单（加后置拦截 + @Around环绕）。
+     *
+     * @param orderId 订单号
+     * @return 订单详情字符串
+     * @since 2.1.4-dev
+     */
+    @After(LogInterceptor.class)
+    @Around(PermissionInterceptor.class)
+    @ContextParam(key = "permCode", value = "ORDER_QUERY")
+    public String queryOrder(String orderId) {
+        return "OrderDetail#" + orderId;
     }
 }
 ```
 
-### 8.3 自定义拦截器注解
+### 模板3：自定义拦截器注解（@InterceptAnnotation元注解方式）
 
 ```java
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.annotation;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import net.ymate.platform.core.beans.annotation.InterceptAnnotation;
+import net.ymate.platform.core.beans.intercept.IInterceptor;
+
+/**
+ * 自定义权限拦截注解（带参数，替代@Before+@ContextParam组合）。
+ *
+ * @author YMP Team
+ * @since 2.1.4-dev
+ */
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@InterceptAnnotation({IInterceptor.Direction.BEFORE, IInterceptor.Direction.AFTER})
-public @interface Log {
+@InterceptAnnotation({IInterceptor.Direction.BEFORE})  // 仅前置方向
+public @interface RequirePermission {
 
     /**
-     * 日志级别
+     * @return 权限编码（拦截器内通过findInterceptAnnotation取此值）
      */
-    String level() default "info";
+    String code();
 
     /**
-     * 是否记录参数
+     * @return 是否必须校验通过，默认true
      */
-    boolean recordParams() default true;
-
-    /**
-     * 是否记录结果
-     */
-    boolean recordResult() default true;
+    boolean required() default true;
 }
 ```
 
 ```java
-@Interceptor(Log.class)
-public class LogAnnotationInterceptor extends AbstractInterceptor {
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.intercept;
 
-    private static final Log LOG = LogFactory.getLog(LogAnnotationInterceptor.class);
+import net.ymate.platform.core.beans.annotation.Interceptor;
+import net.ymate.platform.core.beans.intercept.AbstractInterceptor;
+import net.ymate.platform.core.beans.intercept.InterceptContext;
+import net.ymate.platform.core.beans.intercept.InterceptException;
 
+import com.example.annotation.RequirePermission;
+
+/**
+ * 配合自定义注解@RequirePermission的权限拦截器实现。
+ *
+ * @author YMP Team
+ * @since 2.1.4-dev
+ */
+@Interceptor(RequirePermission.class)  // 关联自定义注解
+public class PermissionInterceptor extends AbstractInterceptor {
+
+    /**
+     * 前置权限校验。
+     *
+     * @param context 拦截上下文
+     * @return 非null返回值将中断执行并直接返回
+     * @throws InterceptException 无权限时抛出
+     * @since 2.1.4-dev
+     */
     @Override
     protected Object before(InterceptContext context) throws InterceptException {
-        Log logAnnotation = findInterceptAnnotation(context, Log.class);
-        if (logAnnotation != null && logAnnotation.recordParams()) {
-            Method method = context.getTargetMethod();
-            Object[] params = context.getParameters();
-            StringBuilder sb = new StringBuilder();
-            sb.append("Method " + method.getName() + " called with params: ");
-            if (params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    sb.append(params[i]);
-                    if (i < params.length - 1) {
-                        sb.append(", ");
-                    }
-                }
+        // 从方法→类→包三级查找注解
+        RequirePermission ann = findInterceptAnnotation(context, RequirePermission.class);
+        if (ann != null && ann.required()) {
+            String code = ann.code();
+            // TODO: 真实项目此处调用权限服务校验当前用户是否持有code权限
+            boolean hasPerm = "ORDER_CREATE".equals(code) || "ORDER_QUERY".equals(code);
+            if (!hasPerm) {
+                throw new InterceptException("无权限：" + code);
             }
-            LOG.info(sb.toString());
-        }
-        return null;
-    }
-
-    @Override
-    protected Object after(InterceptContext context) throws InterceptException {
-        Log logAnnotation = findInterceptAnnotation(context, Log.class);
-        if (logAnnotation != null && logAnnotation.recordResult()) {
-            Method method = context.getTargetMethod();
-            Object result = context.getResult();
-            LOG.info("Method " + method.getName() + " returned: " + result);
         }
         return null;
     }
@@ -463,27 +349,127 @@ public class LogAnnotationInterceptor extends AbstractInterceptor {
 ```
 
 ```java
+/* 业务侧使用：一个注解搞定拦截+参数（无需@Before/@ContextParam分开写） */
 @Bean
-public class UserService {
+public class OrderService {
+    @RequirePermission(code = "ORDER_CREATE")
+    public String createOrder(String userId, long amount) { return "OK"; }
 
-    @Log(level = "debug", recordParams = true, recordResult = true)
-    public User getUser(String id) {
-        // 业务逻辑
-        return userDao.getUser(id);
-    }
+    @RequirePermission(code = "ORDER_QUERY")
+    public String queryOrder(String orderId) { return "DETAIL"; }
 }
 ```
 
-## 9. 总结
+### 模板4：package-info.java 包级别拦截配置
 
-Core-AOP 模块是 YMP 框架中一个强大的模块，提供了灵活、易用的面向切面编程功能。通过该模块，开发者可以轻松实现日志记录、权限验证、事务管理等横切关注点，提高代码的复用性和可维护性。
+```java
+/*
+ * Copyright 2007-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-该模块的主要优势在于：
+/**
+ * 控制器包：包级别自动加登录校验拦截器 + 日志上下文参数。
+ * 执行顺序：package(LoginInterceptor) → class → method
+ *
+ * @since 2.1.4-dev
+ */
+@Before(com.example.intercept.LoginInterceptor.class)
+@ContextParam(key = "module", value = "WEB_CONTROLLER")
+package com.example.controller;
 
-1. **基于注解的配置**：通过丰富的注解来配置拦截器，使用简单方便。
-2. **灵活的拦截器机制**：支持前置、后置和环绕拦截，可以满足各种拦截需求。
-3. **多层次的配置**：支持包级别、类级别和方法级别的拦截器配置，灵活性高。
-4. **全局规则设置**：通过配置文件或注解设置拦截器的全局规则，方便管理。
-5. **与框架集成**：与 YMP 框架的其他模块无缝集成，支持依赖注入等特性。
+import net.ymate.platform.core.beans.annotation.Before;
+import net.ymate.platform.core.beans.annotation.ContextParam;
+```
 
-Core-AOP 模块为 YMP 框架提供了强大的 AOP 功能，是框架中不可或缺的一部分。通过合理使用该模块，可以大大提高代码的质量和开发效率。
+## 5. 配置速查（ymp-conf.properties / 注解配置）
+
+### 5.1 配置文件常用项（ymp-conf.properties）
+
+| 配置key | 默认值 | 说明 |
+|---|---|---|
+| `ymp.intercept.settings_enabled` | `false` | **必须=true**，配置文件/@InterceptSettings全局规则才会生效 |
+| `ymp.intercept.packages.<包全名>` | 无 | 为指定包批量加拦截器，格式：`before:完整类名\|after:类名`，多拦截器用`\|`分隔 |
+| `ymp.intercept.globals.<拦截器全类名>` | 空 | 取值`disabled`=全局禁用该拦截器（代码中已声明的该拦截器全部跳过） |
+| `ymp.intercept.settings.<目标类全类名>#` | 无 | 类级规则：`*`=清空该类所有拦截器；`before:*`=清空全部前置；`after:*`=清空全部后置 |
+| `ymp.intercept.settings.<类全类名>#<方法名>` | 无 | 方法级规则：`before:类名+`=追加前置；`before:类名-`=移除前置；`after:类名+`=追加后置 |
+
+示例片段：
+```properties
+ymp.intercept.settings_enabled=true
+ymp.intercept.packages.com.example.controller=before:com.example.intercept.LoginInterceptor
+ymp.intercept.globals.com.example.intercept.DebugInterceptor=disabled
+ymp.intercept.settings.com.example.controller.UserController#login=before:*
+ymp.intercept.settings.com.example.controller.OrderController#createOrder=after:com.example.intercept.AuditInterceptor+
+```
+
+### 5.2 启动/配置注解核心参数
+
+- `@EnableBeanProxy`：`factoryClass`=代理工厂实现
+  - `DefaultProxyFactory`（默认，基于CGLIB）
+  - `JavassistProxyFactory`（Javassist实现）
+  - `ByteBuddyProxyFactory`（ByteBuddy实现）
+  - `NoOpProxyFactory`（空实现=关闭AOP，排查代理相关问题时临时使用）
+- `@InterceptSettings`（标在包/类上，需settings_enabled=true）：
+  - `globals`=Class<? extends IInterceptor>[] → 批量禁用
+  - `packages`=@PackageSet[] → 批量为包加拦截器+上下文参数
+  - `value`=@InterceptSet[] → 为目标类/方法加/移除/清空拦截器
+- `@Before/@After/@Around`：`value`=IInterceptor[]，顺序=数组顺序执行（多拦截器）
+- `@ContextParam`：`key`/`value`，value支持`$xxx`从`ymp.params.xxx`读取环境值
+
+## 6. 常见坑点排查（3-6条）
+
+| 坑现象 | 原因 | 解决办法 |
+|---|---|---|
+| 拦截器完全不进，日志也没任何反应 | ①启动类缺`@EnableBeanProxy`（90%情况）②方法非public ③方法是Object类继承方法(toString/equals等) ④对象是`new`出来的而非从BeanFactory取 ⑤@Ignored标注了方法/类 | 启动类补`@EnableBeanProxy`；方法改public；通过 `app.getBeanFactory().getBean(X.class)` 获取Bean实例 |
+| 前置拦截器返回非null后，后置拦截器仍执行？ | 前置拦截器返回非null是中断方法本体和后续前置拦截器，但后置拦截器链独立执行是设计行为 | 如业务需要跳过后置，在context.getContextParams里设标记，after()里读标记判断是否return |
+| `@InterceptSettings`/配置文件全局规则完全无效 | `ymp.intercept.settings_enabled` 未置为`true`（默认false，出于性能考虑不开启解析） | ymp-conf.properties写 `ymp.intercept.settings_enabled=true` |
+| 同方法多拦截器执行顺序不明确 | 同位置未指定@Order时按注解数组顺序，但包→类→方法三级叠加顺序容易误解 | 三级顺序固定：**package → class → method**；同层级多拦截器加`@Order(数字)`，数字越小越先执行 |
+| 自定义拦截器中findInterceptAnnotation()永远返回null | ①拦截器类的@Interceptor没传自定义注解Class参数 ②自定义注解缺@InterceptAnnotation元注解 ③注解未标RUNTIME保留 | 自定义注解上加`@Retention(RetentionPolicy.RUNTIME) + @InterceptAnnotation`；拦截器类`@Interceptor(MyAnn.class)` |
+| 拦截器里修改getParameters()数组元素，业务方法收到的参数没变 | InterceptContext.getParameters()返回副本引用，框架没做参数回写（设计如此，避免副作用） | 如必须改参数，使用更低级IProxy接口而非拦截器，或改造业务为接受封装对象参数 |
+| @Clean加在方法上不生效 / 类级拦截器清理不掉 | @Clean作用是清理包和类**继承**下来的拦截器，需settings_enabled=true，且清理操作仅对声明式（非全局）有效 | 方法级@Clean()不传参=清空类级；传具体拦截器Class=只清那几个；全局声明的用ymp.intercept.globals.xxx=disabled |
+
+## 7. 本模块注解全限定名索引（AI拼import备用）
+
+| 短名 | 全限定名 |
+|---|---|
+| @EnableBeanProxy | `net.ymate.platform.core.annotation.EnableBeanProxy` |
+| @Before | `net.ymate.platform.core.beans.annotation.Before` |
+| @After | `net.ymate.platform.core.beans.annotation.After` |
+| @Around | `net.ymate.platform.core.beans.annotation.Around` |
+| @Clean | `net.ymate.platform.core.beans.annotation.Clean` |
+| @ContextParam | `net.ymate.platform.core.beans.annotation.ContextParam` |
+| @ContextParams | `net.ymate.platform.core.beans.annotation.ContextParams` |
+| @Interceptor | `net.ymate.platform.core.beans.annotation.Interceptor` |
+| @InterceptAnnotation | `net.ymate.platform.core.beans.annotation.InterceptAnnotation` |
+| @InterceptSettings | `net.ymate.platform.core.beans.annotation.InterceptSettings` |
+| @Proxy | `net.ymate.platform.core.beans.annotation.Proxy` |
+| @CleanProxy | `net.ymate.platform.core.beans.annotation.CleanProxy` |
+| @Order | `net.ymate.platform.core.beans.annotation.Order` |
+| @Ignored | `net.ymate.platform.core.beans.annotation.Ignored` |
+
+| 核心类/接口 | 全限定名 |
+|---|---|
+| IInterceptor | `net.ymate.platform.core.beans.intercept.IInterceptor` |
+| IInterceptor.Direction | `net.ymate.platform.core.beans.intercept.IInterceptor.Direction` |
+| IInterceptor.SettingType | `net.ymate.platform.core.beans.intercept.IInterceptor.SettingType` |
+| AbstractInterceptor | `net.ymate.platform.core.beans.intercept.AbstractInterceptor` |
+| InterceptContext | `net.ymate.platform.core.beans.intercept.InterceptContext` |
+| InterceptException | `net.ymate.platform.core.beans.intercept.InterceptException` |
+| InterceptMeta | `net.ymate.platform.core.beans.intercept.InterceptMeta` |
+| IProxyFactory | `net.ymate.platform.core.beans.proxy.IProxyFactory` |
+| DefaultProxyFactory | `net.ymate.platform.core.beans.proxy.impl.DefaultProxyFactory` |
+| JavassistProxyFactory | `net.ymate.platform.core.beans.proxy.impl.JavassistProxyFactory` |
+| ByteBuddyProxyFactory | `net.ymate.platform.core.beans.proxy.impl.ByteBuddyProxyFactory` |
+| NoOpProxyFactory | `net.ymate.platform.core.beans.proxy.impl.NoOpProxyFactory` |
