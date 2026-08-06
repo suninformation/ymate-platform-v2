@@ -83,7 +83,214 @@ slug: validation
 
 
 
+### @ValidateGroups
+
+> @since 2.1.4
+
+声明在类或方法之上，用于配置当前验证使用的分组。当未显式传入分组参数时，验证框架将从目标类或方法上读取该注解声明的分组。
+
+| 配置项 | 描述                                                         |
+| ------ | ------------------------------------------------------------ |
+| value  | 验证分组，默认为 `DefaultGroup`<br/>支持声明多个分组，如：`@ValidateGroups({Create.class, Update.class})` |
+
+分组解析优先级：显式传入 `groups` 参数 > 方法上的 `@ValidateGroups` > 类上的 `@ValidateGroups` > 默认 `DefaultGroup`
+
+
+
+### @VCondition
+
+> @since 2.1.4
+
+声明验证注解的条件，当条件满足时才执行验证。
+
+| 配置项        | 描述                                                         |
+| ------------- | ------------------------------------------------------------ |
+| type          | 条件类型（枚举值），默认为 `ALWAYS`<br/>取值范围：`ALWAYS`、`FIELD_EQUALS`、`FIELD_NOT_EQUALS`、`FIELD_GT`、`FIELD_GT_EQ`、`FIELD_LT`、`FIELD_LT_EQ`、`FIELD_NOT_EMPTY`、`FIELD_EMPTY` |
+| field         | 依赖的参数名称                                               |
+| expectedValue | 期望值（用于 `FIELD_EQUALS`、`FIELD_NOT_EQUALS`、`FIELD_GT`、`FIELD_GT_EQ`、`FIELD_LT`、`FIELD_LT_EQ` 类型条件） |
+
+
+
+## 验证分组
+
+> @since 2.1.4
+
+验证分组允许同一个 DTO 对象在不同操作场景下应用不同的验证规则。例如，在创建和更新操作中，某些字段的验证要求可能不同。
+
+### 分组接口定义
+
+分组可以是任意 `Class` 类型，仅用于标识不同的验证场景。通常使用空接口即可：
+
+```java
+/**
+ * 创建操作分组
+ */
+public interface Create {
+}
+
+/**
+ * 更新操作分组
+ */
+public interface Update {
+}
+```
+
+### 默认分组
+
+当验证注解未指定 `groups` 参数时，默认属于 `DefaultGroup` 分组。当调用 `validate` 方法时未传入分组参数且目标类/方法上未声明 `@ValidateGroups` 注解时，也将使用 `DefaultGroup` 分组。
+
+### 分组使用示例
+
+```java
+public class UserDTO {
+
+    @VRequired(groups = Create.class)
+    private String password;
+
+    @VRequired(groups = Update.class)
+    private String id;
+
+    @VRequired(groups = {Create.class, Update.class})
+    @VLength(min = 2, max = 50, groups = {Create.class, Update.class})
+    private String name;
+
+    //
+    // 此处省略了Get/Set方法
+    //
+}
+```
+
+调用验证时指定分组：
+
+```java
+// Create分组 - 仅验证groups包含Create.class的注解
+Map<String, ValidateResult> results = Validations.get()
+    .validate(UserDTO.class, paramValues, Create.class);
+
+// Update分组 - 仅验证groups包含Update.class的注解
+Map<String, ValidateResult> results = Validations.get()
+    .validate(UserDTO.class, paramValues, Update.class);
+
+// 不传分组 - 使用DefaultGroup分组
+Map<String, ValidateResult> results = Validations.get()
+    .validate(UserDTO.class, paramValues);
+```
+
+### 通过@ValidateGroups声明分组
+
+通过 `@ValidateGroups` 注解可以在类或方法上声明验证分组，避免每次调用时手动传入：
+
+```java
+@ValidateGroups(Create.class)
+public class CreateUserDTO {
+
+    @VRequired(groups = Create.class)
+    private String password;
+
+    @VRequired(groups = Update.class)
+    private String id;
+
+    //
+    // 此处省略了Get/Set方法
+    //
+}
+
+// 不传groups参数，自动使用类上声明的Create分组
+Map<String, ValidateResult> results = Validations.get()
+    .validate(CreateUserDTO.class, paramValues);
+```
+
+
+
+## 条件验证
+
+> @since 2.1.4
+
+条件验证允许在某些条件满足时才执行验证，例如当某个字段的值为特定值时才验证另一个字段。
+
+### 条件类型说明
+
+| 条件类型           | 描述                                       |
+| ------------------ | ------------------------------------------ |
+| `FIELD_EQUALS`     | 当指定字段值等于期望值时验证               |
+| `FIELD_NOT_EQUALS` | 当指定字段值不等于期望值时验证             |
+| `FIELD_GT`         | 当指定字段值大于期望值时验证               |
+| `FIELD_GT_EQ`      | 当指定字段值大于或等于期望值时验证         |
+| `FIELD_LT`         | 当指定字段值小于期望值时验证               |
+| `FIELD_LT_EQ`      | 当指定字段值小于或等于期望值时验证         |
+| `FIELD_NOT_EMPTY`  | 当指定字段值不为空时验证                   |
+| `FIELD_EMPTY`      | 当指定字段值为空时验证                     |
+
+### 条件验证使用示例
+
+```java
+public class OrderDTO {
+
+    @VRequired
+    private String type;
+
+    // 当type为express时，address必填
+    @VRequired(condition = @VCondition(type = VCondition.Type.FIELD_EQUALS, field = "type", expectedValue = "express"))
+    private String address;
+
+    // 当amount大于10000时，approvalCode必填
+    @VRequired(condition = @VCondition(type = VCondition.Type.FIELD_GT, field = "amount", expectedValue = "10000"))
+    private String approvalCode;
+
+    // 当email字段不为空时，验证邮箱格式
+    @VEmail(condition = @VCondition(type = VCondition.Type.FIELD_NOT_EMPTY, field = "email"))
+    private String email;
+
+    // 当phone为空时，backupPhone必填
+    @VRequired(condition = @VCondition(type = VCondition.Type.FIELD_EMPTY, field = "phone"))
+    private String backupPhone;
+
+    private String amount;
+
+    private String phone;
+
+    //
+    // 此处省略了Get/Set方法
+    //
+}
+```
+
+### 分组与条件组合使用
+
+分组和条件可以组合使用，同时满足分组匹配和条件成立时才执行验证：
+
+```java
+public class CombinedDTO {
+
+    // Create分组下必填，且当name不为空时验证长度
+    @VRequired(groups = Create.class)
+    @VLength(min = 6, max = 20, groups = {Create.class, Update.class},
+             condition = @VCondition(type = VCondition.Type.FIELD_NOT_EMPTY, field = "name"))
+    private String password;
+
+    @VRequired(groups = Update.class)
+    private String id;
+
+    private String name;
+
+    //
+    // 此处省略了Get/Set方法
+    //
+}
+```
+
+
+
 ## 默认验证器及参数说明
+
+> @since 2.1.4
+
+所有验证器注解均支持以下通用参数：
+
+| 配置项    | 描述                                                         |
+| --------- | ------------------------------------------------------------ |
+| groups    | 验证分组，默认为 `DefaultGroup`<br/>支持指定多个分组，如：`groups = {Create.class, Update.class}`<br/>当验证时指定的分组与注解声明的分组有交集时才执行验证 |
+| condition | 验证条件，默认为空（即始终验证）<br/>通过 `@VCondition` 注解声明条件，当条件满足时才执行验证 |
 
 
 

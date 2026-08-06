@@ -16,10 +16,8 @@
 package net.ymate.platform.validation;
 
 import net.ymate.platform.commons.util.ClassUtils;
-import net.ymate.platform.validation.annotation.VField;
-import net.ymate.platform.validation.annotation.VModel;
-import net.ymate.platform.validation.annotation.VMsg;
-import net.ymate.platform.validation.annotation.Validation;
+import net.ymate.platform.validation.annotation.*;
+import net.ymate.platform.validation.validate.DefaultGroup;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -294,6 +292,20 @@ public final class ValidationMeta implements Serializable {
 
         private Annotation[] annotations;
 
+        /**
+         * 验证注解对应的分组映射
+         *
+         * @since 2.1.4
+         */
+        private Map<Annotation, Class<?>[]> annotationGroups;
+
+        /**
+         * 验证注解对应的条件映射
+         *
+         * @since 2.1.4
+         */
+        private Map<Annotation, VCondition> annotationConditions;
+
         public String getName() {
             return name;
         }
@@ -356,6 +368,87 @@ public final class ValidationMeta implements Serializable {
 
         public void setAnnotations(Annotation[] annotations) {
             this.annotations = annotations;
+            // 预提取每个验证注解的groups和condition属性
+            if (annotations != null && annotations.length > 0) {
+                Map<Annotation, Class<?>[]> groupsMap = new LinkedHashMap<>();
+                Map<Annotation, VCondition> conditionMap = new LinkedHashMap<>();
+                for (Annotation ann : annotations) {
+                    groupsMap.put(ann, getAnnotationGroups(ann));
+                    VCondition condition = getAnnotationCondition(ann);
+                    if (condition != null) {
+                        conditionMap.put(ann, condition);
+                    }
+                }
+                this.annotationGroups = groupsMap;
+                this.annotationConditions = conditionMap.isEmpty() ? null : conditionMap;
+            }
+        }
+
+        /**
+         * 获取验证注解对应的分组
+         *
+         * @param annotation 验证注解
+         * @return 分组数组，若注解未定义groups属性则返回null（视为Default分组）
+         * @since 2.1.4
+         */
+        public Class<?>[] getAnnotationGroups(Annotation annotation) {
+            if (annotationGroups != null && annotationGroups.containsKey(annotation)) {
+                return annotationGroups.get(annotation);
+            }
+            return doGetAnnotationGroups(annotation);
+        }
+
+        /**
+         * 获取验证注解对应的条件
+         *
+         * @param annotation 验证注解
+         * @return 条件注解，若注解未定义condition属性则返回null（表示无条件限制）
+         * @since 2.1.4
+         */
+        public VCondition getAnnotationCondition(Annotation annotation) {
+            if (annotationConditions != null && annotationConditions.containsKey(annotation)) {
+                return annotationConditions.get(annotation);
+            }
+            return doGetAnnotationCondition(annotation);
+        }
+
+        /**
+         * 通过反射安全获取验证注解上的groups属性
+         *
+         * @param annotation 验证注解
+         * @return 分组数组，若注解未定义groups方法则返回null
+         * @since 2.1.4
+         */
+        private static Class<?>[] doGetAnnotationGroups(Annotation annotation) {
+            try {
+                Method method = annotation.annotationType().getMethod("groups");
+                Class<?>[] groups = (Class<?>[]) method.invoke(annotation);
+                return ArrayUtils.isEmpty(groups) ? new Class<?>[]{DefaultGroup.class} : groups;
+            } catch (NoSuchMethodException e) {
+                // 注解未定义groups属性，返回DefaultGroup分组
+                return new Class<?>[]{DefaultGroup.class};
+            } catch (Exception e) {
+                return new Class<?>[]{DefaultGroup.class};
+            }
+        }
+
+        /**
+         * 通过反射安全获取验证注解上的condition属性
+         *
+         * @param annotation 验证注解
+         * @return 条件注解，若注解未定义condition方法则返回null
+         * @since 2.1.4
+         */
+        private static VCondition doGetAnnotationCondition(Annotation annotation) {
+            try {
+                Method method = annotation.annotationType().getMethod("condition");
+                return (VCondition) method.invoke(annotation);
+            } catch (NoSuchMethodException e) {
+                // 注解未定义condition属性，返回null表示无条件
+                return null;
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 }

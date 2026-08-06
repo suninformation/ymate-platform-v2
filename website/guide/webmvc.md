@@ -322,7 +322,7 @@ ymp.params.webmvc.error_with_status_code=
 # 验证结果消息模板, 默认值: ${items}
 ymp.params.webmvc.validation_template_element=
 
-# 验证结果消息项模板, 默认值: ${message}<br/>
+# 验证结果消息项模板, 默认值: ${message}<br>
 ymp.params.webmvc.validation_template_item=
 
 # 允许访问和重定向的主机名称, 多个主机名称用'|'分隔, 默认值: 空(表示不限制)
@@ -1452,6 +1452,15 @@ WebMVC 模块已集成验证模块，控制器方法可以直接使用验证注�
 
 WebMVC 模块提供了以下验证器，用于 Web 开发过程中涉及的一些场景：
 
+所有 WebMVC 验证器注解均支持以下通用参数：
+
+> @since 2.1.4
+
+| 配置项    | 描述                                                         |
+| --------- | ------------------------------------------------------------ |
+| groups    | 验证分组，默认为 `DefaultGroup`<br/>支持指定多个分组，如：`groups = {Create.class, Update.class}`<br/>当验证时指定的分组与注解声明的分组有交集时才执行验证 |
+| condition | 验证条件，默认为空（即始终验证）<br/>通过 `@VCondition` 注解声明条件，当条件满足时才执行验证 |
+
 ### @VUploadFile
 
 用于对已上传的文件大小和类型等进行验证。
@@ -1491,6 +1500,84 @@ WebMVC 模块提供了以下验证器，用于 Web 开发过程中涉及的一�
 | name   | 令牌名称                      |
 | reset  | 是否重置令牌，默认值：`false` |
 | msg    | 自定义验证消息                |
+
+
+
+### 验证分组与条件
+
+> @since 2.1.4
+
+WebMVC 验证器注解支持分组和条件验证，允许在不同场景下应用不同的验证规则。
+
+WebMVC 验证器注解支持通过 `groups` 参数指定验证分组，通过 `condition` 参数指定验证条件，以及通过 `@ValidateGroups` 注解在控制器类或方法上声明当前验证使用的分组。
+
+#### 在控制器方法上使用验证分组
+
+```java
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    /**
+     * 创建用户 - 仅Create分组下验证hostName
+     */
+    @RequestMapping("/create")
+    public IView create(@VHostName(groups = Create.class) @RequestParam String hostName) {
+        return View.textView("OK");
+    }
+
+    /**
+     * 更新用户 - 仅Update分组下验证hostName
+     */
+    @RequestMapping("/update")
+    public IView update(@VHostName(groups = Update.class) @RequestParam String hostName) {
+        return View.textView("OK");
+    }
+}
+```
+
+#### 使用@ValidateGroups声明方法级分组
+
+通过 `@ValidateGroups` 注解在控制器方法上声明验证分组，验证框架将自动读取该注解声明的分组：
+
+```java
+@Controller
+@RequestMapping("/user")
+public class UserController {
+
+    @RequestMapping("/create")
+    @ValidateGroups(Create.class)
+    public IView create(@VHostName(groups = Create.class) @RequestParam String hostName) {
+        return View.textView("OK");
+    }
+
+    @RequestMapping("/update")
+    @ValidateGroups(Update.class)
+    public IView update(@VHostName(groups = Update.class) @RequestParam String hostName) {
+        return View.textView("OK");
+    }
+}
+```
+
+#### 使用验证条件
+
+通过 `condition` 参数声明验证条件，当条件满足时才执行验证：
+
+```java
+@Controller
+@RequestMapping("/order")
+public class OrderController {
+
+    @RequestMapping("/submit")
+    public IView submit(
+            @RequestParam String type,
+            @RequestParam @VHostName(condition = @VCondition(type = VCondition.Type.FIELD_EQUALS, field = "type", expectedValue = "url")) String hostName) {
+        return View.textView("OK");
+    }
+}
+```
+
+更多关于验证分组、条件验证和 `@ValidateGroups` 注解的详细说明，请参阅[验证模块文档](validation)。
 
 
 

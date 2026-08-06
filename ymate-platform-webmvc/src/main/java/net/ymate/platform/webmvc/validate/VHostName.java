@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.webmvc.validate;
 
+import net.ymate.platform.validation.annotation.VCondition;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
@@ -27,6 +29,18 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface VHostName {
+
+    /**
+     * @return 验证分组，默认为Default分组
+     * @since 2.1.4
+     */
+    Class<?>[] groups() default {};
+
+    /**
+     * @return 条件验证配置
+     * @since 2.1.4
+     */
+    VCondition condition() default @VCondition;
 
     /**
      * @return 自定义验证消息

@@ -75,4 +75,27 @@ public interface IValidation extends IInitialization<IApplication>, IDestroyable
      * @return 返回验证结果映射
      */
     Map<String, ValidateResult> validate(Class<?> targetClass, Method targetMethod, Map<String, Object> paramValues);
+
+    /**
+     * 执行类成员参数验证（带分组）
+     *
+     * @param targetClass 目标类型
+     * @param paramValues 参数集合
+     * @param groups      验证分组
+     * @return 返回验证结果映射
+     * @since 2.1.4
+     */
+    Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues, Class<?>... groups);
+
+    /**
+     * 执行类方法参数验证（带分组）
+     *
+     * @param targetClass  目标类型
+     * @param targetMethod 目标方法
+     * @param paramValues  参数集合
+     * @param groups       验证分组
+     * @return 返回验证结果映射
+     * @since 2.1.4
+     */
+    Map<String, ValidateResult> validate(Class<?> targetClass, Method targetMethod, Map<String, Object> paramValues, Class<?>... groups);
 }
