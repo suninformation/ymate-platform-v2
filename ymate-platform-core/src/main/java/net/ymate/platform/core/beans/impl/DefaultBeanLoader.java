@@ -84,7 +84,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
         }
     }
 
-    private List<Class<?>> doLoad(String packageName, IBeanFilter filter) throws Exception {
+    protected List<Class<?>> doLoad(String packageName, IBeanFilter filter) throws Exception {
         List<Class<?>> returnValue = new ArrayList<>();
         Enumeration<URL> resources = this.getClassLoader().getResources(packageName.replaceAll("\\.", "/"));
         while (resources.hasMoreElements()) {
@@ -105,7 +105,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
         return returnValue;
     }
 
-    private List<Class<?>> findClassByClazz(String packageName, File resourceFile, IBeanFilter filter) throws Exception {
+    protected List<Class<?>> findClassByClazz(String packageName, File resourceFile, IBeanFilter filter) throws Exception {
         List<Class<?>> returnValue = new ArrayList<>();
         String resourceFileName = resourceFile.getName();
         if (resourceFile.isFile()) {
@@ -125,7 +125,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
         return returnValue;
     }
 
-    private boolean checkNonExcludedFile(String targetFileName) {
+    protected boolean checkNonExcludedFile(String targetFileName) {
         Set<String> excludedFiles = getExcludedFiles();
         if (!excludedFiles.isEmpty() && StringUtils.isNotBlank(targetFileName)) {
             if (excludedFiles.contains(targetFileName)) {
@@ -141,14 +141,14 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
         return true;
     }
 
-    private List<Class<?>> findClassByJar(String packageName, JarFile jarFile, IBeanFilter filter) throws Exception {
+    protected List<Class<?>> findClassByJar(String packageName, JarFile jarFile, IBeanFilter filter) throws Exception {
         List<Class<?>> returnValue = new ArrayList<>();
         if (checkNonExcludedFile(new File(jarFile.getName()).getName())) {
             Enumeration<JarEntry> entryEnumeration = jarFile.entries();
             while (entryEnumeration.hasMoreElements()) {
                 JarEntry jarEntry = entryEnumeration.nextElement();
                 // 替换文件名中所有的 '/' 为 '.'，并且只存放.class结尾的类名称，剔除所有包含'$'的内部类名称
-                String className = jarEntry.getName().replaceAll("/", FileUtils.POINT_CHAR);
+                String className = jarEntry.getName().replace("/", FileUtils.POINT_CHAR);
                 if (className.endsWith(FileUtils.FILE_SUFFIX_CLASS) && className.indexOf('$') < 0) {
                     if (className.startsWith(packageName)) {
                         className = className.substring(0, className.lastIndexOf('.'));
@@ -160,7 +160,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
         return returnValue;
     }
 
-    private List<Class<?>> findClassByZip(URL zipUrl, IBeanFilter filter) throws Exception {
+    protected List<Class<?>> findClassByZip(URL zipUrl, IBeanFilter filter) throws Exception {
         List<Class<?>> returnValue = new ArrayList<>();
         ZipInputStream zipInputStream = null;
         try {
@@ -197,7 +197,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
         return returnValue;
     }
 
-    private Class<?> loadClass(String className) {
+    protected Class<?> loadClass(String className) {
         Class<?> clazz = null;
         try {
             try {
@@ -213,7 +213,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
         return clazz;
     }
 
-    private void addClass(List<Class<?>> collection, Class<?> targetClass, IBeanFilter filter) {
+    protected void addClass(List<Class<?>> collection, Class<?> targetClass, IBeanFilter filter) {
         if (targetClass != null) {
             if (filter != null) {
                 if (filter.filter(targetClass)) {
