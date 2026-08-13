@@ -151,6 +151,17 @@ public final class SQL {
      * @since 2.1.4
      */
     private IDatabaseSession doSetVariablesIfNeed(IDatabaseSession session) throws Exception {
+        SQL variablesSql = doBuildVariablesSqlIfExists();
+        if (variablesSql != null) {
+            session.executeForUpdate(variablesSql);
+        }
+        return session;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    private SQL doBuildVariablesSqlIfExists() {
         Fields varFields = Fields.create();
         Params varParams = Params.create();
         variables.forEach((key, value) -> {
@@ -167,9 +178,23 @@ public final class SQL {
             }
         });
         if (!varFields.isEmpty()) {
-            session.executeForUpdate(SQL.create("SET " + StringUtils.join(varFields.fields(), ", ")).param(varParams));
+            return SQL.create("SET " + StringUtils.join(varFields.fields(), ", ")).param(varParams);
         }
-        return session;
+        return null;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public String toString(boolean withVariables) {
+        StringBuilder sqlBuilder = new StringBuilder();
+        if (withVariables) {
+            SQL variablesSql = doBuildVariablesSqlIfExists();
+            if (variablesSql != null) {
+                sqlBuilder.append(variablesSql).append(";\n");
+            }
+        }
+        return sqlBuilder.append(sql).toString();
     }
 
     @Override
