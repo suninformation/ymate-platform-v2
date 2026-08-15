@@ -66,8 +66,8 @@ public final class DefaultLogConfigurable extends DefaultModuleConfigurable {
             return this;
         }
 
-        public Builder loggerClass(String loggerClass) {
-            configurable.addConfig(ILogConfig.LOGGER_CLASS, loggerClass);
+        public Builder loggerFactoryClass(String loggerFactoryClass) {
+            configurable.addConfig(ILogConfig.LOGGER_FACTORY_CLASS, loggerFactoryClass);
             return this;
         }
 

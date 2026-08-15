@@ -119,11 +119,6 @@ public abstract class AbstractLogAdapter extends AbstractLogger {
     }
 
     @Override
-    public ILogger getLogger(String loggerName, ILogConfig config) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public String getLoggerName() {
         return loggerName;
     }

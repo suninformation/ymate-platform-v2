@@ -39,8 +39,8 @@ ymp.configs.log.output_dir=${user.dir}/logs/
 # 日志记录器默认名称, 默认值: default
 ymp.configs.log.logger_name=
 
-# 日志记录器接口实现类, 默认值: net.ymate.platform.log.impl.DefaultLogger
-ymp.configs.log.logger_class=
+# 日志记录器工厂接口实现类, 默认值: net.ymate.platform.log.impl.DefaultLoggerFactory
+ymp.configs.log.logger_factory_class=
 
 # 日志格式模板, 默认值: "${dateTime} ${level} [${hostName}] [${threadName}] [${threadId}:${callerInfo}] ${logContent}"
 ymp.configs.log.log_format=
@@ -70,17 +70,17 @@ ymp.configs.log.format_padded_output=true
 
 #### @LogConf
 
-| 配置项                | 描述                 |
-| --------------------- | -------------------- |
-| configFile            | 日志记录器配置文件   |
-| outputDir             | 日志文件输出路径     |
-| defaultLoggerName     | 默认日志记录器名称   |
-| logFormat             | 日志格式模板         |
-| printStackCount       | 打印堆栈数量         |
-| allowConsoleOutput    | 否允许控制台输出     |
-| formatPaddedOutput    | 否采用简化包名输出   |
-| simplifiedPackageName | 否采用格式化填充输出 |
-| loggerClass           | 日志记录器接口实现类 |
+| 配置项                | 描述                     |
+|-----------------------|--------------------------|
+| configFile            | 日志记录器配置文件       |
+| outputDir             | 日志文件输出路径         |
+| defaultLoggerName     | 默认日志记录器名称       |
+| logFormat             | 日志格式模板             |
+| printStackCount       | 打印堆栈数量             |
+| allowConsoleOutput    | 否允许控制台输出         |
+| formatPaddedOutput    | 否采用简化包名输出       |
+| simplifiedPackageName | 否采用格式化填充输出     |
+| loggerFactoryClass    | 日志记录器工厂接口实现类 |
 
 
 

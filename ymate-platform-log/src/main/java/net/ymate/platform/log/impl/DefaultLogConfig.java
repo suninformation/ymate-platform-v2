@@ -22,7 +22,7 @@ import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.log.ILog;
 import net.ymate.platform.log.ILogConfig;
-import net.ymate.platform.log.ILogger;
+import net.ymate.platform.log.ILoggerFactory;
 import net.ymate.platform.log.annotation.LogConf;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -51,7 +51,7 @@ public final class DefaultLogConfig implements ILogConfig {
 
     private String logFormat;
 
-    private Class<? extends ILogger> loggerClass;
+    private Class<? extends ILoggerFactory> loggerFactoryClass;
 
     private boolean allowConsoleOutput;
 
@@ -89,18 +89,18 @@ public final class DefaultLogConfig implements ILogConfig {
         configFile = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(CONFIG_FILE, StringUtils.defaultIfBlank(confAnn == null ? null : confAnn.configFile(), DEFAULT_CONFIG_FILE))));
         outputDir = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(OUTPUT_DIR, StringUtils.defaultIfBlank(confAnn == null ? null : confAnn.outputDir(), DEFAULT_OUTPUT_DIR))));
         //
-        String loggerClassName = configReader.getString(LOGGER_CLASS);
-        if (StringUtils.isNotBlank(loggerClassName)) {
+        String loggerFactoryClassName = configReader.getString(LOGGER_FACTORY_CLASS);
+        if (StringUtils.isNotBlank(loggerFactoryClassName)) {
             try {
-                loggerClass = (Class<? extends ILogger>) ClassUtils.loadClass(loggerClassName, this.getClass());
+                loggerFactoryClass = (Class<? extends ILoggerFactory>) ClassUtils.loadClass(loggerFactoryClassName, this.getClass());
             } catch (ClassNotFoundException e) {
                 if (LOG.isWarnEnabled()) {
                     LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
         }
-        if (loggerClass == null && confAnn != null && !confAnn.loggerClass().equals(ILogger.class)) {
-            loggerClass = confAnn.loggerClass();
+        if (loggerFactoryClass == null && confAnn != null && !confAnn.loggerFactoryClass().equals(ILoggerFactory.class)) {
+            loggerFactoryClass = confAnn.loggerFactoryClass();
         }
         //
         defaultLoggerName = configReader.getString(LOGGER_NAME, confAnn == null ? null : confAnn.defaultLoggerName());
@@ -148,10 +148,10 @@ public final class DefaultLogConfig implements ILogConfig {
                 defaultLoggerName = DEFAULT_STR;
             }
             //
-            if (this.loggerClass == null) {
-                this.loggerClass = ClassUtils.getExtensionLoader(ILogger.class).getExtensionClass();
-                if (this.loggerClass == null) {
-                    this.loggerClass = DefaultLogger.class;
+            if (this.loggerFactoryClass == null) {
+                this.loggerFactoryClass = ClassUtils.getExtensionLoader(ILoggerFactory.class).getExtensionClass();
+                if (this.loggerFactoryClass == null) {
+                    this.loggerFactoryClass = DefaultLoggerFactory.class;
                 }
             }
             //
@@ -220,13 +220,13 @@ public final class DefaultLogConfig implements ILogConfig {
     }
 
     @Override
-    public Class<? extends ILogger> getLoggerClass() {
-        return loggerClass;
+    public Class<? extends ILoggerFactory> getLoggerFactoryClass() {
+        return loggerFactoryClass;
     }
 
-    public void setLoggerClass(Class<? extends ILogger> loggerClass) {
+    public void setLoggerFactoryClass(Class<? extends ILoggerFactory> loggerFactoryClass) {
         if (!initialized) {
-            this.loggerClass = loggerClass;
+            this.loggerFactoryClass = loggerFactoryClass;
         }
     }
 
@@ -297,8 +297,8 @@ public final class DefaultLogConfig implements ILogConfig {
             return this;
         }
 
-        public Builder loggerClass(Class<? extends ILogger> loggerClass) {
-            config.setLoggerClass(loggerClass);
+        public Builder loggerFactoryClass(Class<? extends ILoggerFactory> loggerFactoryClass) {
+            config.setLoggerFactoryClass(loggerFactoryClass);
             return this;
         }
 

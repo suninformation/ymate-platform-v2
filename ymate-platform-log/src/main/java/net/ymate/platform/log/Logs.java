@@ -78,6 +78,8 @@ public final class Logs implements ILog {
 
     private ILogConfig config;
 
+    private ILoggerFactory loggerFactory;
+
     private boolean initialized;
 
     private ILogger logger;
@@ -103,12 +105,15 @@ public final class Logs implements ILog {
             //
             System.setProperty(LOG_OUT_DIR, config.getOutputDir().getPath());
             //
-            logger = ReentrantLockHelper.putIfAbsentAsync(LOGGER_CACHE, config.getDefaultLoggerName(), () -> ClassUtils.impl(config.getLoggerClass(), ILogger.class).initialize(config.getDefaultLoggerName(), config));
+            loggerFactory = ClassUtils.impl(config.getLoggerFactoryClass(), ILoggerFactory.class);
+            loggerFactory.initialize(config);
+            //
+            logger = ReentrantLockHelper.putIfAbsentAsync(LOGGER_CACHE, config.getDefaultLoggerName(), () -> loggerFactory.getLogger(config.getDefaultLoggerName()));
             //
             if (LOG.isInfoEnabled()) {
                 LOG.info(String.format("-- LOG_CONFIG_FILE: %s", config.getConfigFile().getPath()));
                 LOG.info(String.format("-- LOG_OUTPUT_DIR: %s", config.getOutputDir().getPath()));
-                LOG.info(String.format("-- LOGGER_CLASS: %s", config.getLoggerClass().getName()));
+                LOG.info(String.format("-- LOGGER_FACTORY_CLASS: %s", config.getLoggerFactoryClass().getName()));
                 LOG.info(String.format("-- DEFAULT_LOG_NAME: %s", config.getDefaultLoggerName()));
                 LOG.info(String.format("-- ALLOW_CONSOLE_OUTPUT: %s", config.isAllowConsoleOutput()));
                 LOG.info(String.format("-- FORMAT_PADDED_OUTPUT: %s", config.isFormatPaddedOutput()));
@@ -131,6 +136,10 @@ public final class Logs implements ILog {
             initialized = false;
             //
             LOGGER_CACHE.values().forEach(ILogger::destroy);
+            LOGGER_CACHE.clear();
+            //
+            loggerFactory.destroy();
+            loggerFactory = null;
             //
             logger = null;
             config = null;
@@ -149,7 +158,7 @@ public final class Logs implements ILog {
 
     @Override
     public synchronized ILogger getLogger(String loggerName) throws Exception {
-        return ReentrantLockHelper.putIfAbsentAsync(LOGGER_CACHE, loggerName, () -> getLogger().getLogger(loggerName, config));
+        return ReentrantLockHelper.putIfAbsentAsync(LOGGER_CACHE, loggerName, () -> loggerFactory.getLogger(loggerName));
     }
 
     @Override

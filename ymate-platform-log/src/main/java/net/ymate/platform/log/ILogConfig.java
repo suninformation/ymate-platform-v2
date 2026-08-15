@@ -40,7 +40,7 @@ public interface ILogConfig extends IInitialization<ILog> {
 
     String LOGGER_NAME = "logger_name";
 
-    String LOGGER_CLASS = "logger_class";
+    String LOGGER_FACTORY_CLASS = "logger_factory_class";
 
     String LOG_FORMAT = "log_format";
 
@@ -88,11 +88,12 @@ public interface ILogConfig extends IInitialization<ILog> {
     String getLogFormat();
 
     /**
-     * 获取ILogger接口实现类类型
+     * 获取ILoggerFactory接口实现类类型
      *
-     * @return 返回ILogger接口实现类类型
+     * @return 返回ILoggerFactory接口实现类类型
+     * @since 2.1.4
      */
-    Class<? extends ILogger> getLoggerClass();
+    Class<? extends ILoggerFactory> getLoggerFactoryClass();
 
     /**
      * 否允许控制台输出

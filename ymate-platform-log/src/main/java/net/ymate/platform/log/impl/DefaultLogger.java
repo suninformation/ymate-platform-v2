@@ -19,12 +19,6 @@ import net.ymate.platform.log.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.*;
-import org.apache.logging.log4j.core.config.xml.XmlConfigurationFactory;
-
-import java.io.InputStream;
-import java.nio.file.Files;
 
 /**
  * 默认日志记录器（基于Log4J2实现）
@@ -32,8 +26,6 @@ import java.nio.file.Files;
  * @author 刘镇 (suninformation@163.com) on 2012-12-21 上午10:51:15
  */
 public class DefaultLogger extends AbstractLogger {
-
-    private static volatile boolean loggerInitialized;
 
     private Logger logger;
 
@@ -104,26 +96,6 @@ public class DefaultLogger extends AbstractLogger {
             this.loggerName = loggerName;
             this.config = config;
             //
-            synchronized (DefaultLogger.class) {
-                if (!loggerInitialized) {
-                    try (InputStream inputStream = Files.newInputStream(config.getConfigFile().toPath())) {
-                        ConfigurationSource source = new ConfigurationSource(inputStream);
-                        LoggerContext loggerContext = Configurator.initialize(null, source);
-                        ConfigurationFactory.setConfigurationFactory(new XmlConfigurationFactory() {
-
-                            private final Configuration config = new DefaultConfiguration();
-
-                            @Override
-                            public Configuration getConfiguration(final LoggerContext loggerContext, final ConfigurationSource source) {
-                                return config;
-                            }
-                        });
-                        ConfigurationFactory.getInstance().getConfiguration(loggerContext, source);
-                        //
-                        loggerInitialized = true;
-                    }
-                }
-            }
             logger = LogManager.getLogger(StringUtils.defaultIfBlank(loggerName, config.getDefaultLoggerName()));
             initialized = true;
         }
@@ -133,11 +105,6 @@ public class DefaultLogger extends AbstractLogger {
     @Override
     public boolean isInitialized() {
         return initialized;
-    }
-
-    @Override
-    public ILogger getLogger(String loggerName, ILogConfig config) throws Exception {
-        return new DefaultLogger().initialize(loggerName, config);
     }
 
     @Override

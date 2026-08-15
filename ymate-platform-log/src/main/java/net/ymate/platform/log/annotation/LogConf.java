@@ -16,6 +16,7 @@
 package net.ymate.platform.log.annotation;
 
 import net.ymate.platform.log.ILogger;
+import net.ymate.platform.log.ILoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
@@ -71,6 +72,14 @@ public @interface LogConf {
 
     /**
      * @return 日志记录器接口实现类
+     * @deprecated 该配置项从2.1.4开始作废，请改用 {@link #loggerFactoryClass()} 指定 {@link ILoggerFactory} 接口的实现类
      */
+    @Deprecated
     Class<? extends ILogger> loggerClass() default ILogger.class;
+
+    /**
+     * @return 日志记录器工厂接口实现类
+     * @since 2.1.4
+     */
+    Class<? extends ILoggerFactory> loggerFactoryClass() default ILoggerFactory.class;
 }

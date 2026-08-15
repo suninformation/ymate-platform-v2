@@ -43,16 +43,6 @@ public interface ILogger {
     boolean isInitialized();
 
     /**
-     * 获取指定名称的日志记录器对象
-     *
-     * @param loggerName 日志记录器名称
-     * @param config     日志配置
-     * @return 返回日志记录器对象
-     * @throws Exception 获取日志记录器时可能产生异常
-     */
-    ILogger getLogger(String loggerName, ILogConfig config) throws Exception;
-
-    /**
      * 获取日志记录器名称
      *
      * @return 返回名称字符串
