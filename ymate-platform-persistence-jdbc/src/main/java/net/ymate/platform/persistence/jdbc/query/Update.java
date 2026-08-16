@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.LambdaUtils.SFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
@@ -210,12 +211,11 @@ public class Update extends Query<Update> {
      */
     private String doParseField(String field, boolean wrapIdentifier) {
         if (field != null && field.contains("=")) {
-            String[] fieldParts = StringUtils.split(field, '=');
-            if (fieldParts.length == 2) {
-                return (wrapIdentifier ? wrapIdentifierField(fieldParts[0]) : fieldParts[0]) + " = " + fieldParts[1];
-            }
+            String fieldPartOne = StringUtils.substringBefore(field, "=");
+            String fieldPartTwo = StringUtils.substringAfter(field, "=");
+            return String.format("%s = %s", wrapIdentifier ? wrapIdentifierField(fieldPartOne) : fieldPartOne, fieldPartTwo);
         }
-        return (wrapIdentifier ? wrapIdentifierField(field) : field) + " = ?";
+        return String.format("%s = ?", wrapIdentifier ? wrapIdentifierField(field) : field);
     }
 
     public Fields fields() {
@@ -237,6 +237,36 @@ public class Update extends Query<Update> {
 
     public Update field(String prefix, String field, boolean wrapIdentifier) {
         this.fields.add(prefix, doParseField(field, wrapIdentifier));
+        return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update field(String field, IFunction function) {
+        return field(null, field, function, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update field(String field, IFunction function, boolean wrapIdentifier) {
+        return field(null, field, function, wrapIdentifier);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update field(String prefix, String field, IFunction function) {
+        return field(prefix, field, function, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update field(String prefix, String field, IFunction function, boolean wrapIdentifier) {
+        this.fields.add(prefix, doParseField(String.format("%s=%s", field, function.build()), wrapIdentifier));
+        this.param(function.params());
         return this;
     }
 
@@ -344,6 +374,34 @@ public class Update extends Query<Update> {
      */
     public <T, R> Update field(String prefix, SFunction<T, R> column, Object value) {
         return field(prefix, column).param(value);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public <T, R> Update field(SFunction<T, R> column, IFunction function) {
+        return field(null, getColumnName(column), function, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public <T, R> Update field(SFunction<T, R> column, IFunction function, boolean wrapIdentifier) {
+        return field(null, getColumnName(column), function, wrapIdentifier);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public <T, R> Update field(String prefix, SFunction<T, R> column, IFunction function) {
+        return field(prefix, getColumnName(column), function, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public <T, R> Update field(String prefix, SFunction<T, R> column, IFunction function, boolean wrapIdentifier) {
+        return field(prefix, getColumnName(column), function, wrapIdentifier);
     }
 
     /**
