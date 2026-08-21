@@ -303,6 +303,52 @@ public class FileUtils {
     }
 
     /**
+     * 遍历JAR/ZIP压缩包中指定前缀路径下的文件条目，并通过回调接口处理每个条目
+     *
+     * @param file       JAR或ZIP文件对象
+     * @param prefixPath 前缀路径
+     * @param handler    压缩包文件条目处理回调
+     * @return 是否有文件被处理
+     * @throws IOException 可能产生的异常
+     * @since 2.1.4
+     */
+    public static boolean readJarEntries(File file, String prefixPath, IJarEntryHandler handler) throws IOException {
+        if (file == null || !file.isFile() || !file.exists()) {
+            return false;
+        }
+        try (JarFile jarFile = new JarFile(file)) {
+            return readJarEntries(jarFile, prefixPath, handler);
+        }
+    }
+
+    /**
+     * 遍历JAR/ZIP压缩包中指定前缀路径下的文件条目，并通过回调接口处理每个条目
+     *
+     * @param jarFile    JAR或ZIP文件对象
+     * @param prefixPath 前缀路径
+     * @param handler    压缩包文件条目处理回调
+     * @return 是否有文件被处理
+     * @throws IOException 可能产生的异常
+     * @since 2.1.4
+     */
+    public static boolean readJarEntries(JarFile jarFile, String prefixPath, IJarEntryHandler handler) throws IOException {
+        boolean result = false;
+        Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            if (Strings.CS.startsWith(entry.getName(), prefixPath) && !entry.isDirectory()) {
+                try (InputStream inputStream = jarFile.getInputStream(entry)) {
+                    if (!handler.handle(entry, inputStream)) {
+                        break;
+                    }
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * 从JAR包中提取/META-INF/{prefixPath}目录下的资源文件并复制到{targetFile}指定的目录中
      *
      * @param prefixPath 资源文件目录名称
@@ -334,40 +380,93 @@ public class FileUtils {
             throw new IllegalArgumentException(String.format("Unpack target file [%s] must be directory and absolute path.", targetFile != null ? targetFile.getPath() : StringUtils.EMPTY));
         }
         boolean result = false;
-        prefixPath = "META-INF/" + prefixPath;
-        URL url = callingClass.getResource("/" + prefixPath);
+        String finalprefixPath = "META-INF/" + prefixPath;
+        URL url = callingClass.getResource("/" + finalprefixPath);
         if (url != null) {
             URLConnection connection = url.openConnection();
             try {
                 if (connection instanceof JarURLConnection) {
                     try (JarFile jarFile = ((JarURLConnection) connection).getJarFile()) {
-                        Enumeration<JarEntry> entriesEnum = jarFile.entries();
-                        while (entriesEnum.hasMoreElements()) {
-                            JarEntry entry = entriesEnum.nextElement();
-                            if (Strings.CS.startsWith(entry.getName(), prefixPath)) {
-                                if (!entry.isDirectory()) {
-                                    String entryName = StringUtils.substringAfter(entry.getName(), prefixPath);
-                                    File distFile = new File(targetFile, entryName);
-                                    File distFileParent = distFile.getParentFile();
-                                    if (!distFileParent.exists() && !distFileParent.mkdirs()) {
-                                        throw new IOException(String.format("Unable to create directory: %s", distFileParent.getPath()));
-                                    }
-                                    if (LOG.isDebugEnabled()) {
-                                        LOG.debug(String.format("Unpacking resource file: %s", entry.getName()));
-                                    }
-                                    try (InputStream inputStream = jarFile.getInputStream(entry);
-                                         OutputStream outputStream = Files.newOutputStream(distFile.toPath())) {
-                                        IOUtils.copyLarge(inputStream, outputStream);
-                                        result = true;
-                                    }
-                                }
+                        result = readJarEntries(jarFile, finalprefixPath, (entry, inputStream) -> {
+                            String entryName = StringUtils.substringAfter(entry.getName(), finalprefixPath);
+                            File distFile = new File(targetFile, entryName);
+                            File distFileParent = distFile.getParentFile();
+                            if (!distFileParent.exists() && !distFileParent.mkdirs()) {
+                                throw new IOException(String.format("Unable to create directory: %s", distFileParent.getPath()));
                             }
-                        }
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug(String.format("Unpacking resource file: %s", entry.getName()));
+                            }
+                            try (OutputStream outputStream = Files.newOutputStream(distFile.toPath())) {
+                                IOUtils.copyLarge(inputStream, outputStream);
+                            }
+                            return true;
+                        });
                     }
                 } else {
                     try {
                         writeDirTo(new File(url.toURI()), targetFile);
                         result = true;
+                    } catch (URISyntaxException e) {
+                        throw new IOException(String.format("Unable to unpack file: %s", url), e);
+                    }
+                }
+            } finally {
+                IOUtils.close(connection);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 从JAR包中读取/META-INF/{prefixPath}目录下的资源文件并通过回调接口处理
+     *
+     * @param prefixPath 资源文件目录名称
+     * @param handler    压缩包文件条目处理回调
+     * @return 是否有文件被处理
+     * @throws IOException 可能生产的任何异常
+     * @since 2.1.4
+     */
+    public static boolean unpackJarFile(String prefixPath, IJarEntryHandler handler) throws IOException {
+        return unpackJarFile(prefixPath, handler, FileUtils.class);
+    }
+
+    /**
+     * 从JAR包中读取/META-INF/{prefixPath}目录下的资源文件并通过回调接口处理
+     *
+     * @param prefixPath   资源文件目录名称
+     * @param handler      压缩包文件条目处理回调
+     * @param callingClass 调用类
+     * @return 是否有文件被处理
+     * @throws IOException 可能生产的任何异常
+     * @since 2.1.4
+     */
+    public static boolean unpackJarFile(String prefixPath, IJarEntryHandler handler, Class<?> callingClass) throws IOException {
+        if (callingClass == null) {
+            throw new NullArgumentException("callingClass");
+        }
+        if (StringUtils.isBlank(prefixPath)) {
+            throw new NullArgumentException("prefixPath");
+        }
+        if (handler == null) {
+            throw new NullArgumentException("handler");
+        }
+        boolean result = false;
+        String finalprefixPath = "META-INF/" + prefixPath;
+        URL url = callingClass.getResource("/" + finalprefixPath);
+        if (url != null) {
+            URLConnection connection = url.openConnection();
+            try {
+                if (connection instanceof JarURLConnection) {
+                    try (JarFile jarFile = ((JarURLConnection) connection).getJarFile()) {
+                        result = readJarEntries(jarFile, finalprefixPath, handler);
+                    }
+                } else {
+                    try {
+                        File dir = new File(url.toURI());
+                        if (dir.isDirectory()) {
+                            result = readJarEntries(dir, finalprefixPath, handler);
+                        }
                     } catch (URISyntaxException e) {
                         throw new IOException(String.format("Unable to unpack file: %s", url), e);
                     }
@@ -528,5 +627,24 @@ public class FileUtils {
             }
         }
         return inputStream;
+    }
+
+    /**
+     * JAR/ZIP压缩包文件条目处理回调接口
+     *
+     * @since 2.1.4
+     */
+    @FunctionalInterface
+    public interface IJarEntryHandler {
+
+        /**
+         * 处理压缩包中的文件条目
+         *
+         * @param entry       压缩包条目
+         * @param inputStream 条目内容输入流
+         * @return 是否继续处理下一个条目，返回false则停止遍历
+         * @throws IOException 可能产生的异常
+         */
+        boolean handle(JarEntry entry, InputStream inputStream) throws IOException;
     }
 }
