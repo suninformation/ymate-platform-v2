@@ -139,7 +139,7 @@ public final class ResultSetHelper {
                 } else {
                     Map<String, Object> map = (Map<String, Object>) this.dataSet.get(0);
                     Iterator<String> itemIt = map.keySet().iterator();
-                    this.columnNames = new String[map.keySet().size()];
+                    this.columnNames = new String[map.size()];
                     int idx = 0;
                     while (itemIt.hasNext()) {
                         this.columnNames[idx] = itemIt.next();
@@ -247,9 +247,16 @@ public final class ResultSetHelper {
 
         private final boolean isArray;
 
+        private final Map<String, Integer> columnIndexMap;
+
         public ItemWrapper(Object item, boolean isArray) {
             this.item = item;
             this.isArray = isArray;
+            this.columnIndexMap = new HashMap<>(columnNames.length * 2);
+            for (int i = 0; i < columnNames.length; i++) {
+                columnIndexMap.put(columnNames[i], i);
+                columnIndexMap.put(columnNames[i].toLowerCase(), i);
+            }
         }
 
         public int getColumnCount() {
@@ -271,25 +278,18 @@ public final class ResultSetHelper {
         @SuppressWarnings("unchecked")
         private Object doGetObject(String columnName) {
             Object returnValue = null;
-            if (this.isArray) {
-                Object[] obj = (Object[]) item;
-                for (int i = 0; i < columnNames.length; i++) {
-                    if (columnNames[i].equalsIgnoreCase(columnName)) {
-                        Object[] object = (Object[]) obj[i];
-                        returnValue = object[1];
-                        break;
-                    }
-                }
-            } else {
-                Map<String, Object> map = (Map<String, Object>) item;
-                returnValue = map.get(columnName);
-                if (returnValue == null) {
-                    for (String column : columnNames) {
-                        if (column.equalsIgnoreCase(columnName)) {
-                            returnValue = map.get(column);
-                            break;
-                        }
-                    }
+            Integer columnIndex = columnIndexMap.get(columnName);
+            if (columnIndex == null) {
+                columnIndex = columnIndexMap.get(columnName.toLowerCase());
+            }
+            if (columnIndex != null) {
+                if (this.isArray) {
+                    Object[] obj = (Object[]) item;
+                    Object[] object = (Object[]) obj[columnIndex];
+                    returnValue = object[1];
+                } else {
+                    Map<String, Object> map = (Map<String, Object>) item;
+                    returnValue = map.get(columnNames[columnIndex]);
                 }
             }
             return returnValue;
@@ -566,7 +566,7 @@ public final class ResultSetHelper {
             if (entityMeta != null) {
                 Object primaryKeyObject = null;
                 if (entityMeta.isMultiplePrimaryKey()) {
-                    primaryKeyObject = entityMeta.getPrimaryKeyClass().newInstance();
+                    primaryKeyObject = entityMeta.getPrimaryKeyClass().getDeclaredConstructor().newInstance();
                     //
                     entityObject.setId((Serializable) primaryKeyObject);
                 }
