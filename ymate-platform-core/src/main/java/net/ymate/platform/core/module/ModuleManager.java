@@ -152,28 +152,40 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
     public void registerModule(Class<? extends IModule> moduleClass) {
         if (moduleClass != null) {
             try {
+                String moduleClassName = moduleClass.getName();
                 IModule moduleInst = null;
-                boolean flag = false;
                 boolean includedFlag = false;
+                //
                 if (includedModules.isEmpty()) {
-                    if (!excludedModules.contains(moduleClass.getName()) && !excludedModules.contains(((moduleInst = moduleClass.newInstance()).getName()))) {
-                        flag = true;
+                    // 无显式包含列表 → 检查排除列表
+                    if (excludedModules.contains(moduleClassName)) {
+                        return;
                     }
-                } else if (includedModules.contains(moduleClass.getName()) || includedModules.contains(((moduleInst = moduleClass.newInstance()).getName()))) {
-                    flag = true;
+                    moduleInst = moduleClass.getDeclaredConstructor().newInstance();
+                    if (excludedModules.contains(moduleInst.getName())) {
+                        return;
+                    }
+                } else {
+                    // 有显式包含列表 → 检查包含列表
+                    if (!includedModules.contains(moduleClassName)) {
+                        moduleInst = moduleClass.getDeclaredConstructor().newInstance();
+                        if (!includedModules.contains(moduleInst.getName())) {
+                            return;
+                        }
+                    }
                     includedFlag = true;
                 }
-                if (flag) {
-                    moduleInst = moduleInst != null ? moduleInst : moduleClass.newInstance();
-                    String moduleClassName = moduleClass.getName();
-                    modules.put(moduleClassName, moduleInst);
-                    if (!moduleOrders.contains(moduleClassName)) {
-                        moduleOrders.add(0, moduleClassName);
-                    }
-                    if (includedFlag) {
-                        includedModules.add(moduleClassName);
-                        includedModules.add(moduleInst.getName());
-                    }
+                //
+                if (moduleInst == null) {
+                    moduleInst = moduleClass.getDeclaredConstructor().newInstance();
+                }
+                modules.put(moduleClassName, moduleInst);
+                if (!moduleOrders.contains(moduleClassName)) {
+                    moduleOrders.add(0, moduleClassName);
+                }
+                if (includedFlag) {
+                    includedModules.add(moduleClassName);
+                    includedModules.add(moduleInst.getName());
                 }
             } catch (Exception e) {
                 throw RuntimeUtils.wrapRuntimeThrow(e, "An exception occurred while registering module [%s].", moduleClass);
