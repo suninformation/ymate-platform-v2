@@ -277,6 +277,9 @@ public class DefaultPluginFactory implements IPluginFactory {
             pluginBeanFactory = null;
             //
             pluginConfig = null;
+            if (pluginClassLoader != null) {
+                pluginClassLoader.close();
+            }
             pluginClassLoader = null;
             beanLoader = null;
         }

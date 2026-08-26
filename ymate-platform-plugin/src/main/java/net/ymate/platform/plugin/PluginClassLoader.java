@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.plugin;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
@@ -45,5 +46,10 @@ public class PluginClassLoader extends URLClassLoader {
 
     public String getPluginHome() {
         return pluginHome;
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
     }
 }
