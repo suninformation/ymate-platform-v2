@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.core.i18n;
 
-import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.support.IDestroyable;
 import org.apache.commons.lang3.ArrayUtils;
@@ -27,7 +26,6 @@ import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 国际化资源管理器
@@ -38,9 +36,7 @@ public final class I18N implements IDestroyable {
 
     private static final Log LOG = LogFactory.getLog(I18N.class);
 
-    private static final Map<Locale, Map<String, Properties>> RESOURCES_CACHES = new ConcurrentHashMap<>();
-
-    private static final ReentrantLockHelper RESOURCES_LOCKS = new ReentrantLockHelper();
+    private final Map<Locale, Map<String, Properties>> resourcesCaches = new ConcurrentHashMap<>();
 
     private Locale defaultLocale;
 
@@ -160,53 +156,19 @@ public final class I18N implements IDestroyable {
      */
     public String load(String resourceName, String key, String defaultValue) {
         Locale local = current();
-        Properties prop = null;
         try {
-            Map<String, Properties> cache = RESOURCES_CACHES.get(local);
-            prop = cache != null ? cache.get(resourceName) : null;
-            if (prop == null && eventHandler != null) {
-                ReentrantLock lock = RESOURCES_LOCKS.getLocker(resourceName);
-                lock.lock();
-                try {
-                    cache = RESOURCES_CACHES.get(local);
-                    prop = cache != null ? cache.get(resourceName) : null;
-                    if (prop == null) {
-                        List<String> resourceNames = getResourceNames(local, resourceName);
-                        for (String resName : resourceNames) {
-                            try (InputStream inputStream = eventHandler.onLoad(resName)) {
-                                if (inputStream != null) {
-                                    prop = new Properties();
-                                    prop.load(inputStream);
-                                    break;
-                                }
-                            }
-                        }
-                        if (prop != null && !prop.isEmpty()) {
-                            if (cache == null) {
-                                cache = ReentrantLockHelper.putIfAbsentAsync(RESOURCES_CACHES, local, () -> new ConcurrentHashMap<>(16));
-                            }
-                            cache.put(resourceName, prop);
-                        }
-                    }
-                } finally {
-                    lock.unlock();
-                }
+            Properties prop = resourcesCaches
+                    .computeIfAbsent(local, k -> new ConcurrentHashMap<>(16))
+                    .computeIfAbsent(resourceName, k -> doLoadResource(k, local));
+            if (prop != null) {
+                return StringUtils.defaultIfBlank(prop.getProperty(key, defaultValue), defaultValue);
             }
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
             }
         }
-        String returnValue = null;
-        if (prop != null) {
-            returnValue = prop.getProperty(key, defaultValue);
-        } else {
-            try {
-                returnValue = ResourceBundle.getBundle(resourceName, local).getString(key);
-            } catch (Exception ignored) {
-            }
-        }
-        return StringUtils.defaultIfBlank(returnValue, defaultValue);
+        return defaultValue;
     }
 
     /**
@@ -241,12 +203,54 @@ public final class I18N implements IDestroyable {
     private List<String> getResourceNames(Locale locale, String resourceName) {
         List<String> names = new ArrayList<>();
         names.add(resourceName + ".properties");
-        String localeKey = locale == null ? StringUtils.EMPTY : locale.toString();
-        if (!localeKey.isEmpty()) {
-            resourceName += ("_" + localeKey) + ".properties";
-            names.add(0, resourceName);
+        if (locale != null) {
+            String localeStr = locale.toString();
+            if (!localeStr.isEmpty()) {
+                names.add(0, resourceName + "_" + localeStr + ".properties");
+                String language = locale.getLanguage();
+                if (!language.equals(localeStr)) {
+                    names.add(1, resourceName + "_" + language + ".properties");
+                }
+            }
         }
         return names;
+    }
+
+    private Properties doLoadResource(String resourceName, Locale local) {
+        List<String> resourceNames = getResourceNames(local, resourceName);
+        for (String resName : resourceNames) {
+            // 优先通过事件处理器加载
+            if (eventHandler != null) {
+                try (InputStream inputStream = eventHandler.onLoad(resName)) {
+                    if (inputStream != null) {
+                        Properties prop = new Properties();
+                        prop.load(inputStream);
+                        if (!prop.isEmpty()) {
+                            return prop;
+                        }
+                    }
+                } catch (Exception e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                    }
+                }
+            }
+            // 回退到 classpath 直接加载
+            try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resName)) {
+                if (inputStream != null) {
+                    Properties prop = new Properties();
+                    prop.load(inputStream);
+                    if (!prop.isEmpty()) {
+                        return prop;
+                    }
+                }
+            } catch (Exception e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -257,6 +261,7 @@ public final class I18N implements IDestroyable {
         if (initialized) {
             initialized = false;
             //
+            resourcesCaches.clear();
             defaultLocale = null;
             eventHandler = null;
         }
