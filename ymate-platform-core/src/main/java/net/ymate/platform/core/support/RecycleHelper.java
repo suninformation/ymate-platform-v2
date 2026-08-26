@@ -16,13 +16,13 @@
 package net.ymate.platform.core.support;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
-import net.ymate.platform.commons.util.ThreadUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 对象资源回收助手
@@ -36,6 +36,12 @@ public final class RecycleHelper {
     private static final Log LOG = LogFactory.getLog(RecycleHelper.class);
 
     private static final RecycleHelper INSTANCE = new RecycleHelper();
+
+    private static final ExecutorService SHARED_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "ymp-recycle-helper");
+        t.setDaemon(true);
+        return t;
+    });
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(INSTANCE::recycle));
@@ -107,14 +113,16 @@ public final class RecycleHelper {
     public void recycle(boolean async) {
         if (!destroyableSet.isEmpty()) {
             if (async) {
-                ExecutorService executorService = ThreadUtils.newFixedThreadPool(destroyableSet.size());
-                for (IDestroyable destroyable : destroyableSet) {
-                    executorService.submit(() -> doRecycling(destroyable));
-                }
-                executorService.shutdown();
+                SHARED_EXECUTOR.submit(this::doRecycle);
             } else {
                 recycle();
             }
+        }
+    }
+
+    private void doRecycle() {
+        for (IDestroyable destroyable : destroyableSet) {
+            doRecycling(destroyable);
         }
     }
 }
