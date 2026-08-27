@@ -15,12 +15,13 @@
  */
 package net.ymate.platform.plugin;
 
+import net.ymate.platform.commons.LazyHolder;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.*;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.IEventListener;
-import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.AbstractModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.plugin.impl.DefaultPluginFactory;
@@ -34,16 +35,18 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author 刘镇 (suninformation@163.com) on 2012-11-30 下午6:28:20
  */
-public class Plugins implements IModule, IPlugins {
+public class Plugins extends AbstractModule<IPluginConfig> implements IPlugins {
 
     private static final Log LOG = LogFactory.getLog(Plugins.class);
 
     private static final PluginBeanLoadInitializer PLUGIN_BEAN_LOAD_INITIALIZER = new PluginBeanLoadInitializer();
 
+    private static final LazyHolder<IPlugins> instance = LazyHolder.of(() -> YMP.get().getModuleManager().getModule(Plugins.class));
+
     static {
         try {
             for (Class<IPluginBeanLoadInitializer> initializerClass : ClassUtils.getExtensionLoader(IPluginBeanLoadInitializer.class, true).getExtensionClasses()) {
-                PLUGIN_BEAN_LOAD_INITIALIZER.addInitializer(initializerClass.newInstance());
+                PLUGIN_BEAN_LOAD_INITIALIZER.addInitializer(initializerClass.getDeclaredConstructor().newInstance());
             }
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {
@@ -52,29 +55,16 @@ public class Plugins implements IModule, IPlugins {
         }
     }
 
-    private IApplication owner;
-
-    private IPluginFactory pluginFactory;
-
-    private boolean initialized;
-
-    private static volatile IPlugins instance;
-
     /**
      * @return 返回默认插件框架管理器实例对象
      */
     public static IPlugins get() {
-        IPlugins inst = instance;
-        if (inst == null) {
-            synchronized (Plugins.class) {
-                inst = instance;
-                if (inst == null) {
-                    instance = inst = YMP.get().getModuleManager().getModule(Plugins.class);
-                }
-            }
-        }
-        return inst;
+        return instance.get();
     }
+
+    private IPluginFactory pluginFactory;
+
+    private boolean enabled;
 
     public Plugins() {
     }
@@ -89,72 +79,78 @@ public class Plugins implements IModule, IPlugins {
     }
 
     @Override
-    public void initialize(IApplication owner) throws Exception {
-        if (!initialized) {
-            //
-            if (pluginFactory == null) {
-                IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
-                if (configureFactory != null) {
-                    IApplicationConfigurer configurer = configureFactory.getConfigurer();
-                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
-                    if (moduleConfigurer != null) {
-                        pluginFactory = DefaultPluginFactory.create(configureFactory.getMainClass(), moduleConfigurer);
-                    } else {
-                        pluginFactory = DefaultPluginFactory.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
-                    }
+    protected String doGetModuleVersion() {
+        return "ymate-platform-plugin";
+    }
+
+    @Override
+    protected IPluginConfig doCreateModuleConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return null;
+    }
+
+    @Override
+    protected IPluginConfig doCreateDefaultConfig() {
+        return null;
+    }
+
+    @Override
+    protected void onBeforeInit(IApplication owner) throws Exception {
+        if (pluginFactory == null) {
+            IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+            if (configureFactory != null) {
+                IApplicationConfigurer configurer = configureFactory.getConfigurer();
+                IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(getName());
+                if (moduleConfigurer != null) {
+                    pluginFactory = DefaultPluginFactory.create(configureFactory.getMainClass(), moduleConfigurer);
+                } else {
+                    pluginFactory = DefaultPluginFactory.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(getName()));
                 }
             }
-            //
-            boolean enabled = pluginFactory != null && pluginFactory.getPluginConfig().isEnabled();
-            YMP.showModuleVersion("ymate-platform-plugin", (enabled ? "- enabled" : "- disabled"), this);
-            //
-            if (enabled) {
-                this.owner = owner;
-                this.owner.getEvents().registerEvent(PluginEvent.class);
-                this.owner.getEvents().registerListener(Events.MODE.NORMAL, ApplicationEvent.class, (IEventListener<ApplicationEvent>) context -> {
-                    if (ApplicationEvent.EVENT.APPLICATION_INITIALIZED.equals(context.getEventName())) {
-                        try {
-                            pluginFactory.startup();
-                        } catch (Exception e) {
-                            LOG.warn("A exception occurred while startup plugins: ", RuntimeUtils.unwrapThrow(e));
-                        }
-                    }
-                    return false;
-                });
-                //
-                PLUGIN_BEAN_LOAD_INITIALIZER.beforeBeanLoad(this, pluginFactory.getBeanLoader());
-                //
-                if (pluginFactory.isIncludedClassPath()) {
-                    pluginFactory.getBeanLoader().registerPackageName(IApplication.YMP_BASE_PACKAGE_NAME);
-                }
-                pluginFactory.initialize(owner);
-                //
-                initialized = true;
-            }
+        }
+        enabled = pluginFactory != null && pluginFactory.getPluginConfig().isEnabled();
+    }
+
+    @Override
+    protected void doShowVersion() {
+        YMP.showModuleVersion(doGetModuleVersion(), (enabled ? "- enabled" : "- disabled"), this);
+    }
+
+    @Override
+    protected void doLoadConfig(IApplication owner) throws Exception {
+        if (enabled) {
+            doSetConfig(pluginFactory.getPluginConfig());
         }
     }
 
     @Override
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    @Override
-    public IApplication getOwner() {
-        return owner;
-    }
-
-    @Override
-    public void close() throws Exception {
-        if (initialized) {
-            initialized = false;
+    protected void onInit(IApplication owner) throws Exception {
+        if (enabled) {
+            owner.getEvents().registerEvent(PluginEvent.class);
+            owner.getEvents().registerListener(Events.MODE.NORMAL, ApplicationEvent.class, (IEventListener<ApplicationEvent>) context -> {
+                if (ApplicationEvent.EVENT.APPLICATION_INITIALIZED.equals(context.getEventName())) {
+                    try {
+                        pluginFactory.startup();
+                    } catch (Exception e) {
+                        LOG.warn("A exception occurred while startup plugins: ", RuntimeUtils.unwrapThrow(e));
+                    }
+                }
+                return false;
+            });
             //
-            if (pluginFactory != null) {
-                pluginFactory.close();
-                pluginFactory = null;
+            PLUGIN_BEAN_LOAD_INITIALIZER.beforeBeanLoad(this, pluginFactory.getBeanLoader());
+            //
+            if (pluginFactory.isIncludedClassPath()) {
+                pluginFactory.getBeanLoader().registerPackageName(IApplication.YMP_BASE_PACKAGE_NAME);
             }
-            //
-            owner = null;
+            pluginFactory.initialize(owner);
+        }
+    }
+
+    @Override
+    protected void onClose() throws Exception {
+        if (pluginFactory != null) {
+            pluginFactory.close();
+            pluginFactory = null;
         }
     }
 

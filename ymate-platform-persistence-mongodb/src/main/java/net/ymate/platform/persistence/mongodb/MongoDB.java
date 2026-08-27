@@ -16,15 +16,12 @@
 package net.ymate.platform.persistence.mongodb;
 
 import com.mongodb.ClientSessionOptions;
-import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.LazyHolder;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.IApplicationConfigureFactory;
-import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.AbstractModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.core.persistence.AbstractTrade;
 import net.ymate.platform.core.persistence.IDataSourceRouter;
 import net.ymate.platform.core.persistence.ITrade;
@@ -34,43 +31,25 @@ import net.ymate.platform.persistence.mongodb.transaction.Transactions;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/21 上午9:24
  */
-public class MongoDB implements IModule, IMongo {
+public class MongoDB extends AbstractModule<IMongoConfig> implements IMongo {
 
-    private static volatile IMongo instance;
-
-    private static final ReentrantLockHelper LOCKER = new ReentrantLockHelper();
-
-    private IApplication owner;
-
-    private IMongoConfig config;
-
-    private Map<String, IMongoDataSourceAdapter> dataSourceCaches = new ConcurrentHashMap<>();
-
-    private boolean initialized;
+    private static final LazyHolder<IMongo> instance = LazyHolder.of(() -> YMP.get().getModuleManager().getModule(MongoDB.class));
 
     public static IMongo get() {
-        IMongo inst = instance;
-        if (inst == null) {
-            synchronized (MongoDB.class) {
-                inst = instance;
-                if (inst == null) {
-                    instance = inst = YMP.get().getModuleManager().getModule(MongoDB.class);
-                }
-            }
-        }
-        return inst;
+        return instance.get();
     }
+
+    private Map<String, IMongoDataSourceAdapter> dataSourceCaches = new ConcurrentHashMap<>();
 
     public MongoDB() {
     }
 
     public MongoDB(IMongoConfig config) {
-        this.config = config;
+        doSetConfig(config);
     }
 
     @Override
@@ -79,96 +58,57 @@ public class MongoDB implements IModule, IMongo {
     }
 
     @Override
-    public void initialize(IApplication owner) throws Exception {
-        if (!initialized) {
-            //
-            YMP.showModuleVersion("ymate-platform-persistence-mongodb", this);
-            //
-            this.owner = owner;
-            //
-            if (config == null) {
-                IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
-                if (configureFactory != null) {
-                    IApplicationConfigurer configurer = configureFactory.getConfigurer();
-                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
-                    if (moduleConfigurer != null) {
-                        config = DefaultMongoConfig.create(configureFactory.getMainClass(), moduleConfigurer);
-                    } else {
-                        config = DefaultMongoConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
-                    }
-                }
-                if (config == null) {
-                    config = DefaultMongoConfig.defaultConfig();
-                }
-            }
-            //
-            if (!config.isInitialized()) {
-                config.initialize(this);
-            }
-            // 处理设置为自动连接的数据源
-            config.getDataSourceConfigs()
-                    .entrySet()
-                    .stream()
-                    .filter(entry -> entry.getValue().isAutoConnection())
-                    .map(Map.Entry::getKey)
-                    .forEach(this::doSafeGetDataSourceAdapter);
-            //
-            initialized = true;
+    protected String doGetModuleVersion() {
+        return "ymate-platform-persistence-mongodb";
+    }
+
+    @Override
+    protected IMongoConfig doCreateModuleConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) throws Exception {
+        return DefaultMongoConfig.create(mainClass, moduleConfigurer);
+    }
+
+    @Override
+    protected IMongoConfig doCreateDefaultConfig() {
+        return DefaultMongoConfig.defaultConfig();
+    }
+
+    @Override
+    protected void onInit(IApplication owner) throws Exception {
+        // 处理设置为自动连接的数据源
+        getConfig().getDataSourceConfigs()
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().isAutoConnection())
+                .map(Map.Entry::getValue)
+                .forEach(this::doSafeGetDataSourceAdapter);
+    }
+
+    @Override
+    protected void onClose() throws Exception {
+        for (IMongoDataSourceAdapter adapter : dataSourceCaches.values()) {
+            adapter.close();
         }
+        dataSourceCaches = null;
     }
 
-    @Override
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    @Override
-    public IApplication getOwner() {
-        return owner;
-    }
-
-    @Override
-    public IMongoConfig getConfig() {
-        return config;
-    }
-
-    private IMongoDataSourceAdapter doSafeGetDataSourceAdapter(String dataSourceName) {
-        IMongoDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
-        if (dataSourceAdapter == null) {
-            ReentrantLock lock = null;
+    private IMongoDataSourceAdapter doSafeGetDataSourceAdapter(IMongoDataSourceConfig dataSourceCfg) {
+        return dataSourceCaches.computeIfAbsent(dataSourceCfg.getName(), name -> {
             try {
-                lock = LOCKER.getLocker(dataSourceName);
-                lock.lock();
-                IMongoDataSourceConfig dataSourceConfig = config.getDataSourceConfig(dataSourceName);
-                if (dataSourceConfig != null) {
-                    if (!dataSourceConfig.isInitialized()) {
-                        dataSourceConfig.initialize(this);
-                    }
-                    // 实例化数据源适配器并放入缓存
-                    dataSourceAdapter = dataSourceCaches.get(dataSourceName);
-                    if (dataSourceAdapter == null) {
-                        dataSourceAdapter = new MongoDataSourceAdapter();
-                    }
-                    if (!dataSourceAdapter.isInitialized()) {
-                        dataSourceAdapter.initialize(this, dataSourceConfig);
-                    }
-                    dataSourceCaches.put(dataSourceName, dataSourceAdapter);
+                if (!dataSourceCfg.isInitialized()) {
+                    dataSourceCfg.initialize(MongoDB.this);
                 }
+                IMongoDataSourceAdapter adapter = new MongoDataSourceAdapter();
+                adapter.initialize(MongoDB.this, dataSourceCfg);
+                return adapter;
             } catch (Exception e) {
                 throw RuntimeUtils.wrapRuntimeThrow(e);
-            } finally {
-                ReentrantLockHelper.unlock(lock);
             }
-        }
-        if (dataSourceAdapter == null) {
-            throw new IllegalStateException(String.format("Datasource '%s' not found.", dataSourceName));
-        }
-        return dataSourceAdapter;
+        });
     }
 
     @Override
     public IMongoConnectionHolder getDefaultConnectionHolder() throws Exception {
-        return getConnectionHolder(config.getDefaultDataSourceName());
+        return getConnectionHolder(getConfig().getDefaultDataSourceName());
     }
 
     @Override
@@ -178,7 +118,7 @@ public class MongoDB implements IModule, IMongo {
         if (transaction != null) {
             connectionHolder = transaction.getConnectionHolder(dataSourceName);
         } else {
-            connectionHolder = new DefaultMongoConnectionHolder(doSafeGetDataSourceAdapter(dataSourceName));
+            connectionHolder = new DefaultMongoConnectionHolder(doSafeGetDataSourceAdapter(getConfig().getDataSourceConfig(dataSourceName)));
         }
         return connectionHolder;
     }
@@ -194,7 +134,7 @@ public class MongoDB implements IModule, IMongo {
 
     @Override
     public IMongoSession openSession() throws Exception {
-        return openSession(config.getDefaultDataSourceName());
+        return openSession(getConfig().getDefaultDataSourceName());
     }
 
     @Override
@@ -214,26 +154,12 @@ public class MongoDB implements IModule, IMongo {
 
     @Override
     public IMongoDataSourceAdapter getDefaultDataSourceAdapter() {
-        return doSafeGetDataSourceAdapter(config.getDefaultDataSourceName());
+        return doSafeGetDataSourceAdapter(getConfig().getDefaultDataSourceConfig());
     }
 
     @Override
     public IMongoDataSourceAdapter getDataSourceAdapter(String dataSourceName) {
-        return doSafeGetDataSourceAdapter(dataSourceName);
-    }
-
-    @Override
-    public void close() throws Exception {
-        if (initialized) {
-            initialized = false;
-            //
-            for (IMongoDataSourceAdapter adapter : dataSourceCaches.values()) {
-                adapter.close();
-            }
-            dataSourceCaches = null;
-            config = null;
-            owner = null;
-        }
+        return doSafeGetDataSourceAdapter(getConfig().getDataSourceConfig(dataSourceName));
     }
 
     @Override

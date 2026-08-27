@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation;
 
+import net.ymate.platform.commons.LazyHolder;
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.RuntimeUtils;
@@ -25,7 +26,8 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.IBeanLoader;
-import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.AbstractModule;
+import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.validation.annotation.VCondition;
 import net.ymate.platform.validation.annotation.ValidateGroups;
 import net.ymate.platform.validation.annotation.Validation;
@@ -49,32 +51,19 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author 刘镇 (suninformation@163.com) on 2013-4-7 下午4:43:48
  */
-public final class Validations implements IModule, IValidation {
+public final class Validations extends AbstractModule<Void> implements IValidation {
 
     private static final Log LOG = LogFactory.getLog(Validations.class);
 
-    private static volatile IValidation instance;
+    private static final LazyHolder<IValidation> instance = LazyHolder.of(() -> YMP.get().getModuleManager().getModule(Validations.class));
 
-    private IApplication owner;
-
-    private boolean initialized;
+    public static IValidation get() {
+        return instance.get();
+    }
 
     private final Map<Class<? extends Annotation>, Class<? extends IValidator>> validators = new ConcurrentHashMap<>();
 
     private final Map<Class<?>, ValidationMeta> validationMetaMap = new ConcurrentHashMap<>();
-
-    public static IValidation get() {
-        IValidation inst = instance;
-        if (inst == null) {
-            synchronized (Validations.class) {
-                inst = instance;
-                if (inst == null) {
-                    instance = inst = YMP.get().getModuleManager().getModule(Validations.class);
-                }
-            }
-        }
-        return inst;
-    }
 
     public Validations() {
     }
@@ -85,70 +74,61 @@ public final class Validations implements IModule, IValidation {
     }
 
     @Override
-    public IApplication getOwner() {
-        return owner;
+    protected String doGetModuleVersion() {
+        return "ymate-platform-validation";
     }
 
     @Override
-    public void initialize(IApplication owner) {
-        if (!initialized) {
-            //
-            YMP.showModuleVersion("ymate-platform-validation", this);
-            //
-            this.owner = owner;
-            //
-            IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
-            if (configureFactory != null) {
-                IApplicationConfigurer configurer = configureFactory.getConfigurer();
-                if (configurer != null) {
-                    IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
-                    if (beanLoaderFactory != null) {
-                        IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
-                        if (beanLoader != null) {
-                            beanLoader.registerHandler(Validator.class, new ValidateHandler(this));
-                        }
+    protected Void doCreateModuleConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return null;
+    }
+
+    @Override
+    protected Void doCreateDefaultConfig() {
+        return null;
+    }
+
+    @Override
+    protected void onInit(IApplication owner) {
+        IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+        if (configureFactory != null) {
+            IApplicationConfigurer configurer = configureFactory.getConfigurer();
+            if (configurer != null) {
+                IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
+                if (beanLoaderFactory != null) {
+                    IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
+                    if (beanLoader != null) {
+                        beanLoader.registerHandler(Validator.class, new ValidateHandler(this));
                     }
                 }
             }
-            //
-            initialized = true;
-            //
-            registerValidator(VRequired.class, RequiredValidator.class);
-            registerValidator(VRegex.class, RegexValidator.class);
-            registerValidator(VNumeric.class, NumericValidator.class);
-            registerValidator(VMobile.class, MobileValidator.class);
-            registerValidator(VLength.class, LengthValidator.class);
-            registerValidator(VEmail.class, EmailValidator.class);
-            registerValidator(VDateTime.class, DateTimeValidator.class);
-            registerValidator(VDataRange.class, DataRangeValidator.class);
-            registerValidator(VCompare.class, CompareValidator.class);
-            registerValidator(VRSAData.class, RSADataValidator.class);
-            registerValidator(VIDCard.class, IDCardValidator.class);
-            registerValidator(VSize.class, SizeValidator.class);
         }
+        //
+        registerValidator(VRequired.class, RequiredValidator.class);
+        registerValidator(VRegex.class, RegexValidator.class);
+        registerValidator(VNumeric.class, NumericValidator.class);
+        registerValidator(VMobile.class, MobileValidator.class);
+        registerValidator(VLength.class, LengthValidator.class);
+        registerValidator(VEmail.class, EmailValidator.class);
+        registerValidator(VDateTime.class, DateTimeValidator.class);
+        registerValidator(VDataRange.class, DataRangeValidator.class);
+        registerValidator(VCompare.class, CompareValidator.class);
+        registerValidator(VRSAData.class, RSADataValidator.class);
+        registerValidator(VIDCard.class, IDCardValidator.class);
+        registerValidator(VSize.class, SizeValidator.class);
     }
 
     @Override
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    @Override
-    public void close() {
-        if (initialized) {
-            initialized = false;
-            //
-            validationMetaMap.clear();
-            validators.clear();
-            owner = null;
-        }
+    protected void onClose() {
+        validationMetaMap.clear();
+        validators.clear();
     }
 
     @Override
     public void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass) {
-        if (initialized) {
+        if (isInitialized()) {
             validators.put(annotationClass, validatorClass);
-            owner.getBeanFactory().registerBean(BeanMeta.create(validatorClass, true));
+            getOwner().getBeanFactory().registerBean(BeanMeta.create(validatorClass, true));
         }
     }
 
@@ -170,14 +150,14 @@ public final class Validations implements IModule, IValidation {
     @Override
     public Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues, Class<?>... groups) {
         Map<String, ValidateResult> returnValues = new LinkedHashMap<>();
-        if (initialized) {
+        if (isInitialized()) {
             // 若未显式传入分组，从目标类上读取@ValidateGroups注解
             if (ArrayUtils.isEmpty(groups)) {
                 groups = resolveGroupsFromClass(targetClass);
             }
             ValidationMeta validationMeta = bindValidationMeta(targetClass);
             if (validationMeta != null) {
-                Map<String, String> contextParams = owner.getInterceptSettings().getContextParams(owner, targetClass);
+                Map<String, String> contextParams = getOwner().getInterceptSettings().getContextParams(getOwner(), targetClass);
                 for (Map.Entry<String, ValidationMeta.ParamInfo> entry : validationMeta.getFields().entrySet()) {
                     ValidateResult validateResult = doValidate(entry.getValue(), paramValues, contextParams, validationMeta.getResourcesName(), groups);
                     if (validateResult != null && validateResult.isMatched()) {
@@ -195,7 +175,7 @@ public final class Validations implements IModule, IValidation {
     @Override
     public Map<String, ValidateResult> validate(Class<?> targetClass, Method targetMethod, Map<String, Object> paramValues, Class<?>... groups) {
         Map<String, ValidateResult> returnValues = new LinkedHashMap<>();
-        if (initialized) {
+        if (isInitialized()) {
             // 若未显式传入分组，优先从方法上读取@ValidateGroups，再从类上读取
             if (ArrayUtils.isEmpty(groups)) {
                 groups = resolveGroupsFromMethod(targetMethod, targetClass);
@@ -207,7 +187,7 @@ public final class Validations implements IModule, IValidation {
                     Validation.MODE mode = methodInfo.getValidation() == null ? validationMeta.getMode() : methodInfo.getValidation().mode();
                     String resourceName = methodInfo.getValidation() == null ? validationMeta.getResourcesName() : StringUtils.defaultIfBlank(methodInfo.getValidation().resourcesName(), validationMeta.getResourcesName());
                     //
-                    Map<String, String> contextParams = owner.getInterceptSettings().getContextParams(owner, targetClass, targetMethod);
+                    Map<String, String> contextParams = getOwner().getInterceptSettings().getContextParams(getOwner(), targetClass, targetMethod);
                     for (Map.Entry<String, ValidationMeta.ParamInfo> entry : methodInfo.getParams().entrySet()) {
                         ValidateResult validateResult = doValidate(entry.getValue(), paramValues, contextParams, resourceName, groups);
                         if (validateResult != null && validateResult.isMatched()) {
@@ -250,8 +230,8 @@ public final class Validations implements IModule, IValidation {
                 continue;
             }
             // 执行验证
-            IValidator validator = owner.getBeanFactory().getBean(validators.get(ann.annotationType()));
-            validateResult = validator.validate(new ValidateContext(owner, ann, paramInfo, paramValues, contextParams, resourceName));
+            IValidator validator = getOwner().getBeanFactory().getBean(validators.get(ann.annotationType()));
+            validateResult = validator.validate(new ValidateContext(getOwner(), ann, paramInfo, paramValues, contextParams, resourceName));
             if (validateResult != null && validateResult.isMatched()) {
                 break;
             }

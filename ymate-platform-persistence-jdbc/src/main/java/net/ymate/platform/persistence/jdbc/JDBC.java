@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc;
 
+import net.ymate.platform.commons.LazyHolder;
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
@@ -25,9 +26,8 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
-import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.AbstractModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.core.persistence.IDataSourceRouter;
 import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.annotation.Dialect;
@@ -54,11 +54,11 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author 刘镇 (suninformation@163.com) on 2011-9-10 下午11:45:25
  */
-public final class JDBC implements IModule, IDatabase {
+public final class JDBC extends AbstractModule<IDatabaseConfig> implements IDatabase {
 
     private static final Log LOG = LogFactory.getLog(JDBC.class);
 
-    private static volatile IDatabase instance;
+    private static final LazyHolder<IDatabase> instance = LazyHolder.of(() -> YMP.get().getModuleManager().getModule(JDBC.class));
 
     private static final ReentrantLockHelper LOCKER = new ReentrantLockHelper();
 
@@ -116,31 +116,16 @@ public final class JDBC implements IModule, IDatabase {
     }
 
     public static IDatabase get() {
-        IDatabase inst = instance;
-        if (inst == null) {
-            synchronized (JDBC.class) {
-                inst = instance;
-                if (inst == null) {
-                    instance = inst = YMP.get().getModuleManager().getModule(JDBC.class);
-                }
-            }
-        }
-        return inst;
+        return instance.get();
     }
 
-    private IApplication owner;
-
-    private IDatabaseConfig config;
-
     private Map<String, IDatabaseDataSourceAdapter> dataSourceCaches = new ConcurrentHashMap<>();
-
-    private boolean initialized;
 
     public JDBC() {
     }
 
     public JDBC(IDatabaseConfig config) {
-        this.config = config;
+        doSetConfig(config);
     }
 
     @Override
@@ -149,91 +134,63 @@ public final class JDBC implements IModule, IDatabase {
     }
 
     @Override
-    public void initialize(IApplication owner) throws Exception {
-        if (!initialized) {
-            //
-            YMP.showModuleVersion("ymate-platform-persistence-jdbc", this);
-            //
-            this.owner = owner;
-            this.owner.getEvents().registerEvent(DatabaseEvent.class);
-            //
-            IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
-            if (configureFactory != null) {
-                IApplicationConfigurer configurer = configureFactory.getConfigurer();
-                if (configurer != null) {
-                    IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
-                    if (beanLoaderFactory != null) {
-                        IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
-                        if (beanLoader != null) {
-                            beanLoader.registerHandler(Repository.class, new RepositoryHandler(this));
-                        }
+    protected String doGetModuleVersion() {
+        return "ymate-platform-persistence-jdbc";
+    }
+
+    @Override
+    protected IDatabaseConfig doCreateModuleConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) throws Exception {
+        return DefaultDatabaseConfig.create(mainClass, moduleConfigurer);
+    }
+
+    @Override
+    protected IDatabaseConfig doCreateDefaultConfig() {
+        return DefaultDatabaseConfig.defaultConfig();
+    }
+
+    @Override
+    protected void onInit(IApplication owner) throws Exception {
+        owner.getEvents().registerEvent(DatabaseEvent.class);
+        //
+        IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+        if (configureFactory != null) {
+            IApplicationConfigurer configurer = configureFactory.getConfigurer();
+            if (configurer != null) {
+                IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
+                if (beanLoaderFactory != null) {
+                    IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
+                    if (beanLoader != null) {
+                        beanLoader.registerHandler(Repository.class, new RepositoryHandler(this));
                     }
                 }
-                if (config == null) {
-                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
-                    if (moduleConfigurer != null) {
-                        config = DefaultDatabaseConfig.create(configureFactory.getMainClass(), moduleConfigurer);
-                    } else {
-                        config = DefaultDatabaseConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
-                    }
-                }
             }
-            if (config == null) {
-                config = DefaultDatabaseConfig.defaultConfig();
-            }
-            //
-            if (!config.isInitialized()) {
-                config.initialize(this);
-            }
-            //
-            IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
-            if (proxyFactory != null) {
-                proxyFactory.registerProxy(new TransactionProxy());
-                proxyFactory.registerProxy(new RepositoryProxy(this));
-            }
-            // 处理设置为自动连接的数据源
-            config.getDataSourceConfigs()
-                    .entrySet()
-                    .stream()
-                    .filter(entry -> entry.getValue().isAutoConnection())
-                    .map(Map.Entry::getKey)
-                    .forEach(this::doSafeGetDataSourceAdapter);
-            initialized = true;
         }
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    @Override
-    public void close() throws Exception {
-        if (initialized) {
-            initialized = false;
-            //
-            for (IDatabaseDataSourceAdapter adapter : dataSourceCaches.values()) {
-                adapter.close();
-            }
-            dataSourceCaches = null;
-            config = null;
-            owner = null;
+        //
+        IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
+        if (proxyFactory != null) {
+            proxyFactory.registerProxy(new TransactionProxy());
+            proxyFactory.registerProxy(new RepositoryProxy(this));
         }
+        // 处理设置为自动连接的数据源
+        getConfig().getDataSourceConfigs()
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().isAutoConnection())
+                .map(Map.Entry::getKey)
+                .forEach(this::doSafeGetDataSourceAdapter);
     }
 
     @Override
-    public IApplication getOwner() {
-        return owner;
-    }
-
-    @Override
-    public IDatabaseConfig getConfig() {
-        return config;
+    protected void onClose() throws Exception {
+        for (IDatabaseDataSourceAdapter adapter : dataSourceCaches.values()) {
+            adapter.close();
+        }
+        dataSourceCaches = null;
     }
 
     @Override
     public IDatabaseConnectionHolder getDefaultConnectionHolder() throws Exception {
-        return getConnectionHolder(config.getDefaultDataSourceName());
+        return getConnectionHolder(getConfig().getDefaultDataSourceName());
     }
 
     private IDatabaseDataSourceAdapter doSafeGetDataSourceAdapter(String dataSourceName) {
@@ -243,7 +200,7 @@ public final class JDBC implements IModule, IDatabase {
             try {
                 lock = LOCKER.getLocker(dataSourceName);
                 lock.lock();
-                IDatabaseDataSourceConfig dataSourceConfig = config.getDataSourceConfig(dataSourceName);
+                IDatabaseDataSourceConfig dataSourceConfig = getConfig().getDataSourceConfig(dataSourceName);
                 if (dataSourceConfig != null) {
                     if (!dataSourceConfig.isInitialized()) {
                         dataSourceConfig.initialize(this);
@@ -298,7 +255,7 @@ public final class JDBC implements IModule, IDatabase {
 
     @Override
     public IDatabaseDataSourceAdapter getDefaultDataSourceAdapter() {
-        return getDataSourceAdapter(config.getDefaultDataSourceName());
+        return getDataSourceAdapter(getConfig().getDefaultDataSourceName());
     }
 
     @Override

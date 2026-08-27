@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.commons.LazyHolder;
 import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.commons.util.ClassUtils;
@@ -28,9 +29,8 @@ import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
-import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.AbstractModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.validation.IValidation;
 import net.ymate.platform.validation.Validations;
 import net.ymate.platform.webmvc.annotation.*;
@@ -74,41 +74,23 @@ import java.util.concurrent.TimeUnit;
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-7 下午10:23:39
  */
-public final class WebMVC implements IModule, IWebMvc {
+public final class WebMVC extends AbstractModule<IWebMvcConfig> implements IWebMvc {
 
     private static final Log LOG = LogFactory.getLog(WebMVC.class);
 
-    private static volatile IWebMvc instance;
+    private static final LazyHolder<IWebMvc> instance = LazyHolder.of(() -> YMP.get().getModuleManager().getModule(WebMVC.class));
 
-    private IApplication owner;
-
-    private IWebMvcConfig config;
-
-    private boolean initialized;
+    public static IWebMvc get() {
+        return instance.get();
+    }
 
     private IInterceptorRuleProcessor interceptorRuleProcessor;
-
-    /**
-     * @return 返回默认MVC框架管理器实例对象
-     */
-    public static IWebMvc get() {
-        IWebMvc inst = instance;
-        if (inst == null) {
-            synchronized (WebMVC.class) {
-                inst = instance;
-                if (instance == null) {
-                    instance = inst = YMP.get().getModuleManager().getModule(WebMVC.class);
-                }
-            }
-        }
-        return inst;
-    }
 
     public WebMVC() {
     }
 
     public WebMVC(IWebMvcConfig config) {
-        this.config = config;
+        doSetConfig(config);
     }
 
     @Override
@@ -117,70 +99,71 @@ public final class WebMVC implements IModule, IWebMvc {
     }
 
     @Override
-    public void initialize(IApplication owner) throws Exception {
-        if (!initialized) {
-            //
-            YMP.showModuleVersion("ymate-platform-webmvc", this);
-            //
-            this.owner = owner;
-            this.owner.getEvents().registerEvent(WebEvent.class);
-            //
-            IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
-            if (configureFactory != null) {
-                IApplicationConfigurer configurer = configureFactory.getConfigurer();
-                if (configurer != null) {
-                    IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
-                    if (beanLoaderFactory != null) {
-                        IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
-                        if (beanLoader != null) {
-                            beanLoader.registerHandler(Controller.class, new ControllerHandler(this));
-                            beanLoader.registerHandler(InterceptorRule.class, new InterceptorRuleHandler(this));
-                            beanLoader.registerHandler(ExceptionProcessor.class, new ExceptionProcessorHandler());
-                        }
+    protected String doGetModuleVersion() {
+        return "ymate-platform-webmvc";
+    }
+
+    @Override
+    protected IWebMvcConfig doCreateModuleConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return DefaultWebMvcConfig.create(mainClass, moduleConfigurer);
+    }
+
+    @Override
+    protected IWebMvcConfig doCreateDefaultConfig() {
+        return DefaultWebMvcConfig.defaultConfig();
+    }
+
+    @Override
+    protected void onInit(IApplication owner) throws Exception {
+        owner.getEvents().registerEvent(WebEvent.class);
+        //
+        IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+        if (configureFactory != null) {
+            IApplicationConfigurer configurer = configureFactory.getConfigurer();
+            if (configurer != null) {
+                IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
+                if (beanLoaderFactory != null) {
+                    IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
+                    if (beanLoader != null) {
+                        beanLoader.registerHandler(Controller.class, new ControllerHandler(this));
+                        beanLoader.registerHandler(InterceptorRule.class, new InterceptorRuleHandler(this));
+                        beanLoader.registerHandler(ExceptionProcessor.class, new ExceptionProcessorHandler());
                     }
                 }
-                if (config == null) {
-                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
-                    if (moduleConfigurer != null) {
-                        config = DefaultWebMvcConfig.create(configureFactory.getMainClass(), moduleConfigurer);
-                    } else {
-                        config = DefaultWebMvcConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
-                    }
-                }
             }
-            if (config == null) {
-                config = DefaultWebMvcConfig.defaultConfig();
-            }
-            if (!config.isInitialized()) {
-                config.initialize(this);
-            }
-            if (config.isConventionInterceptorMode()) {
-                interceptorRuleProcessor = new DefaultInterceptorRuleProcessor();
-                interceptorRuleProcessor.initialize(this);
-            }
-            //
-            IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
-            if (proxyFactory != null) {
-                proxyFactory.registerProxy(new RequestParametersProxy());
-            }
-            //
-            IValidation validation = owner.getModuleManager().getModule(Validations.class);
-            validation.registerValidator(VHostName.class, HostNameValidator.class);
-            validation.registerValidator(VToken.class, TokenValidator.class);
-            validation.registerValidator(VUploadFile.class, UploadFileValidator.class);
-            //
-            doGenerateErrorViewIfNeed();
-            //
-            initialized = true;
+        }
+        //
+        if (getConfig().isConventionInterceptorMode()) {
+            interceptorRuleProcessor = new DefaultInterceptorRuleProcessor();
+            interceptorRuleProcessor.initialize(this);
+        }
+        //
+        IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
+        if (proxyFactory != null) {
+            proxyFactory.registerProxy(new RequestParametersProxy());
+        }
+        //
+        IValidation validation = owner.getModuleManager().getModule(Validations.class);
+        validation.registerValidator(VHostName.class, HostNameValidator.class);
+        validation.registerValidator(VToken.class, TokenValidator.class);
+        validation.registerValidator(VUploadFile.class, UploadFileValidator.class);
+        //
+        doGenerateErrorViewIfNeed();
+    }
+
+    @Override
+    protected void onClose() throws Exception {
+        if (getConfig().getErrorProcessor() instanceof IWebInitialization) {
+            ((IWebInitialization) getConfig().getErrorProcessor()).close();
         }
     }
 
     private void doGenerateErrorViewIfNeed() {
         if (RuntimeUtils.getRootPath().endsWith(Type.Const.WEB_INF_PREFIX)) {
-            String currentErrorViewPath = owner.getParam(IWebMvcConfig.PARAMS_ERROR_VIEW, Type.Const.DEFAULT_ERROR_VIEW_FILE);
-            File viewFile = new File(config.getAbstractBaseViewPath(), currentErrorViewPath);
+            String currentErrorViewPath = getOwner().getParam(IWebMvcConfig.PARAMS_ERROR_VIEW, Type.Const.DEFAULT_ERROR_VIEW_FILE);
+            File viewFile = new File(getConfig().getAbstractBaseViewPath(), currentErrorViewPath);
             if (!viewFile.exists()) {
-                viewFile = new File(config.getAbstractBaseViewPath(), Type.Const.DEFAULT_ERROR_VIEW_FILE);
+                viewFile = new File(getConfig().getAbstractBaseViewPath(), Type.Const.DEFAULT_ERROR_VIEW_FILE);
                 try (InputStream inputStream = WebUtils.class.getClassLoader().getResourceAsStream("META-INF/templates-default-error.jsp")) {
                     if (!FileUtils.createFileIfNotExists(viewFile, inputStream) && LOG.isWarnEnabled()) {
                         LOG.warn(String.format("Failed to create default error page file: %s", viewFile.getPath()));
@@ -202,34 +185,6 @@ public final class WebMVC implements IModule, IWebMvc {
     }
 
     @Override
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    @Override
-    public void close() throws Exception {
-        if (initialized) {
-            initialized = false;
-            //
-            if (config.getErrorProcessor() instanceof IWebInitialization) {
-                ((IWebInitialization) config.getErrorProcessor()).close();
-            }
-            //
-            owner = null;
-        }
-    }
-
-    @Override
-    public IWebMvcConfig getConfig() {
-        return config;
-    }
-
-    @Override
-    public IApplication getOwner() {
-        return owner;
-    }
-
-    @Override
     public boolean registerController(Class<?> targetClass) throws Exception {
         return registerController(null, targetClass);
     }
@@ -241,9 +196,9 @@ public final class WebMVC implements IModule, IWebMvc {
             for (Method method : ClassUtils.getMethods(targetClass, true)) {
                 if (method.isAnnotationPresent(RequestMapping.class) && ClassUtils.isNormalMethod(method)) {
                     RequestMeta requestMeta = new RequestMeta(requestMappingPrefix, targetClass, method);
-                    config.getRequestMappingParser().registerRequestMeta(requestMeta);
+                    getConfig().getRequestMappingParser().registerRequestMeta(requestMeta);
                     //
-                    if (owner.isDevEnv() && LOG.isDebugEnabled()) {
+                    if (getOwner().isDevEnv() && LOG.isDebugEnabled()) {
                         LOG.debug(String.format("--> %s: %s : %s.%s", requestMeta.getAllowMethods(), requestMeta.getMapping(), requestMeta.getTargetClass().getName(), requestMeta.getMethod().getName()));
                     }
                     //
@@ -255,7 +210,7 @@ public final class WebMVC implements IModule, IWebMvc {
                 Controller annotation = targetClass.getAnnotation(Controller.class);
                 BeanMeta beanMeta = BeanMeta.create(targetClass, annotation == null || annotation.singleton());
                 beanMeta.setInterfaceIgnored(true);
-                owner.getBeanFactory().registerBean(beanMeta);
+                getOwner().getBeanFactory().registerBean(beanMeta);
             }
         }
         return isValid;
@@ -395,7 +350,7 @@ public final class WebMVC implements IModule, IWebMvc {
             // 处理Convention模式下URL参数集合
             String requestMapping = context.getRequestMapping();
             int position = StringUtils.lastIndexOf(requestMapping, Type.Const.PATH_SEPARATOR_CHAR);
-            if (position > -1 && this.config.isConventionUrlRewriteMode()) {
+            if (position > -1 && this.getConfig().isConventionUrlRewriteMode()) {
                 String mappingPart = StringUtils.substring(requestMapping, 0, position);
                 String[] urlParamArr = StringUtils.split(StringUtils.substring(requestMapping, position), '_');
                 if (urlParamArr != null && urlParamArr.length > 1) {
@@ -409,8 +364,8 @@ public final class WebMVC implements IModule, IWebMvc {
                 }
             }
             //
-            if (config.getErrorProcessor() != null) {
-                view = config.getErrorProcessor().onConvention(this, context);
+            if (getConfig().getErrorProcessor() != null) {
+                view = getConfig().getErrorProcessor().onConvention(this, context);
             }
             if (view == null) {
                 PairObject<IView, String> mappingView = View.mappingToView(this, requestMapping);
@@ -505,17 +460,17 @@ public final class WebMVC implements IModule, IWebMvc {
 
     private boolean isAllowConvention(IRequestContext context) {
         boolean allowConvention = true;
-        if (!config.getConventionViewNotAllowPaths().isEmpty()) {
-            for (String path : config.getConventionViewNotAllowPaths()) {
+        if (!getConfig().getConventionViewNotAllowPaths().isEmpty()) {
+            for (String path : getConfig().getConventionViewNotAllowPaths()) {
                 if (context.getRequestMapping().startsWith(path)) {
                     allowConvention = false;
                     break;
                 }
             }
         }
-        if (allowConvention && !config.getConventionViewAllowPaths().isEmpty()) {
+        if (allowConvention && !getConfig().getConventionViewAllowPaths().isEmpty()) {
             allowConvention = false;
-            for (String path : config.getConventionViewAllowPaths()) {
+            for (String path : getConfig().getConventionViewAllowPaths()) {
                 if (context.getRequestMapping().startsWith(path)) {
                     allowConvention = true;
                     break;
@@ -535,7 +490,7 @@ public final class WebMVC implements IModule, IWebMvc {
         RequestMeta requestMeta = null;
         boolean isRequestNotMatched = false;
         try {
-            if (owner.isDevEnv() && LOG.isDebugEnabled()) {
+            if (getOwner().isDevEnv() && LOG.isDebugEnabled()) {
                 consumeTime = new StopWatch();
                 consumeTime.start();
                 //
@@ -543,16 +498,16 @@ public final class WebMVC implements IModule, IWebMvc {
                 LOG.debug(String.format("Parameters: %s", JsonWrapper.toJsonString(request.getParameterMap(), false, true)));
             }
             //
-            requestMeta = config.getRequestMappingParser().parse(context);
+            requestMeta = getConfig().getRequestMappingParser().parse(context);
             if (requestMeta != null) {
-                IView view = config.getCrossDomainSettings().process(requestMeta, context, request, response);
+                IView view = getConfig().getCrossDomainSettings().process(requestMeta, context, request, response);
                 if (view != null) {
                     view.render();
-                } else if (isAllowRequest(context, response, requestMeta, owner.isDevEnv())) {
-                    processRequestMeta(context, request, requestMeta, owner.isDevEnv());
+                } else if (isAllowRequest(context, response, requestMeta, getOwner().isDevEnv())) {
+                    processRequestMeta(context, request, requestMeta, getOwner().isDevEnv());
                 }
-            } else if (config.isConventionMode() && isAllowConvention(context)) {
-                processRequestConvention(context, owner.isDevEnv());
+            } else if (getConfig().isConventionMode() && isAllowConvention(context)) {
+                processRequestConvention(context, getOwner().isDevEnv());
             } else {
                 throw new RequestNotMatchedException(context);
             }
@@ -565,7 +520,7 @@ public final class WebMVC implements IModule, IWebMvc {
                 IResponseErrorProcessor errorProcessor = ClassUtils.impl(requestMeta.getErrorProcessor(), IResponseErrorProcessor.class);
                 if (errorProcessor != null) {
                     view = errorProcessor.processError(this, e);
-                    if (owner.isDevEnv() && LOG.isDebugEnabled()) {
+                    if (getOwner().isDevEnv() && LOG.isDebugEnabled()) {
                         LOG.debug(String.format("An exception processed with: %s", requestMeta.getErrorProcessor().getName()));
                     }
                 }
@@ -580,7 +535,7 @@ public final class WebMVC implements IModule, IWebMvc {
                 doProcessError(e);
             }
         } finally {
-            if (consumeTime != null && owner.isDevEnv() && LOG.isDebugEnabled()) {
+            if (consumeTime != null && getOwner().isDevEnv() && LOG.isDebugEnabled()) {
                 consumeTime.stop();
                 if (isRequestNotMatched) {
                     LOG.debug(String.format("Process request completed: %s:%s: [NOT_MATCHED], total execution time: %dms", context.getHttpMethod(), context.getRequestMappingWithSuffix(), consumeTime.getTime(TimeUnit.MILLISECONDS)));

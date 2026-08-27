@@ -17,14 +17,12 @@ package net.ymate.platform.cache;
 
 import net.ymate.platform.cache.impl.DefaultCacheConfig;
 import net.ymate.platform.cache.support.CacheableProxy;
+import net.ymate.platform.commons.LazyHolder;
 import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.IApplicationConfigureFactory;
-import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
-import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.AbstractModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,34 +34,19 @@ import java.util.Map;
  *
  * @author 刘镇 (suninformation@163.com) on 14-10-16
  */
-public final class Caches implements IModule, ICaches {
+public final class Caches extends AbstractModule<ICacheConfig> implements ICaches {
 
-    private static volatile ICaches instance;
-
-    private IApplication owner;
-
-    private ICacheConfig config;
-
-    private boolean initialized;
+    private static final LazyHolder<ICaches> instance = LazyHolder.of(() -> YMP.get().getModuleManager().getModule(Caches.class));
 
     public static ICaches get() {
-        ICaches inst = instance;
-        if (inst == null) {
-            synchronized (Caches.class) {
-                inst = instance;
-                if (inst == null) {
-                    instance = inst = YMP.get().getModuleManager().getModule(Caches.class);
-                }
-            }
-        }
-        return inst;
+        return instance.get();
     }
 
     public Caches() {
     }
 
     public Caches(ICacheConfig config) {
-        this.config = config;
+        doSetConfig(config);
     }
 
     @Override
@@ -72,76 +55,42 @@ public final class Caches implements IModule, ICaches {
     }
 
     @Override
-    public void initialize(IApplication owner) throws Exception {
-        if (!initialized) {
-            //
-            YMP.showModuleVersion("ymate-platform-cache", this);
-            //
-            this.owner = owner;
-            this.owner.getEvents().registerEvent(CacheEvent.class);
-            //
-            if (config == null) {
-                IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
-                if (configureFactory != null) {
-                    IApplicationConfigurer configurer = configureFactory.getConfigurer();
-                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
-                    if (moduleConfigurer != null) {
-                        config = DefaultCacheConfig.create(configureFactory.getMainClass(), moduleConfigurer);
-                    } else {
-                        config = DefaultCacheConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
-                    }
-                }
-                if (config == null) {
-                    config = DefaultCacheConfig.defaultConfig();
-                }
-            }
-            if (!config.isInitialized()) {
-                config.initialize(this);
-            }
-            //
-            IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
-            if (proxyFactory != null) {
-                proxyFactory.registerProxy(new CacheableProxy());
-            }
-            //
-            initialized = true;
+    protected String doGetModuleVersion() {
+        return "ymate-platform-cache";
+    }
+
+    @Override
+    protected ICacheConfig doCreateModuleConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return DefaultCacheConfig.create(mainClass, moduleConfigurer);
+    }
+
+    @Override
+    protected ICacheConfig doCreateDefaultConfig() {
+        return DefaultCacheConfig.defaultConfig();
+    }
+
+    @Override
+    protected void onInit(IApplication owner) throws Exception {
+        owner.getEvents().registerEvent(CacheEvent.class);
+        //
+        IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
+        if (proxyFactory != null) {
+            proxyFactory.registerProxy(new CacheableProxy());
         }
     }
 
     @Override
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    @Override
-    public void close() throws Exception {
-        if (initialized) {
-            initialized = false;
-            //
-            config.close();
-            config = null;
-            owner = null;
-        }
-    }
-
-    @Override
-    public IApplication getOwner() {
-        return owner;
-    }
-
-    @Override
-    public ICacheConfig getConfig() {
-        return config;
+    protected void onClose() throws Exception {
     }
 
     @Override
     public boolean isMultilevel() {
-        return ICache.MULTILEVEL.equalsIgnoreCase(config.getCacheProvider().getName());
+        return ICache.MULTILEVEL.equalsIgnoreCase(getConfig().getCacheProvider().getName());
     }
 
     @Override
     public Object get(String cacheName, Object key) {
-        ICache cache = config.getCacheProvider().getCache(cacheName);
+        ICache cache = getConfig().getCacheProvider().getCache(cacheName);
         if (cache != null) {
             return cache.get(key);
         }
@@ -150,7 +99,7 @@ public final class Caches implements IModule, ICaches {
 
     @Override
     public Object get(Object key) {
-        return get(config.getDefaultCacheName(), key);
+        return get(getConfig().getDefaultCacheName(), key);
     }
 
     @Override
@@ -162,13 +111,13 @@ public final class Caches implements IModule, ICaches {
 
     @Override
     public Map<Object, Object> getAll() {
-        return getAll(config.getDefaultCacheName());
+        return getAll(getConfig().getDefaultCacheName());
     }
 
     private void doPut(String cacheName, Object key, Object value, int timeout, boolean update) {
-        ICache cache = config.getCacheProvider().getCache(cacheName);
+        ICache cache = getConfig().getCacheProvider().getCache(cacheName);
         if (cache == null) {
-            cache = config.getCacheProvider().createCache(cacheName, config.getCacheEventListener());
+            cache = getConfig().getCacheProvider().createCache(cacheName, getConfig().getCacheEventListener());
         }
         if (update) {
             cache.update(key, value, timeout);
@@ -189,12 +138,12 @@ public final class Caches implements IModule, ICaches {
 
     @Override
     public void put(Object key, Object value) {
-        put(config.getDefaultCacheName(), key, value, 0);
+        put(getConfig().getDefaultCacheName(), key, value, 0);
     }
 
     @Override
     public void put(Object key, Object value, int timeout) throws CacheException {
-        put(config.getDefaultCacheName(), key, value, timeout);
+        put(getConfig().getDefaultCacheName(), key, value, timeout);
     }
 
     @Override
@@ -209,17 +158,17 @@ public final class Caches implements IModule, ICaches {
 
     @Override
     public void update(Object key, Object value) {
-        update(config.getDefaultCacheName(), key, value);
+        update(getConfig().getDefaultCacheName(), key, value);
     }
 
     @Override
     public void update(Object key, Object value, int timeout) throws CacheException {
-        update(config.getDefaultCacheName(), key, value, timeout);
+        update(getConfig().getDefaultCacheName(), key, value, timeout);
     }
 
     @Override
     public List<?> keys(String cacheName) {
-        ICache cache = config.getCacheProvider().getCache(cacheName);
+        ICache cache = getConfig().getCacheProvider().getCache(cacheName);
         if (cache != null) {
             return cache.keys();
         }
@@ -228,12 +177,12 @@ public final class Caches implements IModule, ICaches {
 
     @Override
     public List<?> keys() {
-        return keys(config.getDefaultCacheName());
+        return keys(getConfig().getDefaultCacheName());
     }
 
     @Override
     public void remove(String cacheName, Object key) {
-        ICache cache = config.getCacheProvider().getCache(cacheName);
+        ICache cache = getConfig().getCacheProvider().getCache(cacheName);
         if (cache != null) {
             cache.remove(key);
         }
@@ -241,12 +190,12 @@ public final class Caches implements IModule, ICaches {
 
     @Override
     public void remove(Object key) {
-        remove(config.getDefaultCacheName(), key);
+        remove(getConfig().getDefaultCacheName(), key);
     }
 
     @Override
     public void removeAll(String cacheName, List<?> keys) {
-        ICache cache = config.getCacheProvider().getCache(cacheName);
+        ICache cache = getConfig().getCacheProvider().getCache(cacheName);
         if (cache != null) {
             cache.removeAll(keys);
         }
@@ -254,12 +203,12 @@ public final class Caches implements IModule, ICaches {
 
     @Override
     public void removeAll(List<?> keys) {
-        removeAll(config.getDefaultCacheName(), keys);
+        removeAll(getConfig().getDefaultCacheName(), keys);
     }
 
     @Override
     public void clear(String cacheName) {
-        ICache cache = config.getCacheProvider().getCache(cacheName);
+        ICache cache = getConfig().getCacheProvider().getCache(cacheName);
         if (cache != null) {
             cache.clear();
         }
@@ -267,6 +216,6 @@ public final class Caches implements IModule, ICaches {
 
     @Override
     public void clear() {
-        clear(config.getDefaultCacheName());
+        clear(getConfig().getDefaultCacheName());
     }
 }
