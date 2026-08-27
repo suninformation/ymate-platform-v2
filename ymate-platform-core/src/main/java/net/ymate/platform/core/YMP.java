@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package net.ymate.platform.core;
 
 import net.ymate.platform.commons.IPasswordProcessor;
+import net.ymate.platform.commons.LazyHolder;
 import net.ymate.platform.commons.impl.DefaultPasswordProcessor;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.ExpressionUtils;
@@ -42,18 +43,6 @@ import java.nio.charset.StandardCharsets;
  */
 public final class YMP {
 
-    private static Class<?> systemMainClass;
-
-    static {
-        String mainClassName = System.getProperty(IApplication.SYSTEM_MAIN_CLASS);
-        if (StringUtils.isNotBlank(mainClassName)) {
-            try {
-                systemMainClass = Class.forName(mainClassName);
-            } catch (ClassNotFoundException ignored) {
-            }
-        }
-    }
-
     public static final Version VERSION = Version.VERSION;
 
     private static final String DEFAULT_BANNER_STR = "__  __ __  ___ ___\n" +
@@ -67,79 +56,122 @@ public final class YMP {
 
     private static volatile IApplication instance;
 
-    private static volatile IApplicationConfigureFactory configureFactory;
+    /**
+     * 主类解析器，从系统属性中延迟解析主类
+     *
+     * @since 2.1.4
+     */
+    private static final class MainClassResolver {
 
-    private static volatile IApplicationConfigureParseFactory configureParseFactory;
+        static final Class<?> MAIN_CLASS;
 
-    private static volatile IBeanLoadFactory beanLoadFactory;
+        static {
+            Class<?> clazz = null;
+            String mainClassName = System.getProperty(IApplication.SYSTEM_MAIN_CLASS);
+            if (StringUtils.isNotBlank(mainClassName)) {
+                try {
+                    clazz = Class.forName(mainClassName);
+                } catch (ClassNotFoundException ignored) {
+                }
+            }
+            MAIN_CLASS = clazz;
+        }
+    }
 
-    private static volatile IProxyFactory proxyFactory;
+    /**
+     * 静态配置持有者，集中管理所有延迟初始化的工厂实例
+     *
+     * @since 2.1.4
+     */
+    private static final class Config {
 
-    private static volatile IPasswordProcessor passwordProcessor;
+        static final LazyHolder<IApplicationConfigureFactory> CONFIGURE_FACTORY =
+                LazyHolder.of(() -> {
+                    IApplicationConfigureFactory factory = ClassUtils.loadClass(IApplicationConfigureFactory.class, DefaultApplicationConfigureFactory.class);
+                    factory.setMainClass(MainClassResolver.MAIN_CLASS);
+                    if (LOG != null && LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Using IApplicationConfigureFactory class [%s].", factory.getClass().getName()));
+                    }
+                    return factory;
+                });
 
-    private static volatile IApplication.Environment environment;
+        static final LazyHolder<IApplicationConfigureParseFactory> CONFIGURE_PARSE_FACTORY =
+                LazyHolder.of(() -> {
+                    IApplicationConfigureParseFactory factory = ClassUtils.loadClass(IApplicationConfigureParseFactory.class, DefaultApplicationConfigureParseFactory.class);
+                    if (LOG != null && LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Using IApplicationConfigureParseFactory class [%s].", factory.getClass().getName()));
+                    }
+                    return factory;
+                });
+
+        static final LazyHolder<IBeanLoadFactory> BEAN_LOAD_FACTORY =
+                LazyHolder.of(() -> {
+                    IBeanLoadFactory factory = ClassUtils.loadClass(IBeanLoadFactory.class);
+                    if (LOG != null && LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Using IBeanLoadFactory class [%s].", factory.getClass().getName()));
+                    }
+                    return factory;
+                });
+
+        static final LazyHolder<IProxyFactory> PROXY_FACTORY =
+                LazyHolder.of(() -> {
+                    IProxyFactory factory = ClassUtils.loadClass(IProxyFactory.class);
+                    if (LOG != null && LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Using IProxyFactory class [%s].", factory.getClass().getName()));
+                    }
+                    return factory;
+                });
+
+        static final LazyHolder<IPasswordProcessor> PASSWORD_PROCESSOR =
+                LazyHolder.of(() -> {
+                    String passwordClassName = System.getProperty(IApplication.SYSTEM_PASS_CLASS);
+                    if (StringUtils.isNotBlank(passwordClassName)) {
+                        IPasswordProcessor proc = ClassUtils.impl(passwordClassName, IPasswordProcessor.class, YMP.class);
+                        if (proc != null) {
+                            if (LOG != null && LOG.isInfoEnabled()) {
+                                LOG.info(String.format("Using IPasswordProcessor class [%s].", proc.getClass().getName()));
+                            }
+                            return proc;
+                        }
+                    }
+                    IPasswordProcessor proc = ClassUtils.loadClass(IPasswordProcessor.class, DefaultPasswordProcessor.class);
+                    if (LOG != null && LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Using IPasswordProcessor class [%s].", proc.getClass().getName()));
+                    }
+                    return proc;
+                });
+
+        static final LazyHolder<IApplication.Environment> ENVIRONMENT =
+                LazyHolder.of(() -> {
+                    try {
+                        String runDevStr = System.getProperty(IApplication.SYSTEM_ENV);
+                        if (StringUtils.isNotBlank(runDevStr)) {
+                            return IApplication.Environment.valueOf(runDevStr.toUpperCase());
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                    return IApplication.Environment.UNKNOWN;
+                });
+    }
 
     static {
         showBanner();
     }
 
     public static IApplicationConfigureFactory getConfigureFactory() {
-        IApplicationConfigureFactory inst = configureFactory;
-        if (inst == null) {
-            synchronized (YMP.class) {
-                inst = configureFactory;
-                if (inst == null) {
-                    configureFactory = inst = ClassUtils.loadClass(IApplicationConfigureFactory.class, DefaultApplicationConfigureFactory.class);
-                    configureFactory.setMainClass(systemMainClass);
-                    if (LOG != null && LOG.isInfoEnabled()) {
-                        LOG.info(String.format("Using IApplicationConfigureFactory class [%s].", configureFactory.getClass().getName()));
-                    }
-                }
-            }
-        }
-        return inst;
+        return Config.CONFIGURE_FACTORY.get();
     }
 
     public static IApplicationConfigureParseFactory getConfigureParseFactory() {
-        IApplicationConfigureParseFactory inst = configureParseFactory;
-        if (inst == null) {
-            synchronized (YMP.class) {
-                inst = configureParseFactory;
-                if (inst == null) {
-                    configureParseFactory = inst = ClassUtils.loadClass(IApplicationConfigureParseFactory.class, DefaultApplicationConfigureParseFactory.class);
-                    if (LOG != null && LOG.isInfoEnabled()) {
-                        LOG.info(String.format("Using IApplicationConfigureParseFactory class [%s].", configureParseFactory.getClass().getName()));
-                    }
-                }
-            }
-        }
-        return inst;
+        return Config.CONFIGURE_PARSE_FACTORY.get();
     }
 
     public static IBeanLoadFactory getBeanLoadFactory() {
-        IBeanLoadFactory inst = beanLoadFactory;
-        if (inst == null) {
-            synchronized (YMP.class) {
-                inst = beanLoadFactory;
-                if (inst == null) {
-                    beanLoadFactory = inst = ClassUtils.loadClass(IBeanLoadFactory.class);
-                }
-            }
-        }
-        return inst;
+        return Config.BEAN_LOAD_FACTORY.get();
     }
 
     public static IProxyFactory getProxyFactory() {
-        IProxyFactory inst = proxyFactory;
-        if (inst == null) {
-            synchronized (YMP.class) {
-                inst = proxyFactory;
-                if (inst == null) {
-                    proxyFactory = inst = ClassUtils.loadClass(IProxyFactory.class);
-                }
-            }
-        }
-        return inst;
+        return Config.PROXY_FACTORY.get();
     }
 
     /**
@@ -147,22 +179,7 @@ public final class YMP {
      * @since 2.1.2
      */
     public static IPasswordProcessor getPasswordProcessor() {
-        IPasswordProcessor inst = passwordProcessor;
-        if (inst == null) {
-            synchronized (YMP.class) {
-                inst = passwordProcessor;
-                if (inst == null) {
-                    String passwordClassName = System.getProperty(IApplication.SYSTEM_PASS_CLASS);
-                    if (StringUtils.isNotBlank(passwordClassName)) {
-                        inst = ClassUtils.impl(passwordClassName, IPasswordProcessor.class, YMP.class);
-                    }
-                    if (inst == null) {
-                        passwordProcessor = inst = ClassUtils.loadClass(IPasswordProcessor.class, DefaultPasswordProcessor.class);
-                    }
-                }
-            }
-        }
-        return inst;
+        return Config.PASSWORD_PROCESSOR.get();
     }
 
     /**
@@ -181,22 +198,7 @@ public final class YMP {
      * @return 返回运行模式枚举值
      */
     public static IApplication.Environment getPriorityRunEnv(IApplication.Environment runEnv) {
-        IApplication.Environment env = environment;
-        if (env == null) {
-            synchronized (YMP.class) {
-                env = environment;
-                if (env == null) {
-                    try {
-                        String runDevStr = System.getProperty(IApplication.SYSTEM_ENV);
-                        if (StringUtils.isNotBlank(runDevStr)) {
-                            env = IApplication.Environment.valueOf(runDevStr.toUpperCase());
-                        }
-                    } catch (IllegalArgumentException ignored) {
-                    }
-                    environment = env = env != null ? env : IApplication.Environment.UNKNOWN;
-                }
-            }
-        }
+        IApplication.Environment env = Config.ENVIRONMENT.get();
         return IApplication.Environment.UNKNOWN.equals(env) && runEnv != null ? runEnv : env;
     }
 
@@ -232,7 +234,7 @@ public final class YMP {
                     if (LOG != null && LOG.isInfoEnabled()) {
                         LOG.info(String.format("Using IApplicationCreator class [%s].", creator.getClass().getName()));
                     }
-                    application = creator.create(systemMainClass, args, applicationInitializers);
+                    application = creator.create(MainClassResolver.MAIN_CLASS, args, applicationInitializers);
                     if (application == null) {
                         throw new IllegalStateException(String.format("IApplicationCreator [%s] returns the IApplication interface instance object invalid.", creator.getClass().getName()));
                     }
