@@ -99,8 +99,9 @@ public class ClassUtils {
         if (implClass != null) {
             if (interfaceClass == null || interfaceClass.isAssignableFrom(implClass)) {
                 try {
-                    return (T) implClass.newInstance();
-                } catch (IllegalAccessException | InstantiationException e) {
+                    return (T) implClass.getDeclaredConstructor().newInstance();
+                } catch (IllegalAccessException | InstantiationException | IllegalArgumentException |
+                         InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                     }
@@ -144,7 +145,7 @@ public class ClassUtils {
                     if (parameterTypes != null && parameterTypes.length > 0) {
                         return (T) implClass.getConstructor(parameterTypes).newInstance(initArgs);
                     }
-                    return (T) implClass.newInstance();
+                    return (T) implClass.getDeclaredConstructor().newInstance();
                 } catch (IllegalAccessException | IllegalArgumentException | InstantiationException |
                          NoSuchMethodException | SecurityException |
                          InvocationTargetException e) {
@@ -207,8 +208,9 @@ public class ClassUtils {
         }
         if (instance == null && defaultClass != null) {
             try {
-                instance = defaultClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+                instance = defaultClass.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException |
+                     InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
@@ -662,8 +664,9 @@ public class ClassUtils {
      */
     public static <T> BeanWrapper<T> wrapperClass(Class<T> clazz) {
         try {
-            return wrapper(clazz.newInstance());
-        } catch (IllegalAccessException | InstantiationException e) {
+            return wrapper(clazz.getDeclaredConstructor().newInstance());
+        } catch (IllegalAccessException | InstantiationException | IllegalArgumentException |
+                 InvocationTargetException | NoSuchMethodException | SecurityException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
@@ -779,7 +782,7 @@ public class ClassUtils {
                     synchronized (instancesCache) {
                         return ReentrantLockHelper.putIfAbsentAsync(instancesCache, clazz.getName(), () -> {
                             try {
-                                return clazz.newInstance();
+                                return clazz.getDeclaredConstructor().newInstance();
                             } catch (InstantiationException | IllegalAccessException e) {
                                 throw new RuntimeException(e.getMessage(), e);
                             }

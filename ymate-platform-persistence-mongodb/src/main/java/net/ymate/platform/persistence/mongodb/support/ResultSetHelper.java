@@ -53,7 +53,7 @@ public class ResultSetHelper {
             EntityMeta entityMeta = EntityMeta.load(entity);
             Object primaryKeyObject = null;
             if (entityMeta.isMultiplePrimaryKey()) {
-                primaryKeyObject = entityMeta.getPrimaryKeyClass().newInstance();
+                primaryKeyObject = entityMeta.getPrimaryKeyClass().getDeclaredConstructor().newInstance();
                 //
                 beanWrapper.getTargetObject().setId((Serializable) primaryKeyObject);
             }

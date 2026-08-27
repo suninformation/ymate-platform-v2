@@ -64,7 +64,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
     public void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception {
         Set<Class<?>> classes = load(filter);
         for (Class<?> clazz : classes) {
-            // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
+            // 不扫描注解、枚举类，被声明@Ignored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
             if (!clazz.isAnnotation() && !clazz.isEnum() && !clazz.isAnnotationPresent(Ignored.class)) {
                 Annotation[] annotations = clazz.getAnnotations();
                 for (Annotation annotation : annotations) {
@@ -86,7 +86,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
 
     protected List<Class<?>> doLoad(String packageName, IBeanFilter filter) throws Exception {
         List<Class<?>> returnValue = new ArrayList<>();
-        Enumeration<URL> resources = this.getClassLoader().getResources(packageName.replaceAll("\\.", "/"));
+        Enumeration<URL> resources = this.getClassLoader().getResources(packageName.replace(".", "/"));
         while (resources.hasMoreElements()) {
             URL res = resources.nextElement();
             if (FileUtils.PROTOCOL_FILE.equalsIgnoreCase(res.getProtocol()) || FileUtils.PROTOCOL_VFS_FILE.equalsIgnoreCase(res.getProtocol())) {
@@ -97,7 +97,9 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
                     }
                 }
             } else if (FileUtils.PROTOCOL_JAR.equalsIgnoreCase(res.getProtocol()) || FileUtils.PROTOCOL_WS_JAR.equalsIgnoreCase(res.getProtocol())) {
-                returnValue.addAll(findClassByJar(packageName, ((JarURLConnection) res.openConnection()).getJarFile(), filter));
+                try (JarFile jarFile = ((JarURLConnection) res.openConnection()).getJarFile()) {
+                    returnValue.addAll(findClassByJar(packageName, jarFile, filter));
+                }
             } else if (FileUtils.PROTOCOL_ZIP.equalsIgnoreCase(res.getProtocol())) {
                 returnValue.addAll(findClassByZip(res, filter));
             }
