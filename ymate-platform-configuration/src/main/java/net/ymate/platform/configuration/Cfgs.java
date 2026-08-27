@@ -294,7 +294,7 @@ public final class Cfgs implements IConfig {
                         provider = ClassUtils.impl(providerClass, IConfigurationProvider.class);
                     }
                     if (provider == null) {
-                        provider = doParseConfigurationProviderClass(cfgFileName).newInstance();
+                        provider = doParseConfigurationProviderClass(cfgFileName).getDeclaredConstructor().newInstance();
                     }
                     cfgFileName = StringUtils.trim(cfgFileName);
                     if (StringUtils.isBlank(cfgFileName)) {

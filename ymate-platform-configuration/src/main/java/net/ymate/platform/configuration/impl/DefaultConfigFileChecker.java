@@ -51,9 +51,8 @@ public class DefaultConfigFileChecker implements IConfigFileChecker, Runnable {
             if (timeInterval > 0) {
                 scheduledExecutorService = ThreadUtils.newScheduledThreadPool(1, DefaultThreadFactory.create("ConfigFileChecker"));
                 scheduledExecutorService.scheduleWithFixedDelay(this, timeInterval, timeInterval, TimeUnit.MILLISECONDS);
-                //
-                initialized = true;
             }
+            initialized = true;
         }
     }
 
@@ -99,8 +98,7 @@ public class DefaultConfigFileChecker implements IConfigFileChecker, Runnable {
         if (initialized) {
             initialized = false;
             if (scheduledExecutorService != null) {
-                scheduledExecutorService.shutdown();
-                scheduledExecutorService = null;
+                ThreadUtils.shutdownExecutorService(scheduledExecutorService);
             }
         }
     }
