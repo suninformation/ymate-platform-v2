@@ -112,7 +112,11 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
                     .serverHost(hostName)
                     .port(8284)
                     .build();
-            server = Servs.createServer(serverCfg, new TextLineCodec(), serverListener);
+            server = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
+                    .config(serverCfg)
+                    .codec(new TextLineCodec())
+                    .listener(serverListener)
+                    .build();
             server.start();
             Assert.assertTrue("第一个服务端应该已启动", server.isStarted());
             LOG.info("第一个TCP服务端已启动: " + hostName + ":8284");
@@ -125,7 +129,11 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
                         .serverHost(hostName)
                         .port(8284)
                         .build();
-                NioServer server2 = Servs.createServer(serverCfg2, new TextLineCodec(), serverListener);
+                NioServer server2 = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
+                        .config(serverCfg2)
+                        .codec(new TextLineCodec())
+                        .listener(serverListener)
+                        .build();
                 server2.start();
             } catch (IOException e) {
                 portConflict = true;
@@ -147,7 +155,11 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
                     .serverHost(hostName)
                     .port(8285)
                     .build();
-            udpServer = Servs.createUdpServer(serverCfg, new TextLineCodec(), this);
+            udpServer = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpServer()
+                    .config(serverCfg)
+                    .codec(new TextLineCodec())
+                    .listener(this)
+                    .build();
             udpServer.start();
             Assert.assertTrue("第一个UDP服务端应该已启动", udpServer.isStarted());
             LOG.info("第一个UDP服务端已启动: " + hostName + ":8285");
@@ -160,7 +172,11 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
                         .serverHost(hostName)
                         .port(8285)
                         .build();
-                NioUdpServer udpServer2 = Servs.createUdpServer(serverCfg2, new TextLineCodec(), this);
+                NioUdpServer udpServer2 = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpServer()
+                        .config(serverCfg2)
+                        .codec(new TextLineCodec())
+                        .listener(this)
+                        .build();
                 udpServer2.start();
             } catch (IOException e) {
                 portConflict = true;
@@ -182,7 +198,11 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
                     .remoteHost(hostName)
                     .port(9999) // 不存在的端口
                     .build();
-            NioClient client = Servs.createClient(clientCfg, new TextLineCodec(), null, null, clientListener);
+            NioClient client = Servs.<net.ymate.platform.serv.nio.client.NioClientListener, TextLineCodec>createClient()
+                    .config(clientCfg)
+                    .codec(new TextLineCodec())
+                    .listener(clientListener)
+                    .build();
             try {
                 client.connect();
             } catch (IOException e) {
@@ -207,7 +227,11 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
                     .remoteHost(hostName)
                     .port(9999) // 不存在的端口
                     .build();
-            NioUdpClient client = Servs.createUdpClient(clientCfg, new TextLineCodec(), null, this);
+            NioUdpClient client = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpClient()
+                    .config(clientCfg)
+                    .codec(new TextLineCodec())
+                    .listener(this)
+                    .build();
             client.connect();
             // UDP是无连接的，所以connect总是成功的
             client.close();
@@ -227,7 +251,11 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
                     .serverHost(hostName)
                     .port(8286)
                     .build();
-            server = Servs.createServer(serverCfg, new TextLineCodec(), serverListener);
+            server = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
+                    .config(serverCfg)
+                    .codec(new TextLineCodec())
+                    .listener(serverListener)
+                    .build();
             server.start();
             Assert.assertTrue("服务端应该已启动", server.isStarted());
 
@@ -237,7 +265,11 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
                     .remoteHost(hostName)
                     .port(8286)
                     .build();
-            NioClient client = Servs.createClient(clientCfg, new TextLineCodec(), null, null, clientListener);
+            NioClient client = Servs.<net.ymate.platform.serv.nio.client.NioClientListener, TextLineCodec>createClient()
+                    .config(clientCfg)
+                    .codec(new TextLineCodec())
+                    .listener(clientListener)
+                    .build();
             client.connect();
             Assert.assertTrue("客户端应该已连接", client.isConnected());
 

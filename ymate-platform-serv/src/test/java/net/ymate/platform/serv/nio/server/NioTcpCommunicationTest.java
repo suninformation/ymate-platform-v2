@@ -24,6 +24,7 @@ import net.ymate.platform.serv.impl.DefaultReconnectServiceImpl;
 import net.ymate.platform.serv.impl.DefaultServerCfg;
 import net.ymate.platform.serv.nio.INioSession;
 import net.ymate.platform.serv.nio.client.NioClient;
+import net.ymate.platform.serv.nio.client.NioClientListener;
 import net.ymate.platform.serv.nio.codec.TextLineCodec;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -131,28 +132,32 @@ public class NioTcpCommunicationTest {
                 .keepAliveTime(10000)
                 .build();
         // 创建并启动TCP服务端
-        server = Servs.createServer(serverCfg, new TextLineCodec(), new net.ymate.platform.serv.nio.server.NioServerListener() {
-            @Override
-            public void onMessageReceived(Object message, net.ymate.platform.serv.nio.INioSession session) throws IOException {
-                LOG.info("服务端收到消息: " + message);
-                if ("0".equals(message)) {
-                    heartbeatReceived.set(true);
-                    heartbeatLatch.countDown();
-                    LOG.info("服务端收到心跳包");
-                } else {
-                    receivedMessage.set(message.toString());
-                    messageLatch.countDown();
-                    // 回复客户端
-                    session.send("Server response: " + message);
-                }
-            }
+        server = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
+                .config(serverCfg)
+                .codec(new TextLineCodec())
+                .listener(new net.ymate.platform.serv.nio.server.NioServerListener() {
+                    @Override
+                    public void onMessageReceived(Object message, net.ymate.platform.serv.nio.INioSession session) throws IOException {
+                        LOG.info("服务端收到消息: " + message);
+                        if ("0".equals(message)) {
+                            heartbeatReceived.set(true);
+                            heartbeatLatch.countDown();
+                            LOG.info("服务端收到心跳包");
+                        } else {
+                            receivedMessage.set(message.toString());
+                            messageLatch.countDown();
+                            // 回复客户端
+                            session.send("Server response: " + message);
+                        }
+                    }
 
-            @Override
-            public void onSessionAccepted(net.ymate.platform.serv.nio.INioSession session) throws IOException {
-                LOG.info("服务端会话已打开: " + session.id());
-                super.onSessionAccepted(session);
-            }
-        });
+                    @Override
+                    public void onSessionAccepted(net.ymate.platform.serv.nio.INioSession session) throws IOException {
+                        LOG.info("服务端会话已打开: " + session.id());
+                        super.onSessionAccepted(session);
+                    }
+                })
+                .build();
         server.start();
         Assert.assertTrue("服务端应该已启动", server.isStarted());
         LOG.info("TCP服务端已启动: " + hostName + ":8283");
@@ -169,7 +174,13 @@ public class NioTcpCommunicationTest {
         // 创建并启动TCP客户端
         IHeartbeatService<String> heartbeatService = new DefaultHeartbeatServiceImpl();
         IReconnectService reconnectService = new DefaultReconnectServiceImpl();
-        client = Servs.createClient(clientCfg, new TextLineCodec(), reconnectService, heartbeatService, clientListener);
+        client = Servs.<NioClientListener, TextLineCodec>createClient()
+                .config(clientCfg)
+                .codec(new TextLineCodec())
+                .reconnect(reconnectService)
+                .heartbeat(heartbeatService)
+                .listener(clientListener)
+                .build();
         client.connect();
         Assert.assertTrue("客户端应该已连接", client.isConnected());
         LOG.info("TCP客户端已连接: " + hostName + ":8283");

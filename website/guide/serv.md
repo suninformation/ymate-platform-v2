@@ -116,43 +116,47 @@ public class TcpServer {
                 .serverHost("0.0.0.0")
                 .port(8281)
                 .build();
-        NioServer nioServer = Servs.createServer(serverCfg, new TextLineCodec(), new NioServerListener() {
-            @Override
-            public void onSessionRegistered(INioSession session) throws IOException {
-                System.out.println("Session registered: " + session);
-            }
+        NioServer nioServer = Servs.<NioServerListener, TextLineCodec>createServer()
+                .config(serverCfg)
+                .codec(new TextLineCodec())
+                .listener(new NioServerListener() {
+                    @Override
+                    public void onSessionRegistered(INioSession session) throws IOException {
+                        System.out.println("Session registered: " + session);
+                    }
 
-            @Override
-            public void onClientReconnected(IClient<?, ?> client) {
-                System.out.println("Client reconnected: " + client);
-            }
+                    @Override
+                    public void onClientReconnected(IClient<?, ?> client) {
+                        System.out.println("Client reconnected: " + client);
+                    }
 
-            @Override
-            public void onExceptionCaught(Throwable e, INioSession session) throws IOException {
-                super.onExceptionCaught(e, session);
-            }
+                    @Override
+                    public void onExceptionCaught(Throwable e, INioSession session) throws IOException {
+                        super.onExceptionCaught(e, session);
+                    }
 
-            @Override
-            public void onSessionAccepted(INioSession session) throws IOException {
-                super.onSessionAccepted(session);
-                System.out.println("Session accepted: " + session);
-            }
+                    @Override
+                    public void onSessionAccepted(INioSession session) throws IOException {
+                        super.onSessionAccepted(session);
+                        System.out.println("Session accepted: " + session);
+                    }
 
-            @Override
-            public void onMessageReceived(Object message, INioSession session) throws IOException {
-                session.send("Hi, guys! I received a message: " + message);
-            }
+                    @Override
+                    public void onMessageReceived(Object message, INioSession session) throws IOException {
+                        session.send("Hi, guys! I received a message: " + message);
+                    }
 
-            @Override
-            public void onAfterSessionClosed(INioSession session) throws IOException {
-                System.out.println("Session closed: " + session);
-            }
+                    @Override
+                    public void onAfterSessionClosed(INioSession session) throws IOException {
+                        System.out.println("Session closed: " + session);
+                    }
 
-            @Override
-            public void onBeforeSessionClosed(INioSession session) throws IOException {
-                System.out.println("Session closing: " + session);
-            }
-        });
+                    @Override
+                    public void onBeforeSessionClosed(INioSession session) throws IOException {
+                        System.out.println("Session closing: " + session);
+                    }
+                })
+                .build();
         nioServer.start();
     }
 }
@@ -182,18 +186,21 @@ public class UdpServer {
                 .serverHost("0.0.0.0")
                 .port(8281)
                 .build();
-        NioUdpServer nioUdpServer = Servs.createUdpServer(serverCfg, new TextLineCodec(), new AbstractNioUdpListener() {
+        NioUdpServer nioUdpServer = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpServer()
+                .config(serverCfg)
+                .codec(new TextLineCodec())
+                .listener(new AbstractNioUdpListener() {
+                    @Override
+                    public Object onMessageReceived(InetSocketAddress sourceAddress, Object message) throws IOException {
+                        return "Hi, guys! I received a message: " + message + ", from " + sourceAddress;
+                    }
 
-            @Override
-            public Object onMessageReceived(InetSocketAddress sourceAddress, Object message) throws IOException {
-                return "Hi, guys! I received a message: " + message + ", from " + sourceAddress;
-            }
-
-            @Override
-            public void onExceptionCaught(InetSocketAddress sourceAddress, Throwable e) throws IOException {
-                System.out.println(sourceAddress + "--->" + e);
-            }
-        });
+                    @Override
+                    public void onExceptionCaught(InetSocketAddress sourceAddress, Throwable e) throws IOException {
+                        System.out.println(sourceAddress + "--->" + e);
+                    }
+                })
+                .build();
         nioUdpServer.start();
     }
 }
@@ -284,7 +291,13 @@ public class TcpClientListener extends NioClientListener {
                 .remoteHost("0.0.0.0")
                 .port(8281)
                 .build();
-        NioClient nioClient = Servs.createClient(clientCfg, new TextLineCodec(), new DefaultReconnectServiceImpl(), new DefaultHeartbeatServiceImpl(), new TcpClientListener());
+        NioClient nioClient = Servs.<NioClientListener, TextLineCodec>createClient()
+                .config(clientCfg)
+                .codec(new TextLineCodec())
+                .reconnect(new DefaultReconnectServiceImpl())
+                .heartbeat(new DefaultHeartbeatServiceImpl())
+                .listener(new TcpClientListener())
+                .build();
         nioClient.connect();
     }
 
@@ -337,7 +350,12 @@ public class UdpClientListener extends AbstractNioUdpListener {
                 .remoteHost("0.0.0.0")
                 .port(8281)
                 .build();
-        NioUdpClient nioUdpClient = Servs.createUdpClient(clientCfg, new TextLineCodec(), new DefaultHeartbeatServiceImpl(), new UdpClientListener());
+        NioUdpClient nioUdpClient = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpClient()
+                .config(clientCfg)
+                .codec(new TextLineCodec())
+                .heartbeat(new DefaultHeartbeatServiceImpl())
+                .listener(new UdpClientListener())
+                .build();
         nioUdpClient.connect();
     }
 

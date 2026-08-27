@@ -274,7 +274,12 @@ public class NioUdpSessionManagerTest {
                 LOG.error("客户端异常: " + e.getMessage() + " 来自: " + sourceAddress, e);
             }
         };
-        NioUdpClient client = Servs.createUdpClient(clientCfg, new TextLineCodec(), heartbeatService, clientListener);
+        NioUdpClient client = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpClient()
+                .config(clientCfg)
+                .codec(new TextLineCodec())
+                .heartbeat(heartbeatService)
+                .listener(clientListener)
+                .build();
         client.connect();
         clients.add(client);
         LOG.info("UDP客户端已初始化: " + clientName + " -> " + hostName + ":8286");

@@ -63,4 +63,210 @@ public final class Servs {
         udpClient.initialize(clientCfg, listener, codec, null, heartbeat);
         return udpClient;
     }
+
+    // TCP Server Builder
+
+    /**
+     * TCP 服务端构建器
+     *
+     * @param <LISTENER> 监听器类型
+     * @param <CODEC>    编解码器类型
+     * @author 刘镇 (suninformation@163.com) on 2026/8/24
+     * @since 2.1.4
+     */
+    public static class ServerBuilder<LISTENER extends NioServerListener, CODEC extends INioCodec> {
+        private IServerCfg serverCfg;
+        private CODEC codec;
+        private LISTENER listener;
+
+        public ServerBuilder<LISTENER, CODEC> config(IServerCfg cfg) {
+            this.serverCfg = cfg;
+            return this;
+        }
+
+        public ServerBuilder<LISTENER, CODEC> codec(CODEC codec) {
+            this.codec = codec;
+            return this;
+        }
+
+        public ServerBuilder<LISTENER, CODEC> listener(LISTENER listener) {
+            this.listener = listener;
+            return this;
+        }
+
+        public NioServer build() {
+            return createServer(serverCfg, codec, listener);
+        }
+    }
+
+    /**
+     * 创建 TCP 服务端构建器
+     *
+     * @param <LISTENER> 监听器类型
+     * @param <CODEC>    编解码器类型
+     * @return 返回 TCP 服务端构建器实例
+     * @since 2.1.4
+     */
+    public static <LISTENER extends NioServerListener, CODEC extends INioCodec> ServerBuilder<LISTENER, CODEC> createServer() {
+        return new ServerBuilder<>();
+    }
+
+    // UDP Server Builder
+
+    /**
+     * UDP 服务端构建器
+     *
+     * @param <LISTENER> 监听器类型
+     * @param <CODEC>    编解码器类型
+     * @author 刘镇 (suninformation@163.com) on 2026/8/24
+     * @since 2.1.4
+     */
+    public static class UdpServerBuilder<LISTENER extends AbstractNioUdpListener, CODEC extends INioCodec> {
+        private IServerCfg serverCfg;
+        private CODEC codec;
+        private LISTENER listener;
+
+        public UdpServerBuilder<LISTENER, CODEC> config(IServerCfg cfg) {
+            this.serverCfg = cfg;
+            return this;
+        }
+
+        public UdpServerBuilder<LISTENER, CODEC> codec(CODEC codec) {
+            this.codec = codec;
+            return this;
+        }
+
+        public UdpServerBuilder<LISTENER, CODEC> listener(LISTENER listener) {
+            this.listener = listener;
+            return this;
+        }
+
+        public NioUdpServer build() {
+            return createUdpServer(serverCfg, codec, listener);
+        }
+    }
+
+    /**
+     * 创建 UDP 服务端构建器
+     *
+     * @param <LISTENER> 监听器类型
+     * @param <CODEC>    编解码器类型
+     * @return 返回 UDP 服务端构建器实例
+     * @since 2.1.4
+     */
+    public static <LISTENER extends AbstractNioUdpListener, CODEC extends INioCodec> UdpServerBuilder<LISTENER, CODEC> createUdpServer() {
+        return new UdpServerBuilder<>();
+    }
+
+    //TCP Client Builder
+
+    /**
+     * TCP 客户端构建器
+     *
+     * @param <LISTENER> 监听器类型
+     * @param <CODEC>    编解码器类型
+     * @author 刘镇 (suninformation@163.com) on 2026/8/24
+     * @since 2.1.4
+     */
+    public static class ClientBuilder<LISTENER extends NioClientListener, CODEC extends INioCodec> {
+        private IClientCfg clientCfg;
+        private CODEC codec;
+        private LISTENER listener;
+        private IReconnectService reconnectService;
+        private IHeartbeatService<?> heartbeatService;
+
+        public ClientBuilder<LISTENER, CODEC> config(IClientCfg cfg) {
+            this.clientCfg = cfg;
+            return this;
+        }
+
+        public ClientBuilder<LISTENER, CODEC> codec(CODEC codec) {
+            this.codec = codec;
+            return this;
+        }
+
+        public ClientBuilder<LISTENER, CODEC> listener(LISTENER listener) {
+            this.listener = listener;
+            return this;
+        }
+
+        public ClientBuilder<LISTENER, CODEC> reconnect(IReconnectService svc) {
+            this.reconnectService = svc;
+            return this;
+        }
+
+        public ClientBuilder<LISTENER, CODEC> heartbeat(IHeartbeatService<?> svc) {
+            this.heartbeatService = svc;
+            return this;
+        }
+
+        public NioClient build() throws Exception {
+            return createClient(clientCfg, codec, reconnectService, heartbeatService, listener);
+        }
+    }
+
+    /**
+     * 创建 TCP 客户端构建器
+     *
+     * @param <LISTENER> 监听器类型
+     * @param <CODEC>    编解码器类型
+     * @return 返回 TCP 客户端构建器实例
+     * @since 2.1.4
+     */
+    public static <LISTENER extends NioClientListener, CODEC extends INioCodec> ClientBuilder<LISTENER, CODEC> createClient() {
+        return new ClientBuilder<>();
+    }
+
+    // UDP Client Builder
+
+    /**
+     * UDP 客户端构建器
+     *
+     * @param <LISTENER> 监听器类型
+     * @param <CODEC>    编解码器类型
+     * @author 刘镇 (suninformation@163.com) on 2026/8/24
+     * @since 2.1.4
+     */
+    public static class UdpClientBuilder<LISTENER extends AbstractNioUdpListener, CODEC extends INioCodec> {
+        private IClientCfg clientCfg;
+        private CODEC codec;
+        private LISTENER listener;
+        private IHeartbeatService<?> heartbeatService;
+
+        public UdpClientBuilder<LISTENER, CODEC> config(IClientCfg cfg) {
+            this.clientCfg = cfg;
+            return this;
+        }
+
+        public UdpClientBuilder<LISTENER, CODEC> codec(CODEC codec) {
+            this.codec = codec;
+            return this;
+        }
+
+        public UdpClientBuilder<LISTENER, CODEC> listener(LISTENER listener) {
+            this.listener = listener;
+            return this;
+        }
+
+        public UdpClientBuilder<LISTENER, CODEC> heartbeat(IHeartbeatService<?> svc) {
+            this.heartbeatService = svc;
+            return this;
+        }
+
+        public NioUdpClient build() throws Exception {
+            return createUdpClient(clientCfg, codec, heartbeatService, listener);
+        }
+    }
+
+    /**
+     * 创建 UDP 客户端构建器
+     *
+     * @param <LISTENER> 监听器类型
+     * @param <CODEC>    编解码器类型
+     * @return 返回 UDP 客户端构建器实例
+     * @since 2.1.4
+     */
+    public static <LISTENER extends AbstractNioUdpListener, CODEC extends INioCodec> UdpClientBuilder<LISTENER, CODEC> createUdpClient() {
+        return new UdpClientBuilder<>();
+    }
 }

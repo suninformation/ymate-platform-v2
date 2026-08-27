@@ -92,7 +92,11 @@ public class NioUdpCommunicationTest extends AbstractNioUdpListener {
                 .keepAliveTime(10000)
                 .build();
         // 创建并启动UDP服务端
-        server = Servs.createUdpServer(serverCfg, new TextLineCodec(), this);
+        server = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpServer()
+                .config(serverCfg)
+                .codec(new TextLineCodec())
+                .listener(this)
+                .build();
         server.start();
         Assert.assertTrue("服务端应该已启动", server.isStarted());
         LOG.info("UDP服务端已启动: " + hostName + ":8282");
@@ -107,7 +111,12 @@ public class NioUdpCommunicationTest extends AbstractNioUdpListener {
                 .build();
         // 创建并启动UDP客户端
         IHeartbeatService<String> heartbeatService = new DefaultHeartbeatServiceImpl();
-        client = Servs.createUdpClient(clientCfg, new TextLineCodec(), heartbeatService, this);
+        client = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpClient()
+                .config(clientCfg)
+                .codec(new TextLineCodec())
+                .heartbeat(heartbeatService)
+                .listener(this)
+                .build();
         client.connect();
         LOG.info("UDP客户端已初始化: " + hostName + ":8282"); // UDP是无连接协议，不检查isConnected()
     }

@@ -44,9 +44,13 @@ examples:
 - 5行最简TCP服务端：
 ```java
 IServerCfg cfg = DefaultServerCfg.builder().serverName("srv").port(8281).build();
-NioServer server = Servs.createServer(cfg, new TextLineCodec(), new NioServerListener() {
-    public void onMessageReceived(Object msg, INioSession s) throws IOException { s.send("OK:"+msg); }
-});
+NioServer server = Servs.<NioServerListener, TextLineCodec>createServer()
+    .config(cfg)
+    .codec(new TextLineCodec())
+    .listener(new NioServerListener() {
+        public void onMessageReceived(Object msg, INioSession s) throws IOException { s.send("OK:"+msg); }
+    })
+    .build();
 server.start();
 ```
 
@@ -90,10 +94,10 @@ server.start();
 
 ## 3. 核心API速查（≤8条最常用）
 
-- `Servs.createServer(IServerCfg, INioCodec, NioServerListener)` → `NioServer`：创建TCP服务端
-- `Servs.createClient(IClientCfg, INioCodec, IReconnectService, IHeartbeatService, NioClientListener)` → `NioClient`：创建TCP客户端（含重连+心跳）
-- `Servs.createUdpServer(IServerCfg, INioCodec, AbstractNioUdpListener)` → `NioUdpServer`：创建UDP服务端
-- `Servs.createUdpClient(IClientCfg, INioCodec, IHeartbeatService, AbstractNioUdpListener)` → `NioUdpClient`：创建UDP客户端
+- `Servs.createServer()` → `ServerBuilder` → `.build()` → `NioServer`：创建TCP服务端
+- `Servs.createClient()` → `ClientBuilder` → `.build()` → `NioClient`：创建TCP客户端（含可选重连+心跳）
+- `Servs.createUdpServer()` → `UdpServerBuilder` → `.build()` → `NioUdpServer`：创建UDP服务端
+- `Servs.createUdpClient()` → `UdpClientBuilder` → `.build()` → `NioUdpClient`：创建UDP客户端
 - `NioServer.start()` / `NioClient.connect()`：启动服务端 / 连接客户端
 - `INioSession.send(Object message)`：会话发送消息
 - `DefaultServerCfg.builder().serverName().serverHost().port().build()`：构建服务端配置
@@ -152,7 +156,10 @@ public class TcpServerDemo {
                 .serverHost("0.0.0.0")
                 .port(8281)
                 .build();
-        NioServer nioServer = Servs.createServer(serverCfg, new TextLineCodec(), new NioServerListener() {
+        NioServer nioServer = Servs.<NioServerListener, TextLineCodec>createServer()
+                .config(serverCfg)
+                .codec(new TextLineCodec())
+                .listener(new NioServerListener() {
             @Override
             public void onSessionRegistered(INioSession session) throws IOException {
                 System.out.println("Session registered: " + session);
@@ -184,7 +191,8 @@ public class TcpServerDemo {
             public void onExceptionCaught(Throwable e, INioSession session) throws IOException {
                 e.printStackTrace();
             }
-        });
+        })
+                .build();
         nioServer.start();
         System.out.println("TCP Server started on port 8281...");
     }
@@ -248,13 +256,13 @@ public class TcpClientDemo extends NioClientListener {
                 .heartbeatInterval(30)
                 .reconnectionInterval(5)
                 .build();
-        NioClient nioClient = Servs.createClient(
-                clientCfg,
-                new TextLineCodec(),
-                new DefaultReconnectServiceImpl(),
-                new DefaultHeartbeatServiceImpl(),
-                new TcpClientDemo()
-        );
+        NioClient nioClient = Servs.<NioClientListener, TextLineCodec>createClient()
+                .config(clientCfg)
+                .codec(new TextLineCodec())
+                .reconnect(new DefaultReconnectServiceImpl())
+                .heartbeat(new DefaultHeartbeatServiceImpl())
+                .listener(new TcpClientDemo())
+                .build();
         nioClient.connect();
         System.out.println("TCP Client connected, type messages (quit to exit):");
         try (Scanner scanner = new Scanner(System.in)) {

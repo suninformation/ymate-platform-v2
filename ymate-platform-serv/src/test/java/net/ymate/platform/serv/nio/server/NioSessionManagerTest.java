@@ -287,7 +287,12 @@ public class NioSessionManagerTest {
                 .heartbeatInterval(10) // 10秒发送一次心跳
                 .build();
         IHeartbeatService<String> heartbeatService = new DefaultHeartbeatServiceImpl();
-        NioClient client = Servs.createClient(clientCfg, new TextLineCodec(), null, heartbeatService, new TestClientListener());
+        NioClient client = Servs.<NioClientListener, TextLineCodec>createClient()
+                .config(clientCfg)
+                .codec(new TextLineCodec())
+                .heartbeat(heartbeatService)
+                .listener(new TestClientListener())
+                .build();
         client.connect();
         Assert.assertTrue("客户端应该已连接", client.isConnected());
         clients.add(client);
