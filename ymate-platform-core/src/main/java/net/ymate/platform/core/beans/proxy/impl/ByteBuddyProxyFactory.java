@@ -28,6 +28,8 @@ import net.ymate.platform.core.beans.proxy.IProxyMethodParamHandler;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ByteBuddy代理工厂接口实现
@@ -37,24 +39,41 @@ import java.util.List;
  */
 public class ByteBuddyProxyFactory extends AbstractProxyFactory {
 
+    /**
+     * 代理类缓存（避免重复为目标类生成代理类导致 Metaspace 泄漏）
+     *
+     * 注意：仅适用于 createProxy(targetClass, List) 版本，因为代理链拦截器编译进代理类时
+     * 持有代理集合快照，需保证同一目标类的代理集合在应用生命周期内保持不变；
+     * createProxy(targetClass, methodParamHandler) 版本的处理器每次调用均可能不同，
+     * 无法安全缓存，故保持每次生成。
+     */
+    private final Map<Class<?>, Class<?>> proxyClassCache = new ConcurrentHashMap<>();
+
+    @Override
+    protected void doClose() throws Exception {
+        proxyClassCache.clear();
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public <T> T createProxy(Class<?> targetClass, List<IProxy> proxies) {
-        try (DynamicType.Unloaded<?> unloaded = new ByteBuddy()
-                .subclass(targetClass)
-                .method(ElementMatchers.any())
-                .intercept(MethodDelegation.to(new ProxyInterceptor(this, targetClass, proxies)))
-                .make()) {
-            return (T) unloaded.load(getClass().getClassLoader())
-                    .getLoaded()
-                    .newInstance();
+        try {
+            Class<?> proxyClass = proxyClassCache.computeIfAbsent(targetClass, key -> {
+                try (DynamicType.Unloaded<?> unloaded = new ByteBuddy()
+                        .subclass(key)
+                        .method(ElementMatchers.any())
+                        .intercept(MethodDelegation.to(new ProxyInterceptor(ByteBuddyProxyFactory.this, key, proxies)))
+                        .make()) {
+                    return unloaded.load(getClass().getClassLoader()).getLoaded();
+                }
+            });
+            return (T) proxyClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw RuntimeUtils.wrapRuntimeThrow(e);
         }
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> T createProxy(Class<?> targetClass, IProxyMethodParamHandler methodParamHandler) {
         try (DynamicType.Unloaded<?> unloaded = new ByteBuddy()
                 .subclass(targetClass)
@@ -63,6 +82,7 @@ public class ByteBuddyProxyFactory extends AbstractProxyFactory {
                 .make()) {
             return (T) unloaded.load(getClass().getClassLoader())
                     .getLoaded()
+                    .getDeclaredConstructor()
                     .newInstance();
         } catch (Exception e) {
             throw RuntimeUtils.wrapRuntimeThrow(e);

@@ -71,9 +71,19 @@ public abstract class AbstractProxyFactory implements IProxyFactory {
         if (initialized) {
             initialized = false;
             //
+            doClose();
             proxies.clear();
             owner = null;
         }
+    }
+
+    /**
+     * 关闭工厂时执行的清理动作，供子类扩展，默认空实现
+     *
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    protected void doClose() throws Exception {
     }
 
     @Override

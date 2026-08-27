@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * IoC受控类描述对象
@@ -38,6 +39,8 @@ public class BeanMeta implements Serializable {
     private boolean interfaceIgnored;
 
     private IInitializer initializer;
+
+    private final ReentrantLock createLock = new ReentrantLock();
 
     public static BeanMeta create(Class<?> beanClass) {
         return new BeanMeta(beanClass, false);
@@ -105,6 +108,14 @@ public class BeanMeta implements Serializable {
 
     public void setInitializer(IInitializer initializer) {
         this.initializer = initializer;
+    }
+
+    /**
+     * @return 获取Bean实例创建锁
+     * @since 2.0.6
+     */
+    public ReentrantLock getCreateLock() {
+        return createLock;
     }
 
     public Set<Class<?>> getInterfaces(Collection<Class<?>> excludedClassSet) {

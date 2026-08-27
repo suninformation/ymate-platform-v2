@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.beans.impl;
 
+import net.ymate.platform.commons.util.ClassFieldCache;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
@@ -35,8 +36,10 @@ import org.apache.commons.logging.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 默认对象工厂接口实现
@@ -57,19 +60,19 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     private IProxyFactory proxyFactory;
 
-    private final Map<Class<? extends Annotation>, IBeanInjector> beanInjectorMap = new HashMap<>();
+    private final Map<Class<? extends Annotation>, IBeanInjector> beanInjectorMap = new ConcurrentHashMap<>();
 
     /**
      * 对象类型 -> 对象实例
      */
-    private final Map<Class<?>, BeanMeta> beanInstancesMap = new HashMap<>();
+    private final Map<Class<?>, BeanMeta> beanInstancesMap = new ConcurrentHashMap<>();
 
     /**
      * 接口类型 -> 对象类型
      */
-    private final Map<Class<?>, Class<?>> beanInterfacesMap = new HashMap<>();
+    private final Map<Class<?>, Class<?>> beanInterfacesMap = new ConcurrentHashMap<>();
 
-    private final Set<Class<?>> excludedInterfaceClasses = new HashSet<>();
+    private final Set<Class<?>> excludedInterfaceClasses = ConcurrentHashMap.newKeySet();
 
     public DefaultBeanFactory() {
     }
@@ -196,7 +199,8 @@ public class DefaultBeanFactory implements IBeanFactory {
                 } else {
                     obj = (T) beanMeta.getBeanObject();
                     if (obj == null) {
-                        synchronized (beanMeta.getBeanClass()) {
+                        beanMeta.getCreateLock().lock();
+                        try {
                             obj = (T) beanMeta.getBeanObject();
                             if (obj == null) {
                                 obj = (T) doCreateObjectInst(beanMeta);
@@ -204,6 +208,8 @@ public class DefaultBeanFactory implements IBeanFactory {
                                     beanMeta.setBeanObject(obj);
                                 }
                             }
+                        } finally {
+                            beanMeta.getCreateLock().unlock();
                         }
                     }
                 }
@@ -276,50 +282,12 @@ public class DefaultBeanFactory implements IBeanFactory {
         return proxyFactory;
     }
 
-    private Object buildBeanProxyIfNeed(Class<?> targetClass, Object targetObject) throws IllegalAccessException, InstantiationException {
+    private Object buildBeanProxyIfNeed(Class<?> targetClass, Object targetObject) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         if (useProxy && !Modifier.isFinal(targetClass.getModifiers())) {
-            List<IProxy> proxies = proxyFactory.getProxies(new IProxyFilter() {
-
-                private boolean checkAnnotation(Proxy targetProxyAnn) {
-                    // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
-                    if (targetProxyAnn != null && targetProxyAnn.annotation().length > 0) {
-                        for (Class<? extends Annotation> annClass : targetProxyAnn.annotation()) {
-                            if (targetClass.isAnnotationPresent(annClass)) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-                    return true;
-                }
-
-                @Override
-                public boolean filter(IProxy targetProxy) {
-                    CleanProxy cleanProxy = targetClass.getAnnotation(CleanProxy.class);
-                    if (cleanProxy != null) {
-                        if (cleanProxy.value().length > 0) {
-                            for (Class<? extends IProxy> proxyClass : cleanProxy.value()) {
-                                if (proxyClass.equals(targetProxy.getClass())) {
-                                    return false;
-                                }
-                            }
-                        } else {
-                            return false;
-                        }
-                    }
-                    Proxy proxyAnn = targetProxy.getClass().getAnnotation(Proxy.class);
-                    // 若已设置作用包路径
-                    if (proxyAnn != null && StringUtils.isNotBlank(proxyAnn.packageScope())) {
-                        // 若当前类对象所在包路径匹配
-                        if (!Strings.CS.startsWith(targetClass.getPackage().getName(), proxyAnn.packageScope())) {
-                            return false;
-                        }
-                    }
-                    return checkAnnotation(proxyAnn);
-                }
-            });
+            List<IProxy> proxies = proxyFactory.getProxies(new BeanProxyFilter(targetClass));
             if (!proxies.isEmpty()) {
                 // 由于创建代理是通过接口重新实例化对象并覆盖原对象，所以需要复制原有对象成员（暂时先这样吧，还没想到好的处理办法）
+                // 注意：每次调用 createProxy 均创建新的代理实例（单例与否由 BeanMeta 控制），代理类的缓存与复用由各 IProxyFactory 实现内部负责
                 Object proxyObject = proxyFactory.createProxy(targetClass, proxies);
                 if (proxyObject != null) {
                     if (targetObject != null) {
@@ -332,7 +300,57 @@ public class DefaultBeanFactory implements IBeanFactory {
                 }
             }
         }
-        return targetObject != null ? targetObject : targetClass.newInstance();
+        return targetObject != null ? targetObject : targetClass.getDeclaredConstructor().newInstance();
+    }
+
+    /**
+     * Bean代理过滤器，用于判断代理是否适用于目标类
+     */
+    static class BeanProxyFilter implements IProxyFilter {
+
+        private final Class<?> targetClass;
+
+        BeanProxyFilter(Class<?> targetClass) {
+            this.targetClass = targetClass;
+        }
+
+        private boolean checkAnnotation(Proxy targetProxyAnn) {
+            // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
+            if (targetProxyAnn != null && targetProxyAnn.annotation().length > 0) {
+                for (Class<? extends Annotation> annClass : targetProxyAnn.annotation()) {
+                    if (targetClass.isAnnotationPresent(annClass)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean filter(IProxy targetProxy) {
+            CleanProxy cleanProxy = targetClass.getAnnotation(CleanProxy.class);
+            if (cleanProxy != null) {
+                if (cleanProxy.value().length > 0) {
+                    for (Class<? extends IProxy> proxyClass : cleanProxy.value()) {
+                        if (proxyClass.equals(targetProxy.getClass())) {
+                            return false;
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            }
+            Proxy proxyAnn = targetProxy.getClass().getAnnotation(Proxy.class);
+            // 若已设置作用包路径
+            if (proxyAnn != null && StringUtils.isNotBlank(proxyAnn.packageScope())) {
+                // 若当前类对象所在包路径匹配
+                if (!Strings.CS.startsWith(targetClass.getPackage().getName(), proxyAnn.packageScope())) {
+                    return false;
+                }
+            }
+            return checkAnnotation(proxyAnn);
+        }
     }
 
     /**
@@ -344,32 +362,30 @@ public class DefaultBeanFactory implements IBeanFactory {
      * @throws Exception 可能产生的异常
      */
     private void initBeanIoC(Class<?> targetClass, Object targetObject, BeanMeta.IInitializer initializer) throws Exception {
-        List<Field> fields = ClassUtils.getFields(targetClass, true);
+        List<Field> fields = ClassFieldCache.getFields(targetClass);
         if (!fields.isEmpty()) {
             for (Field field : fields) {
-                if (ClassUtils.isNormalField(field)) {
-                    Object injectObj = null;
-                    if (field.isAnnotationPresent(Inject.class)) {
-                        if (!field.getType().isInterface() && ClassUtils.isInterfaceOf(field.getType(), IModule.class)) {
-                            injectObj = owner.getModuleManager().getModule(field.getType().getName());
-                        } else {
-                            if (field.isAnnotationPresent(By.class)) {
-                                By injectBy = field.getAnnotation(By.class);
-                                if (!injectBy.value().isInterface() && ClassUtils.isInterfaceOf(injectBy.value(), IModule.class)) {
-                                    injectObj = owner.getModuleManager().getModule(injectBy.value().getName());
-                                } else {
-                                    injectObj = this.getBean(injectBy.value());
-                                }
+                Object injectObj = null;
+                if (field.isAnnotationPresent(Inject.class)) {
+                    if (!field.getType().isInterface() && ClassUtils.isInterfaceOf(field.getType(), IModule.class)) {
+                        injectObj = owner.getModuleManager().getModule(field.getType().getName());
+                    } else {
+                        if (field.isAnnotationPresent(By.class)) {
+                            By injectBy = field.getAnnotation(By.class);
+                            if (!injectBy.value().isInterface() && ClassUtils.isInterfaceOf(injectBy.value(), IModule.class)) {
+                                injectObj = owner.getModuleManager().getModule(injectBy.value().getName());
                             } else {
-                                injectObj = this.getBean(field.getType());
+                                injectObj = this.getBean(injectBy.value());
                             }
+                        } else {
+                            injectObj = this.getBean(field.getType());
                         }
                     }
-                    injectObj = tryBeanInjector(targetClass, field, injectObj);
-                    if (injectObj != null) {
-                        field.setAccessible(true);
-                        field.set(targetObject, injectObj);
-                    }
+                }
+                injectObj = tryBeanInjector(targetClass, field, injectObj);
+                if (injectObj != null) {
+                    field.setAccessible(true);
+                    field.set(targetObject, injectObj);
                 }
             }
         }
