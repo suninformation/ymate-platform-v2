@@ -17,6 +17,7 @@ package net.ymate.platform.core.beans.proxy;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/7 6:00 PM
@@ -30,7 +31,7 @@ public abstract class AbstractProxyChain implements IProxyChain {
     private final Object[] methodParams;
 
     private final List<IProxy> proxies;
-    private int index = 0;
+    private final AtomicInteger index = new AtomicInteger(0);
 
     public AbstractProxyChain(IProxyFactory owner, Class<?> targetClass, Object targetObject, Method targetMethod, Object[] methodParams, List<IProxy> proxies) {
         this.owner = owner;
@@ -69,8 +70,9 @@ public abstract class AbstractProxyChain implements IProxyChain {
     @Override
     public Object doProxyChain() throws Throwable {
         Object result;
-        if (index < proxies.size()) {
-            result = proxies.get(index++).doProxy(this);
+        int idx = index.getAndIncrement();
+        if (idx < proxies.size()) {
+            result = proxies.get(idx).doProxy(this);
         } else {
             result = doInvoke();
         }
