@@ -1589,6 +1589,7 @@ mvn ymate:module -Dname=demo
 | 参数        | 描述                                         |
 | ----------- | -------------------------------------------- |
 | name        | 模块名称，必须。                             |
+| useNewModule | 是否使用 `AbstractModule` 实现，默认值：`true` |
 | packageName | 指定模块包名称，默认值：`${project.groupId}` |
 | overwrite   | 是否覆盖已存在的文件，默认值：`false`        |
 
@@ -1838,6 +1839,8 @@ public final class DefaultDemoConfigurable extends DefaultModuleConfigurable {
 
 #### 步骤三：实现模块及业务接口
 
+##### 方式一：直接实现 `IModule` 接口
+
 ```java
 public final class Demo implements IModule, IDemo {
 
@@ -1944,6 +1947,114 @@ public final class Demo implements IModule, IDemo {
     }
 }
 ```
+
+> 说明：`IDemoConfig` 接口中的配置参数访问方法为 `paramOne()`，而示例中 `DefaultDemoConfig` 实现类定义的是 `getParam()`，两者并不一致，开发时请以实际接口定义为准。
+
+
+
+##### 方式二：基于抽象模块类 `AbstractModule` 实现（推荐）
+
+> 说明：该实现方式自 `2.1.4` 版本开始支持。
+
+`net.ymate.platform.core.module.AbstractModule` 是框架提供的模块抽象基类，它封装了模块初始化、配置加载、版本信息展示与生命周期管理的公共逻辑。与方式一（直接实现 `IModule` 接口）相比，基于 `AbstractModule` 开发模块无需自行维护 `owner`、`config`、`initialized` 等状态，也无需编写重复的配置加载与版本信息展示代码，子类只需实现少量抽象方法即可。
+
+抽象基类定义如下抽象方法（必须实现）：
+
+| 方法 | 说明 |
+| --- | --- |
+| `doGetModuleVersion()` | 返回模块版本标识，用于 `YMP#showModuleVersion` 输出版本信息 |
+| `doCreateModuleConfig(mainClass, moduleConfigurer)` | 从模块配置器创建模块配置实例 |
+| `doCreateDefaultConfig()` | 创建默认配置实例（无配置时返回 `null`） |
+| `onInit(owner)` | 模块初始化钩子，调用时 `config` 已加载完毕，在此执行注册事件、注册 `Handler`、`Proxy` 等逻辑 |
+| `onClose()` | 模块关闭钩子，在此执行特定的清理逻辑 |
+
+同时提供如下钩子方法（可按需重写）：
+
+| 方法 | 说明 |
+| --- | --- |
+| `onBeforeInit(owner)` | 模块初始化前钩子，在 `showVersion` 之前调用 |
+| `doShowVersion()` | 显示模块版本信息，默认调用 `YMP.showModuleVersion(doGetModuleVersion(), this)`，子类可按需重写（如扩展模块可能传入其他对象） |
+| `doLoadConfig(owner)` | 加载模块配置，子类可重写以提供自定义加载逻辑 |
+| `doInitConfig()` | 初始化配置实例，默认会优先判定 `config` 是否实现 `IInitialization` 接口并直接调用，否则回退到反射调用 |
+| `doDestroyConfig()` | 销毁配置实例，默认会优先判定 `config` 是否实现 `IDestroyable` 接口并直接调用，否则回退到反射调用 |
+| `doSetConfig(config)` | 设置模块配置实例，用于子类构造器中预置配置，替代默认加载流程 |
+
+基于 `AbstractModule` 重写上述 `Demo` 模块示例如下：
+
+```java
+public final class Demo extends AbstractModule<IDemoConfig> implements IDemo {
+
+    private static final LazyHolder<IDemo> instance = LazyHolder.of(() -> YMP.get().getModuleManager().getModule(Demo.class));
+
+    public static IDemo get() {
+        return instance.get();
+    }
+
+    public Demo() {
+    }
+
+    public Demo(IDemoConfig config) {
+        doSetConfig(config);
+    }
+
+    @Override
+    public String getName() {
+        return MODULE_NAME;
+    }
+
+    @Override
+    protected String doGetModuleVersion() {
+        return "module.demo";
+    }
+
+    @Override
+    protected IDemoConfig doCreateModuleConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return DefaultDemoConfig.create(mainClass, moduleConfigurer);
+    }
+
+    @Override
+    protected IDemoConfig doCreateDefaultConfig() {
+        return DefaultDemoConfig.defaultConfig();
+    }
+
+    @Override
+    protected void onInit(IApplication owner) throws Exception {
+        if (getConfig().isEnabled()) {
+            // TODO 在此处编写模块初始化逻辑
+        }
+    }
+
+    @Override
+    protected void onClose() throws Exception {
+        if (getConfig().isEnabled()) {
+            // TODO 在此处编写模块销毁逻辑
+        }
+    }
+
+    @Override
+    public IApplication getOwner() {
+        return super.getOwner();
+    }
+
+    @Override
+    public IDemoConfig getConfig() {
+        return super.getConfig();
+    }
+
+    @Override
+    public String sayHi(String name) {
+        // TODO 业务方法逻辑
+        return String.format("Hi! %s", StringUtils.defaultIfBlank(name, getConfig().paramOne()));
+    }
+}
+```
+
+与方式一的区别主要有以下几点：
+
+- 无需自行维护 `owner`、`config`、`initialized` 状态，也无需编写 `initialize`、`close`、`isInitialized` 等生命周期方法，这些均由 `AbstractModule` 统一实现。
+- 配置实例的加载（`doCreateModuleConfig` / `doCreateDefaultConfig`）、初始化（`doInitConfig`）与销毁（`doDestroyConfig`）均由基类自动完成，其中初始化与销毁会优先通过 `IInitialization` / `IDestroyable` 接口直接调用，否则回退到反射调用。
+- 版本信息展示由 `doShowVersion` 统一处理，子类仅需实现 `doGetModuleVersion` 返回版本标识。
+- 单例可通过 `LazyHolder` 简化，避免方式一中的双重检查锁定（DCL）样板代码。
 
 
 
