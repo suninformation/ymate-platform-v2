@@ -72,7 +72,6 @@ public class DefaultLoggerFactory implements ILoggerFactory {
     public void destroy() {
         if (initialized) {
             try {
-                ((LoggerContext) LogManager.getContext(false)).stop();
                 LogManager.shutdown();
             } catch (Throwable ignored) {
             }
