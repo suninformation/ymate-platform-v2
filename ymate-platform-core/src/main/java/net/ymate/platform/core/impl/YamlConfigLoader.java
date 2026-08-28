@@ -16,17 +16,22 @@
 package net.ymate.platform.core.impl;
 
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
 
 /**
  * YAML 配置文件加载与扁平化处理器
@@ -56,6 +61,8 @@ import java.util.Map;
  * ymp.excluded_packages = com.test|com.demo
  * ymp.configs.jdbc.connection_url = jdbc:mysql://localhost/db
  * </pre>
+ * <p>
+ * 同时支持反向转换：将扁平化的键值对集合（如 Properties 加载结果）还原为 YAML 层级结构并输出为格式化文本。
  *
  * @author 刘镇 (suninformation@163.com) on 2026-08-28 09:45
  * @since 2.1.4
@@ -154,6 +161,82 @@ public final class YamlConfigLoader {
     }
 
     /**
+     * 将扁平化的键值对集合（点号分隔键名，如 Properties 加载结果）转换为 YAML 格式文本
+     * <p>
+     * 转换规则与 {@link #flatten(Map)} 互逆：点号分隔的键名还原为层级嵌套结构，以竖线（|）连接的值还原为列表，
+     * 各层级键名按字典顺序排列；注意扁平化结构无法区分键名中本身包含点号的场景。
+     *
+     * @param source 扁平化的键值对集合，可为 Properties 对象
+     * @return 返回 YAML 格式文本，若 SnakeYAML 类库不可用则返回 null，若源集合为空则返回空字符串
+     * @since 2.1.4
+     */
+    public static String toYamlText(Map<?, ?> source) {
+        if (!YAML_AVAILABLE) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("SnakeYAML library was not found in classpath, the YAML text conversion has been skipped.");
+            }
+            return null;
+        }
+        if (source == null || source.isEmpty()) {
+            return StringUtils.EMPTY;
+        }
+        return SnakeYamlProcessor.dump(unflatten(source));
+    }
+
+    /**
+     * 将 Properties 对象转换为 YAML 格式文本
+     *
+     * @param properties Properties 对象
+     * @return 返回 YAML 格式文本，若 SnakeYAML 类库不可用则返回 null，若对象为空则返回空字符串
+     * @since 2.1.4
+     */
+    public static String toYamlText(Properties properties) {
+        return toYamlText((Map<?, ?>) properties);
+    }
+
+    /**
+     * 将扁平化的键值对集合还原为 YAML 层级嵌套 Map 结构，各层级键名按字典顺序排列
+     *
+     * @param source 扁平化的键值对集合
+     * @return 返回层级嵌套的 Map 对象
+     * @since 2.1.4
+     */
+    private static Map<String, Object> unflatten(Map<?, ?> source) {
+        Map<String, Object> returnValue = new TreeMap<>();
+        source.forEach((key, value) -> {
+            if (key == null || value == null) {
+                return;
+            }
+            String[] keyParts = String.valueOf(key).split("\\" + KEY_SEPARATOR);
+            Map<String, Object> current = returnValue;
+            for (int i = 0; i < keyParts.length - 1; i++) {
+                Object child = current.get(keyParts[i]);
+                if (!(child instanceof Map)) {
+                    child = new TreeMap<String, Object>();
+                    current.put(keyParts[i], child);
+                }
+                current = castToSourceMap(child);
+            }
+            current.put(keyParts[keyParts.length - 1], restoreValue(String.valueOf(value)));
+        });
+        return returnValue;
+    }
+
+    /**
+     * 还原键值数据：以竖线（|）连接的值转换为列表，与 {@link MapSafeConfigReader} 数组解析约定一致，其它值保持字符串
+     *
+     * @param value 原始字符串值
+     * @return 返回还原后的列表或字符串对象
+     * @since 2.1.4
+     */
+    private static Object restoreValue(String value) {
+        if (value.contains(ARRAY_SEPARATOR)) {
+            return Arrays.asList(StringUtils.split(value, ARRAY_SEPARATOR));
+        }
+        return value;
+    }
+
+    /**
      * 将 Map 类型的 YAML 节点值转换为目标泛型 Map 对象
      *
      * @param value YAML 节点值对象
@@ -181,6 +264,20 @@ public final class YamlConfigLoader {
          */
         static Map<String, Object> load(InputStream inputStream) {
             return new Yaml().load(inputStream);
+        }
+
+        /**
+         * 使用 SnakeYAML 将层级 Map 对象序列化为 YAML 格式文本，采用块级风格输出且不折行
+         *
+         * @param sourceMap 层级 Map 对象
+         * @return 返回 YAML 格式文本
+         * @since 2.1.4
+         */
+        static String dump(Map<String, Object> sourceMap) {
+            DumperOptions options = new DumperOptions();
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            options.setWidth(Integer.MAX_VALUE);
+            return new Yaml(options).dump(sourceMap);
         }
     }
 }
