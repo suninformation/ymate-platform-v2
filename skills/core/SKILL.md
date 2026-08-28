@@ -13,7 +13,8 @@ tags:
   - event
   - i18n
   - bean
-trigger: 当用户需要创建YMP应用启动类、@Bean注册与@Inject依赖注入、YMP.run()启动容器、@EnableAutoScan自动扫描、IApplication生命周期管理、事件监听/触发、I18N多语言时触发；AOP/拦截器问题请跳转core-aop模块
+  - yaml
+trigger: 当用户需要创建YMP应用启动类、@Bean注册与@Inject依赖注入、YMP.run()启动容器、@EnableAutoScan自动扫描、IApplication生命周期管理、事件监听/触发、I18N多语言、框架初始化配置文件(properties/YAML)加载时触发；AOP/拦截器问题请跳转core-aop模块
 tools:
   - dependency-injection
   - event-management
@@ -25,6 +26,7 @@ examples:
   - 通过application.getBeanFactory()获取容器Bean
   - @EventListener订阅事件 + Events.fireEvent()触发事件
   - I18N资源加载与多语言消息获取
+  - YAML格式ymp-conf初始化配置文件的分层加载与覆盖
 ---
 
 # Core 核心容器技能包
@@ -277,9 +279,18 @@ public class ModuleEventListener implements IEventListener<ModuleEvent> {
 }
 ```
 
-## 5. 配置速查（ymp-conf.properties / 注解配置）
+## 5. 配置速查（ymp-conf.properties / YAML / 注解配置）
 
 ### 5.1 配置文件常用项（ymp-conf.properties，放classpath根目录）
+
+框架从 `2.1.4` 版本开始支持 `properties` 和 `YAML`（`.yaml`/`.yml`）两种格式，YAML解析依赖 `org.yaml:snakeyaml`（可选依赖需自行引入，缺失时跳过YAML文件加载，不影响properties逻辑）。
+
+**加载规则（分层合并，后加载层覆盖先加载层的同名key）：**
+
+1. `-Dymp.configFile` 指定配置文件时（支持三种格式，需绝对路径）仅加载该文件，不再执行分层查找；
+2. 否则按以下顺序分层查找：全量基础 `ymp-conf.*`（永远加载） → 操作系统 `ymp-conf_WIN.*`/`ymp-conf_UNIX.*` → 运行环境 `ymp-conf_{env}.*`（JVM参数 `-Dymp.env` 指定，默认dev）；每层内按 `properties` → `yaml` → `yml` 顺序仅取第一个存在的文件；环境/系统配置文件仅书写需覆盖的配置项即可，其余由全量基础文件提供。
+
+**YAML格式约定：** 嵌套映射自动扁平化为点号分隔键名，集合元素用 `|` 连接（与properties数组书写约定一致）。
 
 | 配置key | 默认值 | 说明 |
 |---|---|---|
@@ -298,6 +309,21 @@ public class ModuleEventListener implements IEventListener<ModuleEvent> {
 | `ymp.configs.event.thread_queue_size` | `1024` | 事件线程池队列大小 |
 | `ymp.intercept.settings_enabled` | `false` | 是否开启拦截器全局规则（AOP用） |
 
+**YAML等价写法示例**（以下两种写法效果完全相同）：
+
+```yaml
+ymp:
+  dev_mode: true
+  excluded_packages:
+    - com.test
+    - com.demo
+```
+
+```properties
+ymp.dev_mode=true
+ymp.excluded_packages=com.test|com.demo
+```
+
 ### 5.2 启动注解配置（标注在启动类上）
 
 - `@EnableAutoScan`：value=扫描包数组、excluded=排除包、factoryClass=自定义BeanLoadFactory
@@ -314,6 +340,7 @@ public class ModuleEventListener implements IEventListener<ModuleEvent> {
 | @Inject注入字段为null | ①类无@Bean未注册 ②未@EnableAutoScan或扫描包不含该类 ③对象是new出来而非从BeanFactory获取 | 类加@Bean；启动类加@EnableAutoScan并指定正确value；通过 `app.getBeanFactory().getBean(X.class)` 获取实例 |
 | 接口多实现时注入报错/取到非期望实现 | 容器里同接口多个@Bean，按注册顺序取最后一个 | 注入字段上加`@By(具体实现Class.class)`显式指定 |
 | 启动类注解配置不生效 | ①static块未设置SYSTEM_MAIN_CLASS ②配置文件ymp-conf.properties中同key有非空值（配置文件优先） | static{System.setProperty(IApplication.SYSTEM_MAIN_CLASS, Starter.class.getName());}；需注解生效则清空配置文件对应项 |
+| YAML格式ymp-conf配置文件未生效 | ①工程缺少SnakeYAML依赖（optional依赖不传递）②同层级存在同名properties文件（properties优先加载）③-Bymp.configFile指定了其它文件 | pom显式引入org.yaml:snakeyaml；确认同层无同名properties文件占用；未指定configFile时按分层规则自动查找classpath根目录 |
 | @EventListener订阅APPLICATION_STARTUP/MODULE_STARTUP不触发 | 自动扫描在模块初始化后才执行，注解订阅注册太晚 | 实现 `IApplicationInitializer` 在 `afterEventInit()` 中手动 `events.registerListener(...)` 注册 |
 | 打包后找不到配置类/Bean未注册 | JVM未指定mainClass，或启动类不在扫描范围 | 启动参数加 `-Dymp.mainClass=com.example.Starter`，或static块强制设SYSTEM_MAIN_CLASS |
 | I18N.get(key)返回key本身而非值 | resources/i18n/下无对应properties文件或命名不对，或未被打包进classpath | 按 messages_zh_CN.properties 命名放 resources/i18n/，检查maven-resources配置 |

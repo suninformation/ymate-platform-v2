@@ -1,6 +1,6 @@
 ---
 name: ymp-configuration
-description: 配置体系模块，统一管理XML/Properties/JSON配置文件，支持注解驱动配置注入、动态重载
+description: 配置体系模块，统一管理XML/Properties/JSON/YAML配置文件，支持注解驱动配置注入、动态重载
 version: 2.1.4-dev
 author: YMP Team
 category: configuration
@@ -10,8 +10,9 @@ tags:
   - xml
   - properties
   - json
+  - yaml
   - dynamic-reload
-trigger: 当需要管理配置文件、@Configuration配置类、@ConfigValue注入、动态配置重载、配置体系目录结构时触发
+trigger: 当需要管理配置文件、解析YAML/JSON/Properties/XML格式配置、@Configuration配置类、@ConfigValue注入、动态配置重载、配置体系目录结构时触发
 tools:
   - configuration-management
   - file-parsing
@@ -19,7 +20,7 @@ tools:
 examples:
   - 创建@Configuration配置类并开启reload自动重载
   - 在@Bean服务中用@Configs和@ConfigValue注入配置值
-  - 加载XML/Properties/JSON格式配置文件
+  - 加载XML/Properties/JSON/YAML格式配置文件
   - 通过Cfgs.searchAsFile搜索配置体系中的文件
   - 设置ConfigurationConf的configHome和checkTimeInterval
 ---
@@ -47,7 +48,7 @@ Cfgs.get().fillCfg(new AppConfig());
 ## 1. 模块摘要
 
 通过规范的目录结构（全局>项目>模块三级优先级）实现配置文件等资源的统一管理，为模块化开发提供灵活部署方案。核心能力：
-- 默认支持 XML、Properties、JSON 三种配置文件解析，可通过 `IConfigurationProvider` 自定义扩展
+- 默认支持 XML、Properties、JSON、YAML 四种配置文件解析（YAML 依赖 SnakeYAML 类库，该类库为可选依赖需自行引入，缺失时跳过 YAML 加载且不影响其它格式），可通过 `IConfigurationProvider` 自定义扩展
 - `@Configuration` 注解声明配置类，无需编码即可自动加载填充
 - `@Configs` + `@ConfigValue` 直接向 Bean 字段或方法参数注入配置值
 - 修改配置文件无需重启，支持 `checkTimeInterval` 定时检查自动重新加载
@@ -73,6 +74,7 @@ Cfgs.get().fillCfg(new AppConfig());
 | `DefaultConfigurationProvider` | `net.ymate.platform.configuration.impl.DefaultConfigurationProvider` | XML格式默认解析器 | 无需直接调用，@Configuration的provider默认值 |
 | `PropertyConfigurationProvider` | `net.ymate.platform.configuration.impl.PropertyConfigurationProvider` | Properties格式解析器 | @Configuration的provider设为此Class |
 | `JSONConfigurationProvider` | `net.ymate.platform.configuration.impl.JSONConfigurationProvider` | JSON格式解析器 | @Configuration的provider设为此Class |
+| `YAMLConfigurationProvider` | `net.ymate.platform.configuration.impl.YAMLConfigurationProvider` | YAML格式解析器（依赖SnakeYAML） | @Configuration的provider设为此Class；文件扩展名为.yaml/.yml时按扩展名自动路由 |
 | `IConfiguration` | `net.ymate.platform.core.configuration.IConfiguration` | 配置对象接口 | `getString(String category, String key)` / `reload()` / `isModified()` |
 
 ## 3. 核心API速查（≤8条最常用调用）
@@ -301,4 +303,5 @@ public class DemoConfigService {
 | reload=true但修改后不生效 | checkTimeInterval=0（默认不开启） | 启动类@ConfigurationConf或properties中设置checkTimeInterval>0（如5000毫秒） |
 | Properties/MAP字段取出值不对 | Properties格式未按properties.<category>.<key>=value书写；MAP用`|`分隔或分级`key.subkey` | 严格按文档格式：集合用\|分隔，MAP用嵌套属性或attributes.xxx |
 | JSON配置解析异常 | JSON结构不符合categories/properties/attributes嵌套规范 | 参考文档JSON模板结构，必须有categories数组包裹category |
+| YAML配置文件未被解析或内容为空 | 工程缺少SnakeYAML依赖（optional依赖不传递，需自行引入）；或YAML结构不符合规范 | pom中显式引入org.yaml:snakeyaml；YAML内容结构与JSON格式一致：categories数组包裹category，集合content用列表书写，MAP用attributes键值对表示 |
 | 搜索文件返回null | 文件实际放错层级（全局/项目/模块）未对应configHome/projectName/moduleName设置 | 按三级优先级检查目录：全局<项目<模块，取最近匹配 |
