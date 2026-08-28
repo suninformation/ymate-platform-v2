@@ -82,6 +82,10 @@ public class FileUtils {
 
     public static final String FILE_SUFFIX_JSON = "json";
 
+    public static final String FILE_SUFFIX_YAML = "yaml";
+
+    public static final String FILE_SUFFIX_YML = "yml";
+
     private static final Log LOG = LogFactory.getLog(FileUtils.class);
 
     /**

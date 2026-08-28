@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,46 +61,128 @@ public final class DefaultApplicationConfigureParser implements IApplicationConf
     }
 
     public static IApplicationConfigureParser systemDefault() {
-        final Properties properties = new Properties();
-        try (InputStream inputStream = loadSystemConfig()) {
-            if (inputStream != null) {
-                properties.load(inputStream);
+        Map<String, String> configData = new LinkedHashMap<>();
+        String configFileName = System.getProperty(IApplication.SYSTEM_CONFIG_FILE);
+        if (StringUtils.isNotBlank(configFileName) && isSupportedConfigFile(FileUtils.getExtName(configFileName))) {
+            configFileName = RuntimeUtils.replaceEnvVariable(configFileName);
+            File configFile = new File(configFileName);
+            if (configFile.isAbsolute() && configFile.exists() && configFile.isFile()) {
+                if (loadConfigFile(configData, configFile)) {
+                    return new DefaultApplicationConfigureParser(configData);
+                }
             }
+        }
+        for (List<String> layerPaths : buildConfigFilePathLayers()) {
+            for (String filePath : layerPaths) {
+                try (InputStream inputStream = ResourceUtils.getResourceAsStream(DefaultApplicationConfigureParser.class, filePath)) {
+                    if (inputStream == null) {
+                        continue;
+                    }
+                    configData.putAll(parseConfigFile(inputStream, FileUtils.getExtName(filePath)));
+                    break;
+                } catch (IOException e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                    }
+                    break;
+                }
+            }
+        }
+        return new DefaultApplicationConfigureParser(configData);
+    }
+
+    /**
+     * 判断指定文件扩展名是否为受支持的配置文件类型（properties、yaml 或 yml）
+     *
+     * @param fileExtName 文件扩展名
+     * @return 若受支持则返回 true
+     * @since 2.1.4
+     */
+    private static boolean isSupportedConfigFile(String fileExtName) {
+        return Strings.CI.equals(fileExtName, FileUtils.FILE_SUFFIX_PROPERTIES)
+                || Strings.CI.equals(fileExtName, FileUtils.FILE_SUFFIX_YAML)
+                || Strings.CI.equals(fileExtName, FileUtils.FILE_SUFFIX_YML);
+    }
+
+    /**
+     * 加载指定的本地配置文件并将内容合并至 configData，根据文件扩展名选择解析方式
+     *
+     * @param configData 配置数据集合，加载成功后内容将被合并至此集合
+     * @param configFile 配置文件对象
+     * @return 若加载成功则返回 true
+     * @since 2.1.4
+     */
+    private static boolean loadConfigFile(Map<String, String> configData, File configFile) {
+        try (InputStream inputStream = Files.newInputStream(configFile.toPath())) {
+            configData.putAll(parseConfigFile(inputStream, FileUtils.getExtName(configFile)));
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("Found and load the configuration file: %s", configFile.getPath()));
+            }
+            return true;
         } catch (IOException e) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
         }
-        return new DefaultApplicationConfigureParser(properties);
+        return false;
     }
 
-    private static InputStream loadSystemConfig() {
-        String configFileName = System.getProperty(IApplication.SYSTEM_CONFIG_FILE);
-        if (StringUtils.isNotBlank(configFileName) && Strings.CI.equals(FileUtils.getExtName(configFileName), FileUtils.FILE_SUFFIX_PROPERTIES)) {
-            configFileName = RuntimeUtils.replaceEnvVariable(configFileName);
-            File configFile = new File(configFileName);
-            if (configFile.isAbsolute() && configFile.exists() && configFile.isFile()) {
-                try {
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info(String.format("Found and load the configuration file: %s", configFile.getPath()));
-                    }
-                    return new FileInputStream(configFile);
-                } catch (FileNotFoundException ignored) {
-                }
-            }
+    /**
+     * 构建分层配置文件路径列表，加载顺序为：全量基础配置、操作系统特定配置、运行环境特定配置，后加载者覆盖先加载者的同名键
+     * <p>
+     * 每个层级内按 properties、yaml、yml 顺序排列，仅加载第一个存在的文件
+     *
+     * @return 返回按加载顺序排列的分层路径列表
+     * @since 2.1.4
+     */
+    private static List<List<String>> buildConfigFilePathLayers() {
+        List<List<String>> layerPaths = new ArrayList<>();
+        layerPaths.add(buildLayerFilePaths(CONFIG_FILE_PREFIX));
+        if (RuntimeUtils.isWindows()) {
+            layerPaths.add(buildLayerFilePaths(CONFIG_FILE_PREFIX + "_WIN"));
+        } else if (RuntimeUtils.isUnixOrLinux()) {
+            layerPaths.add(buildLayerFilePaths(CONFIG_FILE_PREFIX + "_UNIX"));
         }
-        List<String> filePaths = new ArrayList<>();
         IApplication.Environment runEnv = YMP.getPriorityRunEnv(IApplication.Environment.DEV);
         if (runEnv != IApplication.Environment.UNKNOWN) {
-            filePaths.add(String.format("%s_%s.properties", CONFIG_FILE_PREFIX, runEnv.name()));
+            layerPaths.add(buildLayerFilePaths(CONFIG_FILE_PREFIX + "_" + runEnv.name()));
         }
-        if (RuntimeUtils.isWindows()) {
-            filePaths.add(String.format("%s_WIN.properties", CONFIG_FILE_PREFIX));
-        } else if (RuntimeUtils.isUnixOrLinux()) {
-            filePaths.add(String.format("%s_UNIX.properties", CONFIG_FILE_PREFIX));
+        return layerPaths;
+    }
+
+    /**
+     * 构建同一层级的配置文件路径列表，按 properties、yaml、yml 顺序排列
+     *
+     * @param filePrefix 配置文件名称前缀
+     * @return 返回该层级的候选文件路径列表
+     * @since 2.1.4
+     */
+    private static List<String> buildLayerFilePaths(String filePrefix) {
+        List<String> filePaths = new ArrayList<>(3);
+        filePaths.add(String.format("%s.%s", filePrefix, FileUtils.FILE_SUFFIX_PROPERTIES));
+        filePaths.add(String.format("%s.%s", filePrefix, FileUtils.FILE_SUFFIX_YAML));
+        filePaths.add(String.format("%s.%s", filePrefix, FileUtils.FILE_SUFFIX_YML));
+        return filePaths;
+    }
+
+    /**
+     * 根据文件扩展名解析配置输入流并转换为键值对集合：properties 文件直接加载，yaml/yml 文件解析并扁平化处理
+     *
+     * @param inputStream 配置文件输入流
+     * @param fileExtName 文件扩展名
+     * @return 返回解析后的键值对集合，若文件格式不受支持或 SnakeYAML 类库不可用则返回空集合
+     * @throws IOException 可能产生的任何异常
+     * @since 2.1.4
+     */
+    private static Map<String, String> parseConfigFile(InputStream inputStream, String fileExtName) throws IOException {
+        if (Strings.CI.equals(fileExtName, FileUtils.FILE_SUFFIX_YAML) || Strings.CI.equals(fileExtName, FileUtils.FILE_SUFFIX_YML)) {
+            return YamlConfigLoader.loadAndFlatten(inputStream);
         }
-        filePaths.add(String.format("%s.properties", CONFIG_FILE_PREFIX));
-        return ResourceUtils.getResourceAsStream(DefaultApplicationConfigureParser.class, filePaths.toArray(new String[0]));
+        Properties properties = new Properties();
+        properties.load(inputStream);
+        Map<String, String> configData = new LinkedHashMap<>();
+        properties.forEach((key, value) -> configData.put(BlurObject.bind(key).toStringValue(), BlurObject.bind(value).toStringValue()));
+        return configData;
     }
 
     public DefaultApplicationConfigureParser(Map<?, ?> configData) {

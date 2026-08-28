@@ -31,16 +31,49 @@ YMP 框架的初始化方式有两种，一种是配置文件方式，另一种�
 
 YMP 框架默认使用名称为 `ymp-conf.properties` 的配置文件 ，默认该文件放置在 `classpath` 的根路径下，也可以通过 `JVM` 启动参数 `-Dymp.configFile` 指定具体配置文件路径。
 
+框架从 `2.1.4` 版本开始同时支持 `properties` 和 `YAML`（`.yaml` 或 `.yml`）两种配置文件格式，`YAML` 格式的解析依赖 `SnakeYAML` 类库，该类库为可选依赖，请根据需要自行引入，若当前工程中不存在此类库，则跳过 `YAML` 配置文件的加载，原有 `properties` 配置逻辑不受影响。
+
 具体加载流程如下：
 
-- 首先，检查JVM启动参数 `-Dymp.env` 判断当前系统远行环境（默认值：`dev`）：
-  + `-Dymp.env=test`：测试环境，将优先加载 `ymp-conf_TEST.properties`
-  + `-Dymp.env=dev`：开发环境，将优先加载 `ymp-conf_DEV.properties`
-  + `-Dymp.env=product`：生产环境，将优先加载 `ymp-conf_PRODUCT.properties`
-- 若以上配置文件未找到，则尝试加载与当前操作系统类型相匹配的配置文件：
-    + Unix/Linux环境下，优先加载 `ymp-conf_UNIX.properties`
-    + Windows环境下，优先加载 `ymp-conf_WIN.properties`
-- 若以上配置文件未找到，则尝试加载 `ymp-conf.properties` 默认配置文件。
+- 首先，检查JVM启动参数 `-Dymp.configFile`，若指定了具体配置文件路径（支持 `properties`、`yaml` 和 `yml` 格式，要求绝对路径），则仅加载该配置文件，不再执行后续查找。
+- 若未指定或指定的配置文件加载失败，则按以下顺序分层查找并加载配置文件，每个层级内均按 `properties` → `yaml` → `yml` 的顺序优先加载第一个找到的文件，**后加载层级的配置项将覆盖先加载层级的同名配置项**：
+  1. 全量基础配置文件：`ymp-conf.properties` / `ymp-conf.yaml` / `ymp-conf.yml`，作为基础配置永远优先加载；
+  2. 操作系统特定配置文件（可选）：`ymp-conf_WIN.*` 或 `ymp-conf_UNIX.*`，仅覆盖需要针对操作系统调整的配置项；
+  3. 运行环境特定配置文件（可选）：根据JVM启动参数 `-Dymp.env` 判断当前运行环境（默认值：`dev`）：
+      + `-Dymp.env=dev`：开发环境，加载 `ymp-conf_DEV.*`
+      + `-Dymp.env=test`：测试环境，加载 `ymp-conf_TEST.*`
+      + `-Dymp.env=product`：生产环境，加载 `ymp-conf_PRODUCT.*`
+
+也就是说，环境特定与操作系统特定的配置文件不再要求是全量配置，仅书写需要覆盖的配置项即可，其余配置项将由全量基础配置文件提供。
+
+:::tip **关于 YAML 配置文件格式：**
+
+`YAML` 是层级嵌套结构，框架加载时会将其扁平化为点号分隔的键值对，以适配框架内部的配置分析器，规则如下：
+
+- 嵌套映射将递归展开为点号分隔的键名，如：`ymp.configs.jdbc.connection_url`；
+- 集合元素以竖线（`|`）连接为字符串，与 `properties` 文件中数组的书写约定保持一致；
+- 示例：
+
+```yaml
+ymp:
+  dev_mode: true
+  excluded_packages:
+    - com.test
+    - com.demo
+  configs:
+    jdbc:
+      connection_url: jdbc:mysql://localhost/db
+```
+
+以上内容等同于 `properties` 文件中的：
+
+```properties
+ymp.dev_mode=true
+ymp.excluded_packages=com.test|com.demo
+ymp.configs.jdbc.connection_url=jdbc:mysql://localhost/db
+```
+
+:::
 
 
 
