@@ -1,0 +1,42 @@
+#
+# Copyright 2007-present the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# YAML 配置文件内容格式与 JSON 格式结构一致:
+#   categories: 分类列表, 每个分类包含name、attributes和properties
+#   properties: 属性列表, 每个属性包含name、content和attributes
+categories:
+  - name: default
+    properties:
+      # 标量属性: content为属性值
+      - name: company_name
+        content: Apple Inc.
+        attributes: {}
+      # 数组和集合数据类型: content为列表
+      - name: products
+        content:
+          - iphone
+          - ipad
+          - imac
+          - itouch
+        attributes: {}
+      # MAP<K, V>数据类型: 属性键值对由attributes表示
+      - name: product_spec
+        content: spec.
+        attributes:
+          abc: xzy
+          color: red
+          weight: 120g
+          size: small
+          age: 2015

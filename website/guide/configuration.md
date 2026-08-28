@@ -27,7 +27,7 @@ slug: configuration
 - 从可维护角度将全部资源集成在整个体系中，具备有效的资源重用和灵活的系统集成构建、部署和数据备份与迁移等优势；
 - 简单的配置文件检索、加载及管理模式；
 - 模块间资源共享，模块（modules）可以共用所属项目（projects）的配置、类和包等资源文件；
-- 默认支持对 XML、Properties 和 JSON 配置文件的解析，可以通过 IConfigurationProvider 接口自定义文件格式，支持缓存，避免重复加载；
+- 默认支持对 XML、Properties、JSON 和 YAML 配置文件的解析，可以通过 IConfigurationProvider 接口自定义文件格式，支持缓存，避免重复加载；
 - 配置对象支持 @Configuration 注解方式声明，无需编码即可自动加载并填充配置内容到类对象；
 - 修改配置文件无需重启服务，支持自动重新加载；
 - 集成模块的构建（编译）与分发、服务的启动与停止，以及清晰的资源文件分类结构可快速定位；
@@ -357,7 +357,50 @@ public class DemoConfig extends DefaultConfiguration {
 
 
 
-### 示例四：无需创建配置对象, 直接加载配置文件
+### 示例四：解析YAML配置
+
+- 基于 YAML 文件的基础配置格式如下，内容结构与 JSON 格式一致，同样请将该文件命名为 `configuration.yaml` 并放置在 `config_home` 路径下的 `cfgs` 目录里：
+
+```yaml
+# 配置文件内容格式: categories为分类列表, 每个分类包含name、attributes和properties
+# 注意: attributes将作为关键字使用, 用于表示分类, 属性, 集合和MAP的子属性集合
+categories:
+  - name: default
+    properties:
+      # 举例1: 默认分类下表示公司名称, 属性值由content表示
+      - name: company_name
+        content: Apple Inc.
+        attributes: {}
+      # 数组和集合数据类型的表示方法: content为列表
+      - name: products
+        content:
+          - iphone
+          - ipad
+          - imac
+          - itouch
+        attributes: {}
+      # MAP<K, V>数据类型的表示方法: 属性键值对由attributes表示, 如color对应red
+      - name: product_spec
+        content: spec.
+        attributes:
+          abc: xzy
+          color: red
+          weight: 120g
+          size: small
+          age: 2015
+```
+
+- 修改配置类 `DemoConfig` 如下，通过 `@ConfigurationProvider` 注解指定配置文件内容解析器：
+
+```java
+@Configuration(value = "cfgs/configuration.yaml", provider = YAMLConfigurationProvider.class)
+public class DemoConfig extends DefaultConfiguration {
+}
+```
+
+
+
+### 示例五：无需创建配置对象, 直接加载配置文件
 
 ```java
 @EnableAutoScan
@@ -383,7 +426,7 @@ public class Starter {
 
 
 
-### 示例五：直接注入配置值
+### 示例六：直接注入配置值
 
 本例将演示如何直接通过 `@Configs` 和 `@ConfigValue` 注解注入 `DemoConfig` 配置对象中的配置值：
 

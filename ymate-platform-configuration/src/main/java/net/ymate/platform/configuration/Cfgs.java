@@ -243,6 +243,8 @@ public final class Cfgs implements IConfig {
                 return PropertyConfigurationProvider.class;
             } else if (Strings.CI.equalsAny(extName, FILE_SUFFIX_JSON)) {
                 return JSONConfigurationProvider.class;
+            } else if (Strings.CI.equalsAny(extName, FILE_SUFFIX_YAML, FILE_SUFFIX_YML)) {
+                return YAMLConfigurationProvider.class;
             }
         }
         return config.getConfigurationProviderClass();
