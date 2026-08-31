@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package net.ymate.platform.cache.support;
 
 import net.ymate.platform.cache.*;
+import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.IRedisCommandHolder;
@@ -50,6 +51,13 @@ public class RedisCacheWrapper implements ICache {
     private final ICaches owner;
 
     private final ICacheEventListener cacheEventListener;
+
+    /**
+     * 缓存域级锁实例：每个缓存域只创建/初始化一次，行为与 EhCacheWrapper 返回 this 保持一致，
+     * 保证锁重入、持锁状态跟踪在同一个实例上下文中正确运行。
+     * 使用 volatile + DCL 安全发布；close 时会将此字段置 null，避免悬挂引用。
+     */
+    private volatile IRedisCacheLocker redisCacheLocker;
 
     public RedisCacheWrapper(ICaches owner, IRedis redis, String cacheName, final ICacheEventListener cacheEventListener) {
         this.owner = owner;
@@ -102,7 +110,7 @@ public class RedisCacheWrapper implements ICache {
             Object cacheValue;
             if (owner.getConfig().isStorageWithSet()) {
                 cacheValue = deserializeValue(commander.hget(cacheName, cacheKey));
-                if (owner.getConfig().isEnabledSubscribeExpired() && cacheValue != null && Boolean.TRUE.equals(!commander.exists(cacheName.concat(SEPARATOR).concat(cacheKey)))) {
+                if (owner.getConfig().isEnabledSubscribeExpired() && cacheValue != null && !BlurObject.bind(commander.exists(cacheName.concat(SEPARATOR).concat(cacheKey))).toBooleanValue()) {
                     remove(key);
                 }
             } else {
@@ -279,22 +287,41 @@ public class RedisCacheWrapper implements ICache {
 
     @Override
     public void close() throws Exception {
+        // 先关闭缓存锁实例：停止看门狗续期、拒绝新锁请求，避免持有者还在跑但 redis 已 null 的 NPE 窗口
+        IRedisCacheLocker lockerSnapshot = this.redisCacheLocker;
+        this.redisCacheLocker = null;
+        if (lockerSnapshot instanceof java.io.Closeable) {
+            try {
+                ((java.io.Closeable) lockerSnapshot).close();
+            } catch (Exception e) {
+                // close 仅做兜底，吞掉异常避免打断主销毁流程；错误会被 locker 内部日志记录
+            }
+        }
         redis = null;
     }
 
     @Override
     public ICacheLocker acquireCacheLocker() {
-        // 通过 SPI 方式尝试加载基于 Redis 的锁实现
-        IRedisCacheLocker redisCacheLocker = ClassUtils.loadClass(IRedisCacheLocker.class, RedisCacheLocker.class);
-        if (redisCacheLocker != null && !redisCacheLocker.isInitialized()) {
-            try {
-                redisCacheLocker.initialize(owner, redis, cacheName);
-            } catch (CacheException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new CacheException(e);
+        IRedisCacheLocker locker = redisCacheLocker;
+        if (locker == null) {
+            synchronized (this) {
+                locker = redisCacheLocker;
+                if (locker == null) {
+                    // 通过 SPI 方式尝试加载基于 Redis 的锁实现，无 SPI 扩展则回退到默认的 RedisCacheLocker
+                    locker = ClassUtils.loadClass(IRedisCacheLocker.class, RedisCacheLocker.class);
+                    if (locker != null && !locker.isInitialized()) {
+                        try {
+                            locker.initialize(owner, redis, cacheName);
+                        } catch (CacheException e) {
+                            throw e;
+                        } catch (Exception e) {
+                            throw new CacheException(e);
+                        }
+                    }
+                    redisCacheLocker = locker;
+                }
             }
         }
-        return redisCacheLocker;
+        return locker;
     }
 }
