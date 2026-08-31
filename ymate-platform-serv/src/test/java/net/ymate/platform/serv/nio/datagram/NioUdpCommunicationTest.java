@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.serv.nio.datagram;
 
-import net.ymate.platform.commons.util.NetworkUtils;
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IHeartbeatService;
 import net.ymate.platform.serv.IServerCfg;
@@ -24,8 +22,8 @@ import net.ymate.platform.serv.Servs;
 import net.ymate.platform.serv.impl.DefaultClientCfg;
 import net.ymate.platform.serv.impl.DefaultHeartbeatServiceImpl;
 import net.ymate.platform.serv.impl.DefaultServerCfg;
+import net.ymate.platform.serv.nio.NioTestSupport;
 import net.ymate.platform.serv.nio.codec.TextLineCodec;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.*;
@@ -55,6 +53,8 @@ public class NioUdpCommunicationTest extends AbstractNioUdpListener {
 
     private String hostName;
 
+    private int serverPort;
+
     private final AtomicReference<String> receivedMessage = new AtomicReference<>();
 
     private final AtomicInteger messageCount = new AtomicInteger(0);
@@ -67,31 +67,21 @@ public class NioUdpCommunicationTest extends AbstractNioUdpListener {
 
     @Before
     public void setUp() throws Exception {
-        // 获取本地IP地址
-        String[] ipAddresses = NetworkUtils.IP.getHostIPAddresses();
-        if (ArrayUtils.isNotEmpty(ipAddresses)) {
-            hostName = ipAddresses[0];
-        } else {
-            hostName = NetworkUtils.IP.getHostName();
-        }
-        // 启动服务端
+        hostName = NioTestSupport.getLocalHostName();
+        serverPort = NioTestSupport.getAvailablePort();
         startServer();
-        // 等待服务端启动
-        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
-        // 启动客户端
+        // 等待服务端 NIO selector 就绪，避免客户端消息在服务端注册完成前发送导致丢失
+        Thread.sleep(500);
         startClient();
-        // 等待客户端连接
-        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
     }
 
     private void startServer() throws Exception {
         IServerCfg serverCfg = DefaultServerCfg.builder()
                 .serverName("UdpTestServer")
                 .serverHost(hostName)
-                .port(8282)
+                .port(serverPort)
                 .keepAliveTime(10000)
                 .build();
-        // 创建并启动UDP服务端
         server = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpServer()
                 .config(serverCfg)
                 .codec(new TextLineCodec())
@@ -99,17 +89,16 @@ public class NioUdpCommunicationTest extends AbstractNioUdpListener {
                 .build();
         server.start();
         Assert.assertTrue("服务端应该已启动", server.isStarted());
-        LOG.info("UDP服务端已启动: " + hostName + ":8282");
+        LOG.info(String.format("UDP服务端已启动: %s:%d", hostName, serverPort));
     }
 
     private void startClient() throws Exception {
         IClientCfg clientCfg = DefaultClientCfg.builder()
                 .clientName("UdpTestClient")
                 .remoteHost(hostName)
-                .port(8282)
-                .heartbeatInterval(5) // 5秒发送一次心跳
+                .port(serverPort)
+                .heartbeatInterval(5)
                 .build();
-        // 创建并启动UDP客户端
         IHeartbeatService<String> heartbeatService = new DefaultHeartbeatServiceImpl();
         client = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpClient()
                 .config(clientCfg)
@@ -118,47 +107,44 @@ public class NioUdpCommunicationTest extends AbstractNioUdpListener {
                 .listener(this)
                 .build();
         client.connect();
-        LOG.info("UDP客户端已初始化: " + hostName + ":8282"); // UDP是无连接协议，不检查isConnected()
+        // 等待客户端 NIO 线程完成 registerEvent（selectionKey 和 status 均就绪），
+        // 避免 send() 在 selectionKey 为 null 时静默丢弃消息
+        Assert.assertTrue("客户端应该已就绪", waitForClientConnected(client, 5, TimeUnit.SECONDS));
+        LOG.info(String.format("UDP客户端已初始化: %s:%d", hostName, serverPort));
     }
 
     @After
     public void tearDown() throws Exception {
-        try {
-            // 等待一段时间，确保所有消息和心跳都已处理
-            Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-            // 关闭客户端
-            if (client != null) {
-                client.close();
+        NioTestSupport.closeQuietly(client, server);
+    }
+
+    private boolean waitForClientConnected(NioUdpClient client, long timeout, TimeUnit unit) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < deadline) {
+            if (client.isConnected()) {
+                return true;
             }
-            // 关闭服务端
-            if (server != null) {
-                server.close();
-            }
-        } catch (Exception e) {
-            LOG.error("测试清理失败", RuntimeUtils.unwrapThrow(e));
+            Thread.sleep(100);
         }
+        return client.isConnected();
     }
 
     @Test
     public void testBasicCommunication() throws Exception {
-        // 发送测试消息
         String testMessage = "Hello UDP Server!";
         client.send(testMessage);
         LOG.info("已发送消息: " + testMessage);
 
-        // 等待消息接收
         boolean received = messageLatch.await(5, TimeUnit.SECONDS);
         Assert.assertTrue("应该收到服务端响应", received);
         Assert.assertNotNull("接收到的消息不应为null", receivedMessage.get());
         LOG.info("收到服务端响应: " + receivedMessage.get());
 
-        // 验证消息计数
         Assert.assertTrue("消息计数应该大于0", messageCount.get() > 0);
     }
 
     @Test
     public void testHeartbeat() throws Exception {
-        // 等待心跳包
         boolean received = heartbeatLatch.await(10, TimeUnit.SECONDS);
         Assert.assertTrue("应该收到心跳包", received);
         Assert.assertTrue("心跳包标志应该为true", heartbeatReceived.get());
@@ -194,7 +180,6 @@ public class NioUdpCommunicationTest extends AbstractNioUdpListener {
         LOG.info("服务端收到消息: " + msg + " 来自: " + sourceAddress);
         messageCount.incrementAndGet();
 
-        // 检查是否为心跳包
         if ("0".equals(msg)) {
             heartbeatReceived.set(true);
             heartbeatLatch.countDown();
@@ -202,7 +187,6 @@ public class NioUdpCommunicationTest extends AbstractNioUdpListener {
         } else {
             receivedMessage.set(msg);
             messageLatch.countDown();
-            // 回复客户端
             return "Server response: " + msg;
         }
         return null;

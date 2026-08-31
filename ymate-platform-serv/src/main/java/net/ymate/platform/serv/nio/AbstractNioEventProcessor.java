@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,11 @@ public abstract class AbstractNioEventProcessor<LISTENER extends IListener<INioS
             SelectionKey key = channel.register(selector, ops, session);
             if (session != null) {
                 session.selectionKey(key);
-                session.status(INioSession.Status.CONNECTED);
+                // TCP 客户端使用 OP_CONNECT 注册时连接尚未建立，不应设置 CONNECTED 状态
+                // 实际连接状态由 onConnectedEvent 在 finishConnect() 成功后设置
+                if ((ops & SelectionKey.OP_CONNECT) == 0) {
+                    session.status(INioSession.Status.CONNECTED);
+                }
                 //
                 if (eventGroup.isServer() && session.isUdp()) {
                     return;
@@ -167,10 +171,14 @@ public abstract class AbstractNioEventProcessor<LISTENER extends IListener<INioS
                     continue;
                 }
                 INioSession session = (INioSession) element[2];
-                SelectionKey selectionKey = channel.register(selector, (Integer) element[1], session);
+                int ops = (Integer) element[1];
+                SelectionKey selectionKey = channel.register(selector, ops, session);
                 if (session != null) {
                     session.selectionKey(selectionKey);
-                    session.status(INioSession.Status.CONNECTED);
+                    // TCP 客户端使用 OP_CONNECT 注册时连接尚未建立，不应设置 CONNECTED 状态
+                    if ((ops & SelectionKey.OP_CONNECT) == 0) {
+                        session.status(INioSession.Status.CONNECTED);
+                    }
                     //
                     eventGroup.listener().onSessionRegistered(session);
                 }
@@ -255,10 +263,10 @@ public abstract class AbstractNioEventProcessor<LISTENER extends IListener<INioS
             SocketChannel channel = (SocketChannel) key.interestOps(0).channel();
             if (channel.finishConnect()) {
                 session.finishConnect();
+                session.selectionKey(key);
+                session.status(INioSession.Status.CONNECTED);
+                eventGroup.listener().onSessionConnected(session);
             }
-            session.selectionKey(key);
-            session.status(INioSession.Status.CONNECTED);
-            eventGroup.listener().onSessionConnected(session);
         }
     }
 

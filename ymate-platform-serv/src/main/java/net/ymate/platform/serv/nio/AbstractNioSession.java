@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,11 +60,13 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
 
     private final SelectableChannel channel;
 
-    private SelectionKey selectionKey;
+    // volatile: selectionKey 和 status 由 NIO 线程写入，被其他线程（如测试线程、心跳线程）读取，
+    // 必须保证可见性，否则 isConnected() 返回 true 时 selectionKey 可能仍为 null，导致 send() 静默丢弃消息
+    private volatile SelectionKey selectionKey;
 
     private ByteBufferBuilder bufferBuilder;
 
-    private Status status;
+    private volatile Status status;
 
     private final boolean udp;
 

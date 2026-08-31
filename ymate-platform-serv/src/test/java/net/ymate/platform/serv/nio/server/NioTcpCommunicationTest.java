@@ -15,18 +15,16 @@
  */
 package net.ymate.platform.serv.nio.server;
 
-import net.ymate.platform.commons.util.NetworkUtils;
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.*;
 import net.ymate.platform.serv.impl.DefaultClientCfg;
 import net.ymate.platform.serv.impl.DefaultHeartbeatServiceImpl;
 import net.ymate.platform.serv.impl.DefaultReconnectServiceImpl;
 import net.ymate.platform.serv.impl.DefaultServerCfg;
 import net.ymate.platform.serv.nio.INioSession;
+import net.ymate.platform.serv.nio.NioTestSupport;
 import net.ymate.platform.serv.nio.client.NioClient;
 import net.ymate.platform.serv.nio.client.NioClientListener;
 import net.ymate.platform.serv.nio.codec.TextLineCodec;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.*;
@@ -35,7 +33,6 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -55,9 +52,9 @@ public class NioTcpCommunicationTest {
 
     private String hostName;
 
-    private final AtomicReference<String> receivedMessage = new AtomicReference<>();
+    private int serverPort;
 
-    private final AtomicInteger messageCount = new AtomicInteger(0);
+    private final AtomicReference<String> receivedMessage = new AtomicReference<>();
 
     private final AtomicBoolean heartbeatReceived = new AtomicBoolean(false);
 
@@ -69,9 +66,11 @@ public class NioTcpCommunicationTest {
 
     private final CountDownLatch reconnectLatch = new CountDownLatch(1);
 
+    private volatile CountDownLatch connectedLatch;
+
     private final ClientListener clientListener = new ClientListener();
 
-    private class ClientListener extends net.ymate.platform.serv.nio.client.NioClientListener {
+    private class ClientListener extends NioClientListener {
         @Override
         public void onSessionRegistered(INioSession session) throws IOException {
             LOG.info("客户端会话已注册");
@@ -80,6 +79,7 @@ public class NioTcpCommunicationTest {
         @Override
         public void onSessionConnected(INioSession session) throws IOException {
             LOG.info("客户端会话已打开");
+            connectedLatch.countDown();
         }
 
         @Override
@@ -107,31 +107,21 @@ public class NioTcpCommunicationTest {
 
     @Before
     public void setUp() throws Exception {
-        // 获取本地IP地址
-        String[] ipAddresses = NetworkUtils.IP.getHostIPAddresses();
-        if (ArrayUtils.isNotEmpty(ipAddresses)) {
-            hostName = ipAddresses[0];
-        } else {
-            hostName = NetworkUtils.IP.getHostName();
-        }
-        // 启动服务端
+        hostName = NioTestSupport.getLocalHostName();
+        serverPort = NioTestSupport.getAvailablePort();
+        connectedLatch = new CountDownLatch(1);
         startServer();
-        // 等待服务端启动
-        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
-        // 启动客户端
         startClient();
-        // 等待客户端连接
-        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
+        Assert.assertTrue("客户端应该已连接", connectedLatch.await(5, TimeUnit.SECONDS));
     }
 
     private void startServer() throws Exception {
         IServerCfg serverCfg = DefaultServerCfg.builder()
                 .serverName("TcpTestServer")
                 .serverHost(hostName)
-                .port(8283)
+                .port(serverPort)
                 .keepAliveTime(10000)
                 .build();
-        // 创建并启动TCP服务端
         server = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
                 .config(serverCfg)
                 .codec(new TextLineCodec())
@@ -146,7 +136,6 @@ public class NioTcpCommunicationTest {
                         } else {
                             receivedMessage.set(message.toString());
                             messageLatch.countDown();
-                            // 回复客户端
                             session.send("Server response: " + message);
                         }
                     }
@@ -160,18 +149,17 @@ public class NioTcpCommunicationTest {
                 .build();
         server.start();
         Assert.assertTrue("服务端应该已启动", server.isStarted());
-        LOG.info("TCP服务端已启动: " + hostName + ":8283");
+        LOG.info(String.format("TCP服务端已启动: %s:%d", hostName, serverPort));
     }
 
     private void startClient() throws Exception {
         IClientCfg clientCfg = DefaultClientCfg.builder()
                 .clientName("TcpTestClient")
                 .remoteHost(hostName)
-                .port(8283)
-                .heartbeatInterval(5) // 5秒发送一次心跳
-                .reconnectionInterval(3) // 3秒重连一次
+                .port(serverPort)
+                .heartbeatInterval(5)
+                .reconnectionInterval(3)
                 .build();
-        // 创建并启动TCP客户端
         IHeartbeatService<String> heartbeatService = new DefaultHeartbeatServiceImpl();
         IReconnectService reconnectService = new DefaultReconnectServiceImpl();
         client = Servs.<NioClientListener, TextLineCodec>createClient()
@@ -182,47 +170,28 @@ public class NioTcpCommunicationTest {
                 .listener(clientListener)
                 .build();
         client.connect();
-        Assert.assertTrue("客户端应该已连接", client.isConnected());
-        LOG.info("TCP客户端已连接: " + hostName + ":8283");
+        LOG.info(String.format("TCP客户端已初始化: %s:%d", hostName, serverPort));
     }
 
     @After
     public void tearDown() throws Exception {
-        try {
-            // 等待一段时间，确保所有消息和心跳都已处理
-            Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-            // 关闭客户端
-            if (client != null) {
-                client.close();
-            }
-            // 关闭服务端
-            if (server != null) {
-                server.close();
-            }
-        } catch (Exception e) {
-            LOG.error("测试清理失败", RuntimeUtils.unwrapThrow(e));
-        }
+        NioTestSupport.closeQuietly(client, server);
     }
 
     @Test
     public void testBasicCommunication() throws Exception {
-        // 发送测试消息
         String testMessage = "Hello TCP Server!";
         client.send(testMessage);
         LOG.info("已发送消息: " + testMessage);
 
-        // 等待消息接收
         boolean received = messageLatch.await(5, TimeUnit.SECONDS);
         Assert.assertTrue("应该收到服务端响应", received);
         Assert.assertNotNull("接收到的消息不应为null", receivedMessage.get());
         LOG.info("收到服务端响应: " + receivedMessage.get());
-
-        // 消息计数验证已移除，因为服务端监听器直接处理消息
     }
 
     @Test
     public void testHeartbeat() throws Exception {
-        // 等待心跳包
         boolean received = heartbeatLatch.await(10, TimeUnit.SECONDS);
         Assert.assertTrue("应该收到心跳包", received);
         Assert.assertTrue("心跳包标志应该为true", heartbeatReceived.get());
@@ -247,32 +216,31 @@ public class NioTcpCommunicationTest {
 
     @Test
     public void testReconnect() throws Exception {
-        // 验证初始连接状态
         Assert.assertTrue("客户端初始状态应该已连接", client.isConnected());
 
-        // 关闭服务端模拟网络断开
         LOG.info("关闭服务端模拟网络断开...");
         server.close();
 
-        // 等待一段时间，确保客户端检测到连接断开
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+        Thread.sleep(TimeUnit.SECONDS.toMillis(3));
 
-        // 重新启动服务端
         LOG.info("重新启动服务端...");
         startServer();
 
-        // 等待客户端重连（增加等待时间，确保重连服务有足够时间检测和重连）
         LOG.info("等待客户端重连...");
+        // 注意: DefaultReconnectServiceImpl 中 onClientReconnected 在 reconnect() 之前调用，
+        // 即 reconnectLatch 被 countDown 时连接可能尚未真正建立，需要额外等待 isConnected()
         boolean reconnectedSuccess = reconnectLatch.await(30, TimeUnit.SECONDS);
+        if (reconnectedSuccess) {
+            reconnectedSuccess = waitForClientReconnected(client, 10, TimeUnit.SECONDS);
+        }
 
-        // 如果重连失败，尝试手动触发重连
         if (!reconnectedSuccess) {
             LOG.info("自动重连失败，尝试手动触发重连...");
             try {
                 client.reconnect();
-                // 等待重连完成
-                Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-                reconnectedSuccess = client.isConnected();
+                // 手动 reconnect() 不会触发 onClientReconnected 回调，
+                // 需要直接轮询 isConnected() 判断连接是否建立
+                reconnectedSuccess = waitForClientReconnected(client, 10, TimeUnit.SECONDS);
                 if (reconnectedSuccess) {
                     LOG.info("手动重连成功");
                 }
@@ -281,11 +249,19 @@ public class NioTcpCommunicationTest {
             }
         }
 
-        // 验证重连是否成功
         Assert.assertTrue("客户端应该成功重连", reconnectedSuccess);
         Assert.assertTrue("客户端应该已重新连接", client.isConnected());
-
         LOG.info("断线重连测试通过");
     }
 
+    private boolean waitForClientReconnected(NioClient client, long timeout, TimeUnit unit) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < deadline) {
+            if (client.isConnected()) {
+                return true;
+            }
+            Thread.sleep(200);
+        }
+        return client.isConnected();
+    }
 }

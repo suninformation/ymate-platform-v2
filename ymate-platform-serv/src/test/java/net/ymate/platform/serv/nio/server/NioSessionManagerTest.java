@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.serv.nio.server;
 
-import net.ymate.platform.commons.util.NetworkUtils;
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IHeartbeatService;
 import net.ymate.platform.serv.IServerCfg;
@@ -25,10 +23,10 @@ import net.ymate.platform.serv.impl.DefaultClientCfg;
 import net.ymate.platform.serv.impl.DefaultHeartbeatServiceImpl;
 import net.ymate.platform.serv.impl.DefaultServerCfg;
 import net.ymate.platform.serv.nio.INioSession;
+import net.ymate.platform.serv.nio.NioTestSupport;
 import net.ymate.platform.serv.nio.client.NioClient;
 import net.ymate.platform.serv.nio.client.NioClientListener;
 import net.ymate.platform.serv.nio.codec.TextLineCodec;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.*;
@@ -59,9 +57,13 @@ public class NioSessionManagerTest {
 
     private String hostName;
 
+    private int serverPort;
+
     private final AtomicInteger clientConnectCount = new AtomicInteger(0);
 
-    private final CountDownLatch clientsConnectedLatch = new CountDownLatch(3);
+    private CountDownLatch clientsConnectedLatch;
+
+    private volatile CountDownLatch sessionAcceptedLatch;
 
     private final AtomicReference<String> testClientSessionId = new AtomicReference<>();
 
@@ -77,7 +79,12 @@ public class NioSessionManagerTest {
                 testClientSessionId.set(sessionWrapper.getId());
                 LOG.info("记录测试客户端会话ID: " + sessionWrapper.getId());
             }
-            clientsConnectedLatch.countDown();
+            if (clientsConnectedLatch != null) {
+                clientsConnectedLatch.countDown();
+            }
+            if (sessionAcceptedLatch != null) {
+                sessionAcceptedLatch.countDown();
+            }
             LOG.info("当前连接客户端数量: " + sessionManager.sessionCount());
         }
 
@@ -92,7 +99,6 @@ public class NioSessionManagerTest {
         public void onMessageReceived(String message, NioSessionWrapper sessionWrapper) throws IOException {
             super.onMessageReceived(message, sessionWrapper);
             LOG.info("服务端收到消息: " + message + " 来自: " + sessionWrapper.getId());
-            // 回复客户端
             sessionWrapper.getSession().send("Server response: " + message);
         }
 
@@ -137,68 +143,47 @@ public class NioSessionManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        // 获取本地IP地址
-        String[] ipAddresses = NetworkUtils.IP.getHostIPAddresses();
-        if (ArrayUtils.isNotEmpty(ipAddresses)) {
-            hostName = ipAddresses[0];
-        } else {
-            hostName = NetworkUtils.IP.getHostName();
-        }
-        // 启动会话管理器
+        hostName = NioTestSupport.getLocalHostName();
+        serverPort = NioTestSupport.getAvailablePort();
+        clientConnectCount.set(0);
+        testClientSessionId.set(null);
+        clientsConnectedLatch = new CountDownLatch(3);
+        sessionAcceptedLatch = new CountDownLatch(1);
         startSessionManager();
-        // 等待会话管理器启动
-        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
     }
 
     private void startSessionManager() throws Exception {
         IServerCfg serverCfg = DefaultServerCfg.builder()
                 .serverName("TcpSessionManagerTestServer")
                 .serverHost(hostName)
-                .port(8285)
+                .port(serverPort)
                 .keepAliveTime(10000)
                 .build();
-        // 初始化会话监听器
         sessionListener = new TestSessionListener();
-        // 创建并初始化会话管理器
         sessionManager = new NioSessionManager<>(serverCfg, new TextLineCodec(), sessionListener);
         sessionManager.initialize();
-        LOG.info("TCP会话管理器已启动: " + hostName + ":8285");
+        LOG.info(String.format("TCP会话管理器已启动: %s:%d", hostName, serverPort));
     }
 
     @After
     public void tearDown() throws Exception {
-        try {
-            // 关闭所有客户端
-            for (NioClient client : clients) {
-                if (client != null) {
-                    client.close();
-                }
-            }
-            clients.clear();
-            // 等待一段时间，确保所有客户端都已关闭
-            Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-            // 关闭会话管理器
-            if (sessionManager != null) {
-                sessionManager.close();
-            }
-        } catch (Exception e) {
-            LOG.error("测试清理失败", RuntimeUtils.unwrapThrow(e));
+        for (NioClient client : clients) {
+            NioTestSupport.closeQuietly(client);
         }
+        clients.clear();
+        NioTestSupport.closeQuietly(sessionManager);
     }
 
     @Test
     public void testMultiClientConnection() throws Exception {
-        // 连接3个客户端
         for (int i = 1; i <= 3; i++) {
             connectClient("Client-" + i);
         }
 
-        // 等待所有客户端连接成功
         boolean allConnected = clientsConnectedLatch.await(30, TimeUnit.SECONDS);
         Assert.assertTrue("所有客户端应该成功连接", allConnected);
         Assert.assertEquals("客户端连接数量应该为3", 3, sessionManager.sessionCount());
 
-        // 输出所有客户端会话信息
         LOG.info("\n=== 所有客户端会话信息 ===");
         Collection<NioSessionWrapper> sessionWrappers = sessionManager.sessionWrappers();
         for (NioSessionWrapper sessionWrapper : sessionWrappers) {
@@ -209,16 +194,11 @@ public class NioSessionManagerTest {
 
     @Test
     public void testFindClient() throws Exception {
-        // 连接1个客户端
         connectClient("FindTestClient");
 
-        // 等待客户端连接成功
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+        Assert.assertNotNull("测试客户端会话ID不应该为null", testClientSessionId.get());
 
-        // 验证客户端是否存在
         String sessionId = testClientSessionId.get();
-        Assert.assertNotNull("测试客户端会话ID不应该为null", sessionId);
-
         boolean exists = sessionManager.contains(sessionId);
         Assert.assertTrue("测试客户端应该存在", exists);
 
@@ -231,14 +211,9 @@ public class NioSessionManagerTest {
 
     @Test
     public void testSendToSpecificClient() throws Exception {
-        // 连接2个客户端
         connectClient("SendTestClient1");
         connectClient("SendTestClient2");
 
-        // 等待客户端连接成功
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-
-        // 向指定客户端发送消息
         String sessionId = testClientSessionId.get();
         Assert.assertNotNull("测试客户端会话ID不应该为null", sessionId);
 
@@ -251,15 +226,11 @@ public class NioSessionManagerTest {
 
     @Test
     public void testDisconnectSpecificClient() throws Exception {
-        // 连接2个客户端
         connectClient("DisconnectTestClient1");
         connectClient("DisconnectTestClient2");
 
-        // 等待客户端连接成功
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
         Assert.assertEquals("客户端连接数量应该为2", 2, sessionManager.sessionCount());
 
-        // 断开指定客户端连接
         String sessionId = testClientSessionId.get();
         Assert.assertNotNull("测试客户端会话ID不应该为null", sessionId);
 
@@ -268,23 +239,20 @@ public class NioSessionManagerTest {
 
         sessionManager.closeSessionWrapper(sessionWrapper);
 
-        // 等待一段时间，确保客户端已断开
-        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
-
-        // 验证客户端是否已断开
-        boolean exists = sessionManager.contains(sessionId);
-        Assert.assertFalse("测试客户端应该不存在", exists);
+        Assert.assertTrue("等待客户端断开超时", waitForSessionCount(1, 5, TimeUnit.SECONDS));
+        Assert.assertFalse("测试客户端应该不存在", sessionManager.contains(sessionId));
         Assert.assertEquals("客户端连接数量应该为1", 1, sessionManager.sessionCount());
 
         LOG.info("断开指定客户端连接测试通过，会话ID: " + sessionId);
     }
 
-    private void connectClient(String clientName) throws Exception {
+    private NioClient connectClient(String clientName) throws Exception {
+        sessionAcceptedLatch = new CountDownLatch(1);
         IClientCfg clientCfg = DefaultClientCfg.builder()
                 .clientName(clientName)
                 .remoteHost(hostName)
-                .port(8285)
-                .heartbeatInterval(10) // 10秒发送一次心跳
+                .port(serverPort)
+                .heartbeatInterval(10)
                 .build();
         IHeartbeatService<String> heartbeatService = new DefaultHeartbeatServiceImpl();
         NioClient client = Servs.<NioClientListener, TextLineCodec>createClient()
@@ -294,8 +262,32 @@ public class NioSessionManagerTest {
                 .listener(new TestClientListener())
                 .build();
         client.connect();
-        Assert.assertTrue("客户端应该已连接", client.isConnected());
+        Assert.assertTrue("客户端应该已连接: " + clientName, waitForClientConnected(client, 5, TimeUnit.SECONDS));
+        Assert.assertTrue("服务端应该已接受连接: " + clientName, sessionAcceptedLatch.await(5, TimeUnit.SECONDS));
         clients.add(client);
         LOG.info("客户端已连接: " + clientName);
+        return client;
+    }
+
+    private boolean waitForClientConnected(NioClient client, long timeout, TimeUnit unit) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < deadline) {
+            if (client.isConnected()) {
+                return true;
+            }
+            Thread.sleep(100);
+        }
+        return client.isConnected();
+    }
+
+    private boolean waitForSessionCount(int expected, long timeout, TimeUnit unit) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < deadline) {
+            if (sessionManager.sessionCount() == expected) {
+                return true;
+            }
+            Thread.sleep(100);
+        }
+        return sessionManager.sessionCount() == expected;
     }
 }

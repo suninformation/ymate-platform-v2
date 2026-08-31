@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.serv.nio.datagram;
 
-import net.ymate.platform.commons.util.NetworkUtils;
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IHeartbeatService;
 import net.ymate.platform.serv.IServerCfg;
@@ -24,8 +22,8 @@ import net.ymate.platform.serv.Servs;
 import net.ymate.platform.serv.impl.DefaultClientCfg;
 import net.ymate.platform.serv.impl.DefaultHeartbeatServiceImpl;
 import net.ymate.platform.serv.impl.DefaultServerCfg;
+import net.ymate.platform.serv.nio.NioTestSupport;
 import net.ymate.platform.serv.nio.codec.TextLineCodec;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.*;
@@ -57,9 +55,13 @@ public class NioUdpSessionManagerTest {
 
     private String hostName;
 
+    private int serverPort;
+
     private final AtomicInteger clientConnectCount = new AtomicInteger(0);
 
-    private final CountDownLatch clientsConnectedLatch = new CountDownLatch(3);
+    private CountDownLatch clientsConnectedLatch;
+
+    private volatile CountDownLatch messageReceivedLatch;
 
     private final AtomicReference<InetSocketAddress> testClientAddress = new AtomicReference<>();
 
@@ -71,20 +73,19 @@ public class NioUdpSessionManagerTest {
             InetSocketAddress sourceAddress = sessionWrapper.getId();
             LOG.info("服务端收到消息: " + message + " 来自: " + sourceAddress);
 
-            // 记录第一个客户端的地址
-            if (clientConnectCount.get() == 0) {
+            int count = clientConnectCount.incrementAndGet();
+            if (count == 1) {
                 testClientAddress.set(sourceAddress);
                 LOG.info("记录测试客户端地址: " + sourceAddress);
             }
-
-            // 增加客户端连接计数
-            int count = clientConnectCount.incrementAndGet();
-            if (count <= 3) {
+            if (count <= 3 && clientsConnectedLatch != null) {
                 clientsConnectedLatch.countDown();
                 LOG.info("当前连接客户端数量: " + sessionManager.sessionCount());
             }
+            if (!"0".equals(message) && messageReceivedLatch != null) {
+                messageReceivedLatch.countDown();
+            }
 
-            // 回复客户端
             return "Server response: " + message;
         }
 
@@ -101,71 +102,47 @@ public class NioUdpSessionManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        // 重置测试变量
+        hostName = NioTestSupport.getLocalHostName();
+        serverPort = NioTestSupport.getAvailablePort();
         clientConnectCount.set(0);
         testClientAddress.set(null);
-        // 获取本地IP地址
-        String[] ipAddresses = NetworkUtils.IP.getHostIPAddresses();
-        if (ArrayUtils.isNotEmpty(ipAddresses)) {
-            hostName = ipAddresses[0];
-        } else {
-            hostName = NetworkUtils.IP.getHostName();
-        }
-        // 启动会话管理器
+        clientsConnectedLatch = new CountDownLatch(3);
+        messageReceivedLatch = new CountDownLatch(1);
         startSessionManager();
-        // 等待会话管理器启动
-        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
     }
 
     @After
     public void tearDown() throws Exception {
-        try {
-            // 关闭所有客户端
-            for (NioUdpClient client : clients) {
-                if (client != null) {
-                    client.close();
-                }
-            }
-            clients.clear();
-            // 等待一段时间，确保所有客户端都已关闭
-            Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-            // 关闭会话管理器
-            if (sessionManager != null) {
-                sessionManager.close();
-            }
-        } catch (Exception e) {
-            LOG.error("测试清理失败", RuntimeUtils.unwrapThrow(e));
+        for (NioUdpClient client : clients) {
+            NioTestSupport.closeQuietly(client);
         }
+        clients.clear();
+        NioTestSupport.closeQuietly(sessionManager);
     }
 
     private void startSessionManager() throws Exception {
         IServerCfg serverCfg = DefaultServerCfg.builder()
                 .serverName("UdpSessionManagerTestServer")
                 .serverHost(hostName)
-                .port(8286)
+                .port(serverPort)
                 .keepAliveTime(10000)
                 .build();
-        // 初始化会话监听器
         sessionListener = new TestUdpSessionListener();
-        // 创建并初始化会话管理器
         sessionManager = new NioUdpSessionManager<>(serverCfg, new TextLineCodec(), sessionListener);
         sessionManager.initialize();
-        LOG.info("UDP会话管理器已启动: " + hostName + ":8286");
+        LOG.info(String.format("UDP会话管理器已启动: %s:%d", hostName, serverPort));
     }
 
     @Test
     public void testMultiClientConnection() throws Exception {
-        // 连接3个客户端并发送消息
+        messageReceivedLatch = new CountDownLatch(3);
         for (int i = 1; i <= 3; i++) {
             NioUdpClient client = connectUdpClient("UdpClient-" + i);
-            // 发送消息以触发会话创建
             client.send("Hello from " + "UdpClient-" + i);
         }
 
-        // 等待客户端连接成功
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+        Assert.assertTrue("所有客户端消息应该被接收", messageReceivedLatch.await(10, TimeUnit.SECONDS));
 
-        // 输出所有客户端会话信息
         LOG.info("\n=== 所有客户端会话信息 ===");
         Collection<NioUdpSessionWrapper> sessionWrappers = sessionManager.sessionWrappers();
         for (NioUdpSessionWrapper sessionWrapper : sessionWrappers) {
@@ -177,14 +154,12 @@ public class NioUdpSessionManagerTest {
 
     @Test
     public void testFindClient() throws Exception {
-        // 连接1个客户端并发送消息
+        messageReceivedLatch = new CountDownLatch(1);
         NioUdpClient client = connectUdpClient("FindTestClient");
         client.send("Hello from FindTestClient");
 
-        // 等待客户端连接成功
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+        Assert.assertTrue("等待消息接收超时", messageReceivedLatch.await(5, TimeUnit.SECONDS));
 
-        // 验证客户端是否存在
         InetSocketAddress clientAddress = testClientAddress.get();
         Assert.assertNotNull("测试客户端地址不应该为null", clientAddress);
 
@@ -200,17 +175,15 @@ public class NioUdpSessionManagerTest {
 
     @Test
     public void testSendToSpecificClient() throws Exception {
-        // 连接2个客户端并发送消息
+        messageReceivedLatch = new CountDownLatch(2);
         NioUdpClient client1 = connectUdpClient("SendTestClient1");
         client1.send("Hello from SendTestClient1");
 
         NioUdpClient client2 = connectUdpClient("SendTestClient2");
         client2.send("Hello from SendTestClient2");
 
-        // 等待客户端连接成功
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+        Assert.assertTrue("等待消息接收超时", messageReceivedLatch.await(5, TimeUnit.SECONDS));
 
-        // 向指定客户端发送消息
         InetSocketAddress clientAddress = testClientAddress.get();
         Assert.assertNotNull("测试客户端地址不应该为null", clientAddress);
 
@@ -223,17 +196,15 @@ public class NioUdpSessionManagerTest {
 
     @Test
     public void testDisconnectSpecificClient() throws Exception {
-        // 连接2个客户端并发送消息
+        messageReceivedLatch = new CountDownLatch(2);
         NioUdpClient client1 = connectUdpClient("DisconnectTestClient1");
         client1.send("Hello from DisconnectTestClient1");
 
         NioUdpClient client2 = connectUdpClient("DisconnectTestClient2");
         client2.send("Hello from DisconnectTestClient2");
 
-        // 等待客户端连接成功
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+        Assert.assertTrue("等待消息接收超时", messageReceivedLatch.await(5, TimeUnit.SECONDS));
 
-        // 断开指定客户端连接
         InetSocketAddress clientAddress = testClientAddress.get();
         Assert.assertNotNull("测试客户端地址不应该为null", clientAddress);
 
@@ -242,10 +213,8 @@ public class NioUdpSessionManagerTest {
 
         sessionManager.closeSessionWrapper(sessionWrapper);
 
-        // 等待一段时间，确保客户端已断开
-        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
+        Assert.assertTrue("等待客户端断开超时", waitForSessionCount(1, 5, TimeUnit.SECONDS));
 
-        // 验证客户端是否已断开
         boolean exists = sessionManager.contains(clientAddress);
         Assert.assertFalse("测试客户端应该不存在", exists);
 
@@ -257,11 +226,10 @@ public class NioUdpSessionManagerTest {
         IClientCfg clientCfg = DefaultClientCfg.builder()
                 .clientName(clientName)
                 .remoteHost(hostName)
-                .port(8286)
-                .heartbeatInterval(10) // 10秒发送一次心跳
+                .port(serverPort)
+                .heartbeatInterval(10)
                 .build();
         IHeartbeatService<String> heartbeatService = new DefaultHeartbeatServiceImpl();
-        // 创建一个简单的AbstractNioUdpListener实现用于客户端
         AbstractNioUdpListener clientListener = new AbstractNioUdpListener() {
             @Override
             public Object onMessageReceived(InetSocketAddress sourceAddress, Object message) throws IOException {
@@ -281,8 +249,33 @@ public class NioUdpSessionManagerTest {
                 .listener(clientListener)
                 .build();
         client.connect();
+        // 等待客户端 NIO 线程完成 registerEvent（selectionKey 不为 null），
+        // 避免 send() 在 selectionKey 为 null 时静默丢弃消息
+        Assert.assertTrue("客户端应该已就绪: " + clientName, waitForClientConnected(client, 5, TimeUnit.SECONDS));
         clients.add(client);
-        LOG.info("UDP客户端已初始化: " + clientName + " -> " + hostName + ":8286");
+        LOG.info(String.format("UDP客户端已初始化: %s -> %s:%d", clientName, hostName, serverPort));
         return client;
+    }
+
+    private boolean waitForClientConnected(NioUdpClient client, long timeout, TimeUnit unit) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < deadline) {
+            if (client.isConnected()) {
+                return true;
+            }
+            Thread.sleep(100);
+        }
+        return client.isConnected();
+    }
+
+    private boolean waitForSessionCount(int expected, long timeout, TimeUnit unit) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < deadline) {
+            if (sessionManager.sessionCount() == expected) {
+                return true;
+            }
+            Thread.sleep(100);
+        }
+        return sessionManager.sessionCount() == expected;
     }
 }

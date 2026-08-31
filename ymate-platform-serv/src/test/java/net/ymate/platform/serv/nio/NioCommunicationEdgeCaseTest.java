@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.serv.nio;
 
-import net.ymate.platform.commons.util.NetworkUtils;
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.Servs;
@@ -28,7 +26,6 @@ import net.ymate.platform.serv.nio.datagram.AbstractNioUdpListener;
 import net.ymate.platform.serv.nio.datagram.NioUdpClient;
 import net.ymate.platform.serv.nio.datagram.NioUdpServer;
 import net.ymate.platform.serv.nio.server.NioServer;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.*;
@@ -49,10 +46,6 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
     private static final Log LOG = LogFactory.getLog(NioCommunicationEdgeCaseTest.class);
 
     private String hostName;
-
-    private NioServer server;
-
-    private NioUdpServer udpServer;
 
     private final net.ymate.platform.serv.nio.server.NioServerListener serverListener = new net.ymate.platform.serv.nio.server.NioServerListener() {
         @Override
@@ -80,56 +73,42 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
 
     @Before
     public void setUp() throws Exception {
-        // 获取本地IP地址
-        String[] ipAddresses = NetworkUtils.IP.getHostIPAddresses();
-        if (ArrayUtils.isNotEmpty(ipAddresses)) {
-            hostName = ipAddresses[0];
-        } else {
-            hostName = NetworkUtils.IP.getHostName();
-        }
+        hostName = NioTestSupport.getLocalHostName();
     }
 
     @After
     public void tearDown() throws Exception {
-        try {
-            if (server != null) {
-                server.close();
-            }
-            if (udpServer != null) {
-                udpServer.close();
-            }
-        } catch (Exception e) {
-            LOG.error("测试清理失败", RuntimeUtils.unwrapThrow(e));
-        }
+        // 兜底清理：每个测试方法应自行管理资源，这里不持有任何字段引用
     }
 
     @Test
     public void testTcpServerPortConflict() {
-        // 启动第一个服务端
+        NioServer server1 = null;
+        NioServer server2 = null;
         try {
+            int port = NioTestSupport.getAvailablePort();
             IServerCfg serverCfg = DefaultServerCfg.builder()
                     .serverName("TestServer1")
                     .serverHost(hostName)
-                    .port(8284)
+                    .port(port)
                     .build();
-            server = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
+            server1 = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
                     .config(serverCfg)
                     .codec(new TextLineCodec())
                     .listener(serverListener)
                     .build();
-            server.start();
-            Assert.assertTrue("第一个服务端应该已启动", server.isStarted());
-            LOG.info("第一个TCP服务端已启动: " + hostName + ":8284");
+            server1.start();
+            Assert.assertTrue("第一个服务端应该已启动", server1.isStarted());
+            LOG.info(String.format("第一个TCP服务端已启动: %s:%d", hostName, port));
 
-            // 尝试在同一端口启动第二个服务端，应该失败
             boolean portConflict = false;
             try {
                 IServerCfg serverCfg2 = DefaultServerCfg.builder()
                         .serverName("TestServer2")
                         .serverHost(hostName)
-                        .port(8284)
+                        .port(port)
                         .build();
-                NioServer server2 = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
+                server2 = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
                         .config(serverCfg2)
                         .codec(new TextLineCodec())
                         .listener(serverListener)
@@ -141,64 +120,70 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
             }
             Assert.assertTrue("应该发生端口冲突", portConflict);
         } catch (Exception e) {
-            LOG.error("测试失败", RuntimeUtils.unwrapThrow(e));
+            LOG.error("测试失败", e);
             Assert.fail("测试失败: " + e.getMessage());
+        } finally {
+            NioTestSupport.closeQuietly(server2, server1);
         }
     }
 
     @Test
     public void testUdpServerPortConflict() {
-        // 启动第一个UDP服务端
+        NioUdpServer server1 = null;
+        NioUdpServer server2 = null;
         try {
+            int port = NioTestSupport.getAvailablePort();
             IServerCfg serverCfg = DefaultServerCfg.builder()
                     .serverName("UdpTestServer1")
                     .serverHost(hostName)
-                    .port(8285)
+                    .port(port)
                     .build();
-            udpServer = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpServer()
+            server1 = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpServer()
                     .config(serverCfg)
                     .codec(new TextLineCodec())
                     .listener(this)
                     .build();
-            udpServer.start();
-            Assert.assertTrue("第一个UDP服务端应该已启动", udpServer.isStarted());
-            LOG.info("第一个UDP服务端已启动: " + hostName + ":8285");
+            server1.start();
+            Assert.assertTrue("第一个UDP服务端应该已启动", server1.isStarted());
+            LOG.info(String.format("第一个UDP服务端已启动: %s:%d", hostName, port));
 
-            // 尝试在同一端口启动第二个UDP服务端，应该失败
             boolean portConflict = false;
             try {
                 IServerCfg serverCfg2 = DefaultServerCfg.builder()
                         .serverName("UdpTestServer2")
                         .serverHost(hostName)
-                        .port(8285)
+                        .port(port)
                         .build();
-                NioUdpServer udpServer2 = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpServer()
+                server2 = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpServer()
                         .config(serverCfg2)
                         .codec(new TextLineCodec())
                         .listener(this)
                         .build();
-                udpServer2.start();
+                server2.start();
             } catch (IOException e) {
                 portConflict = true;
                 LOG.info("UDP端口冲突测试通过: " + e.getMessage());
             }
             Assert.assertTrue("应该发生端口冲突", portConflict);
         } catch (Exception e) {
-            LOG.error("测试失败", RuntimeUtils.unwrapThrow(e));
+            LOG.error("测试失败", e);
             Assert.fail("测试失败: " + e.getMessage());
+        } finally {
+            NioTestSupport.closeQuietly(server2, server1);
         }
     }
 
     @Test
     public void testClientConnectToNonExistentServer() {
-        // 尝试连接到不存在的服务端
+        NioClient client = null;
         try {
+            // 使用一个不太可能被占用的端口号连接不存在的服务端
             IClientCfg clientCfg = DefaultClientCfg.builder()
                     .clientName("TestClient")
                     .remoteHost(hostName)
-                    .port(9999) // 不存在的端口
+                    .port(39999)
                     .build();
-            NioClient client = Servs.<net.ymate.platform.serv.nio.client.NioClientListener, TextLineCodec>createClient()
+            client = Servs.<net.ymate.platform.serv.nio.client.NioClientListener, TextLineCodec>createClient()
                     .config(clientCfg)
                     .codec(new TextLineCodec())
                     .listener(clientListener)
@@ -208,48 +193,51 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
             } catch (IOException e) {
                 LOG.info("连接不存在服务端测试通过: " + e.getMessage());
             }
-            // 注意：由于NIO的非阻塞特性，connect可能不会立即失败，需要检查isConnected()
             Thread.sleep(TimeUnit.SECONDS.toMillis(2));
             Assert.assertFalse("客户端应该未连接", client.isConnected());
-            client.close();
         } catch (Exception e) {
-            LOG.error("测试失败", RuntimeUtils.unwrapThrow(e));
+            LOG.error("测试失败", e);
             Assert.fail("测试失败: " + e.getMessage());
+        } finally {
+            NioTestSupport.closeQuietly(client);
         }
     }
 
     @Test
     public void testUdpClientConnectToNonExistentServer() {
-        // 尝试连接到不存在的UDP服务端
+        NioUdpClient client = null;
         try {
+            int port = NioTestSupport.getAvailablePort();
             IClientCfg clientCfg = DefaultClientCfg.builder()
                     .clientName("UdpTestClient")
                     .remoteHost(hostName)
-                    .port(9999) // 不存在的端口
+                    .port(port)
                     .build();
-            NioUdpClient client = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpClient()
+            client = Servs.<AbstractNioUdpListener, TextLineCodec>createUdpClient()
                     .config(clientCfg)
                     .codec(new TextLineCodec())
                     .listener(this)
                     .build();
             client.connect();
-            // UDP是无连接的，所以connect总是成功的
-            client.close();
             LOG.info("UDP客户端连接测试通过");
         } catch (Exception e) {
-            LOG.error("测试失败", RuntimeUtils.unwrapThrow(e));
+            LOG.error("测试失败", e);
             Assert.fail("测试失败: " + e.getMessage());
+        } finally {
+            NioTestSupport.closeQuietly(client);
         }
     }
 
     @Test
     public void testSendEmptyMessage() {
-        // 启动服务端
+        NioServer server = null;
+        NioClient client = null;
         try {
+            int port = NioTestSupport.getAvailablePort();
             IServerCfg serverCfg = DefaultServerCfg.builder()
                     .serverName("TestServer")
                     .serverHost(hostName)
-                    .port(8286)
+                    .port(port)
                     .build();
             server = Servs.<net.ymate.platform.serv.nio.server.NioServerListener, TextLineCodec>createServer()
                     .config(serverCfg)
@@ -259,33 +247,32 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
             server.start();
             Assert.assertTrue("服务端应该已启动", server.isStarted());
 
-            // 启动客户端并发送空消息
             IClientCfg clientCfg = DefaultClientCfg.builder()
                     .clientName("TestClient")
                     .remoteHost(hostName)
-                    .port(8286)
+                    .port(port)
                     .build();
-            NioClient client = Servs.<net.ymate.platform.serv.nio.client.NioClientListener, TextLineCodec>createClient()
+            client = Servs.<net.ymate.platform.serv.nio.client.NioClientListener, TextLineCodec>createClient()
                     .config(clientCfg)
                     .codec(new TextLineCodec())
                     .listener(clientListener)
                     .build();
             client.connect();
+            Thread.sleep(TimeUnit.SECONDS.toMillis(2));
             Assert.assertTrue("客户端应该已连接", client.isConnected());
 
-            // 发送空消息，应该不会抛出异常
             try {
                 client.send("");
                 LOG.info("发送空消息测试通过");
             } catch (Exception e) {
-                LOG.error("发送空消息失败", RuntimeUtils.unwrapThrow(e));
+                LOG.error("发送空消息失败", e);
                 Assert.fail("发送空消息失败: " + e.getMessage());
             }
-
-            client.close();
         } catch (Exception e) {
-            LOG.error("测试失败", RuntimeUtils.unwrapThrow(e));
+            LOG.error("测试失败", e);
             Assert.fail("测试失败: " + e.getMessage());
+        } finally {
+            NioTestSupport.closeQuietly(client, server);
         }
     }
 
@@ -305,6 +292,4 @@ public class NioCommunicationEdgeCaseTest extends AbstractNioUdpListener {
     public void onExceptionCaught(InetSocketAddress sourceAddress, Throwable e) throws IOException {
         LOG.error("UDP异常: " + e.getMessage(), e);
     }
-
-
 }
