@@ -126,7 +126,9 @@ public final class Validations extends AbstractModule<Void> implements IValidati
 
     @Override
     public void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass) {
-        if (isInitialized()) {
+        // 此处不能使用isInitialized()判断，因为模块自身的onInit()方法中注册内置验证器时该标志尚未置位，
+        // 会导致内置验证器注册失败；改为判断owner是否可用（onInit前已赋值，close后置空）
+        if (getOwner() != null) {
             validators.put(annotationClass, validatorClass);
             getOwner().getBeanFactory().registerBean(BeanMeta.create(validatorClass, true));
         }
