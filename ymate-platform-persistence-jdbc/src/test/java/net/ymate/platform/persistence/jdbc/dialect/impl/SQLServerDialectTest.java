@@ -15,10 +15,15 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
+import net.ymate.platform.core.annotation.EnableAutoScan;
+import net.ymate.platform.core.annotation.EnableBeanProxy;
+import net.ymate.platform.core.annotation.EnableDevMode;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.persistence.jdbc.dialect.DialectTestBase;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
+import net.ymate.platform.test.YMPJUnit4ClassRunner;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * SQLServerDialect 单元测试
@@ -26,6 +31,10 @@ import org.junit.Test;
  * @author 刘镇 (suninformation@163.com) on 2026/2/24 上午10:00
  * @since 2.1.4
  */
+@RunWith(YMPJUnit4ClassRunner.class)
+@EnableAutoScan
+@EnableBeanProxy
+@EnableDevMode
 public class SQLServerDialectTest extends DialectTestBase {
 
     @Override
