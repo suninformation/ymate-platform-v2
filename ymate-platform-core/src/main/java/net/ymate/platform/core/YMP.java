@@ -107,7 +107,7 @@ public final class YMP {
         static final LazyHolder<IBeanLoadFactory> BEAN_LOAD_FACTORY =
                 LazyHolder.of(() -> {
                     IBeanLoadFactory factory = ClassUtils.loadClass(IBeanLoadFactory.class);
-                    if (LOG != null && LOG.isInfoEnabled()) {
+                    if (factory != null && LOG != null && LOG.isInfoEnabled()) {
                         LOG.info(String.format("Using IBeanLoadFactory class [%s].", factory.getClass().getName()));
                     }
                     return factory;
@@ -116,7 +116,7 @@ public final class YMP {
         static final LazyHolder<IProxyFactory> PROXY_FACTORY =
                 LazyHolder.of(() -> {
                     IProxyFactory factory = ClassUtils.loadClass(IProxyFactory.class);
-                    if (LOG != null && LOG.isInfoEnabled()) {
+                    if (factory != null && LOG != null && LOG.isInfoEnabled()) {
                         LOG.info(String.format("Using IProxyFactory class [%s].", factory.getClass().getName()));
                     }
                     return factory;
