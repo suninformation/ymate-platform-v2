@@ -16,6 +16,7 @@
 package net.ymate.platform.core.persistence;
 
 import net.ymate.platform.commons.IPasswordProcessor;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.YMP;
 import org.apache.commons.lang3.StringUtils;
 
@@ -101,7 +102,7 @@ public abstract class AbstractDataSourceAdapter<OWNER extends IPersistence, DATA
     protected String decryptPasswordIfNeed(String password) throws Exception {
         if (StringUtils.isNotBlank(password) && dataSourceConfig.isPasswordEncrypted()) {
             if (dataSourceConfig.getPasswordClass() != null) {
-                return ((IPasswordProcessor) dataSourceConfig.getPasswordClass().newInstance()).decrypt(password);
+                return ClassUtils.impl(dataSourceConfig.getPasswordClass(), IPasswordProcessor.class).decrypt(password);
             }
             IPasswordProcessor passwordProcessor = owner.getOwner().getConfigureFactory().getConfigurer().getPasswordProcessor();
             if (passwordProcessor == null) {

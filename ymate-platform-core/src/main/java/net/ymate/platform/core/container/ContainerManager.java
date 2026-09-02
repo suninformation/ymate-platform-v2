@@ -56,7 +56,7 @@ public class ContainerManager {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Container class [%s] registered.", targetClass.getName()));
             }
-            CONTAINERS.put(key, targetClass.newInstance());
+            CONTAINERS.put(key, targetClass.getDeclaredConstructor().newInstance());
         }
     }
 

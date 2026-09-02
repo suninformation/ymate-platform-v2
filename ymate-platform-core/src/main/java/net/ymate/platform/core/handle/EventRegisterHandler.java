@@ -36,7 +36,7 @@ public final class EventRegisterHandler implements IBeanHandler {
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IEventRegister.class)) {
-            ((IEventRegister) targetClass.newInstance()).register(owner.getEvents());
+            ((IEventRegister) targetClass.getDeclaredConstructor().newInstance()).register(owner.getEvents());
         }
         return null;
     }

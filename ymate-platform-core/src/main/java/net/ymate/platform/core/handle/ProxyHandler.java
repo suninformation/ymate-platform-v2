@@ -41,7 +41,7 @@ public final class ProxyHandler implements IBeanHandler {
         if (proxyFactory != null && ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IProxy.class)) {
             // 排除框架内部拦截器代理类，因为框架已经注册了它
             if (!targetClass.equals(InterceptProxy.class)) {
-                proxyFactory.registerProxy((IProxy) targetClass.newInstance());
+                proxyFactory.registerProxy((IProxy) targetClass.getDeclaredConstructor().newInstance());
             }
         }
         return null;

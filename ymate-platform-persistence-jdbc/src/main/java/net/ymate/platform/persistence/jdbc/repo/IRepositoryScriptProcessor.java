@@ -112,7 +112,7 @@ public interface IRepositoryScriptProcessor {
 
         public static void registerScriptProcessor(String name, Class<? extends IRepositoryScriptProcessor> targetClass) throws Exception {
             String key = StringUtils.defaultIfBlank(name, targetClass.getName()).toLowerCase();
-            ReentrantLockHelper.putIfAbsentAsync(SCRIPT_PROCESSORS, key, targetClass::newInstance);
+            ReentrantLockHelper.putIfAbsentAsync(SCRIPT_PROCESSORS, key, () -> targetClass.getDeclaredConstructor().newInstance());
         }
 
         public static IRepositoryScriptProcessor getDefaultScriptProcessor() {

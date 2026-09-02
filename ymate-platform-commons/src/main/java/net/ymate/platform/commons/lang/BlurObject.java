@@ -64,7 +64,7 @@ public class BlurObject implements Serializable {
             for (Class<IConverter> converter : extensionLoader.getExtensionClasses()) {
                 Converter converterAnn = converter.getAnnotation(Converter.class);
                 if (converterAnn != null) {
-                    IConverter converterInst = converter.newInstance();
+                    IConverter converterInst = converter.getDeclaredConstructor().newInstance();
                     for (Class<?> from : converterAnn.from()) {
                         if (!from.equals(converterAnn.to())) {
                             registerConverter(from, converterAnn.to(), converterInst);

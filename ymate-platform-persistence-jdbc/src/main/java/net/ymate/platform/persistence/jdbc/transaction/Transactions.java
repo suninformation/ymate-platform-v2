@@ -78,7 +78,7 @@ public final class Transactions {
         ITransaction transaction = TRANS_LOCAL.get();
         int count;
         if (transaction == null) {
-            transaction = transactionClass.newInstance();
+            transaction = transactionClass.getDeclaredConstructor().newInstance();
             transaction.setLevel(level);
             TRANS_LOCAL.set(transaction);
             count = 0;

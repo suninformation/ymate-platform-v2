@@ -43,7 +43,7 @@ public final class WebResult extends AbstractWebResult<Integer> {
     public static IWebResultBuilder builder() {
         IWebResultBuilder builder = null;
         try {
-            builder = ClassUtils.getExtensionLoader(IWebResultBuilder.class).getExtensionClass().newInstance();
+            builder = ClassUtils.getExtensionLoader(IWebResultBuilder.class).getExtensionClass().getDeclaredConstructor().newInstance();
         } catch (Exception ignored) {
         }
         return builder != null ? builder : new DefaultWebResultBuilder();

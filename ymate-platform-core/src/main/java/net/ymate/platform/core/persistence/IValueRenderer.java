@@ -114,7 +114,7 @@ public interface IValueRenderer {
                 if (LOG.isInfoEnabled()) {
                     LOG.info(String.format("ValueRenderer class [%s:%s] registered.", key, targetClass.getName()));
                 }
-                VALUE_RENDERER_MAP.put(key, targetClass.newInstance());
+                VALUE_RENDERER_MAP.put(key, targetClass.getDeclaredConstructor().newInstance());
             }
         }
 

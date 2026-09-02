@@ -35,7 +35,7 @@ public final class InjectorHandler implements IBeanHandler {
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IBeanInjector.class)) {
-            owner.getBeanFactory().registerInjector(targetClass.getAnnotation(Injector.class).value(), (IBeanInjector) targetClass.newInstance());
+            owner.getBeanFactory().registerInjector(targetClass.getAnnotation(Injector.class).value(), (IBeanInjector) targetClass.getDeclaredConstructor().newInstance());
         }
         return null;
     }

@@ -226,7 +226,7 @@ public final class InterceptSettings {
 
     public IInterceptor getInterceptorInstance(IApplication owner, Class<? extends IInterceptor> interceptClass) throws IllegalAccessException, InstantiationException {
         IInterceptor instance = owner.getBeanFactory().getBean(interceptClass);
-        return instance != null ? instance : interceptClass.newInstance();
+        return instance != null ? instance : ClassUtils.impl(interceptClass, IInterceptor.class);
     }
 
     public InterceptMeta getInterceptMeta(IApplication owner, Class<?> targetClass, Method targetMethod) {

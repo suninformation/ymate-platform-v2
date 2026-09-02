@@ -220,12 +220,9 @@ public class XPathHelper {
     }
 
     public <T> T toObject(Class<T> targetObject) {
-        try {
-            return toObject(targetObject.newInstance());
-        } catch (InstantiationException | IllegalAccessException e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-            }
+        T target = ClassUtils.loadClass(targetObject);
+        if (target != null) {
+            return toObject(target);
         }
         return null;
     }
@@ -312,25 +309,13 @@ public class XPathHelper {
                             Object fieldValue = beanWrapper.getValue(field);
                             //
                             if (!INodeValueParser.class.equals(fieldNodeAnn.parser())) {
-                                try {
-                                    INodeValueParser parser = fieldNodeAnn.parser().newInstance();
-                                    childObject = parser.parse(this, parentNode, field.getType(), fieldValue);
-                                } catch (InstantiationException e) {
-                                    if (LOG.isWarnEnabled()) {
-                                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                                    }
-                                }
+                                INodeValueParser parser = ClassUtils.impl(fieldNodeAnn.parser(), INodeValueParser.class);
+                                childObject = parser.parse(this, parentNode, field.getType(), fieldValue);
                             } else {
                                 if (fieldValue != null) {
                                     childObject = toObject(childNode, fieldValue);
                                 } else {
-                                    try {
-                                        childObject = toObject(childNode, Void.class.equals(fieldNodeAnn.implClass()) ? field.getType().newInstance() : fieldNodeAnn.implClass().newInstance());
-                                    } catch (InstantiationException e) {
-                                        if (LOG.isWarnEnabled()) {
-                                            LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                                        }
-                                    }
+                                    childObject = toObject(childNode, Void.class.equals(fieldNodeAnn.implClass()) ? ClassUtils.loadClass(field.getType()) : ClassUtils.loadClass(fieldNodeAnn.implClass()));
                                 }
                             }
                             beanWrapper.setValue(field, childObject);
@@ -339,14 +324,8 @@ public class XPathHelper {
                 } else {
                     String value = StringUtils.defaultIfBlank(StringUtils.isNotBlank(fieldNodeAnn.value()) ? getStringValue(parentNode, fieldNodeAnn.value()) : null, StringUtils.trimToNull(fieldNodeAnn.defaultValue()));
                     if (!INodeValueParser.class.equals(fieldNodeAnn.parser())) {
-                        try {
-                            INodeValueParser parser = fieldNodeAnn.parser().newInstance();
-                            beanWrapper.setValue(field, BlurObject.bind(parser.parse(this, parentNode, field.getType(), value)).toObjectValue(field.getType()));
-                        } catch (InstantiationException e) {
-                            if (LOG.isWarnEnabled()) {
-                                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                            }
-                        }
+                        INodeValueParser parser = ClassUtils.impl(fieldNodeAnn.parser(), INodeValueParser.class);
+                        beanWrapper.setValue(field, BlurObject.bind(parser.parse(this, parentNode, field.getType(), value)).toObjectValue(field.getType()));
                     } else {
                         beanWrapper.setValue(field, BlurObject.bind(value).toObjectValue(field.getType()));
                     }

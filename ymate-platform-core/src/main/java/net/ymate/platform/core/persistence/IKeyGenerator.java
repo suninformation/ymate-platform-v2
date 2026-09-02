@@ -86,7 +86,7 @@ public interface IKeyGenerator {
                     if (LOG.isInfoEnabled()) {
                         LOG.info(String.format("KeyGenerator class [%s:%s] registered.", key, targetClass.getName()));
                     }
-                    KEY_GENERATOR_MAP.put(key, targetClass.newInstance());
+                    KEY_GENERATOR_MAP.put(key, targetClass.getDeclaredConstructor().newInstance());
                 }
             }
         }

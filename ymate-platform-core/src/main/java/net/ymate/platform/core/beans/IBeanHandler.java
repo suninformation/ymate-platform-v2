@@ -37,7 +37,7 @@ public interface IBeanHandler {
             Bean bean = targetClass.getAnnotation(Bean.class);
             if (bean != null) {
                 if (!bean.handler().equals(IBeanHandler.class)) {
-                    return ReentrantLockHelper.putIfAbsentAsync(BEAN_HANDLERS, bean.handler(), () -> bean.handler().newInstance()).handle(targetClass);
+                    return ReentrantLockHelper.putIfAbsentAsync(BEAN_HANDLERS, bean.handler(), () -> bean.handler().getDeclaredConstructor().newInstance()).handle(targetClass);
                 } else {
                     singleton = bean.singleton();
                 }

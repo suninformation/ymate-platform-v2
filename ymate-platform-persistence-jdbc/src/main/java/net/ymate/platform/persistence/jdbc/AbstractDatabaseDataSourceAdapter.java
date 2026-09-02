@@ -134,7 +134,7 @@ public abstract class AbstractDatabaseDataSourceAdapter extends AbstractDataSour
             dialect = ClassUtils.impl(dataSourceConfig.getDialectClass(), IDialect.class, this.getClass());
         }
         if (dialect == null && StringUtils.isNotBlank(dataSourceConfig.getType()) && !Strings.CS.equals(Type.DATABASE.UNKNOWN, dataSourceConfig.getType())) {
-            dialect = JDBC.DB_DIALECTS.get(dataSourceConfig.getType()).newInstance();
+            dialect = JDBC.DB_DIALECTS.get(dataSourceConfig.getType()).getDeclaredConstructor().newInstance();
         }
         if (dialect != null && StringUtils.isNotBlank(dataSourceConfig.getIdentifierQuote())) {
             char[] quotes = dataSourceConfig.getIdentifierQuote().toCharArray();

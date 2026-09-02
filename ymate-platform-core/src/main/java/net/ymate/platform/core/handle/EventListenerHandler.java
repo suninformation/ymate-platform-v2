@@ -37,7 +37,7 @@ public final class EventListenerHandler implements IBeanHandler {
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IEventListener.class)) {
             EventListener eventListenerAnn = targetClass.getAnnotation(EventListener.class);
-            owner.getEvents().registerListener(eventListenerAnn.mode(), eventListenerAnn.value(), (IEventListener<?>) targetClass.newInstance());
+            owner.getEvents().registerListener(eventListenerAnn.mode(), eventListenerAnn.value(), (IEventListener<?>) targetClass.getDeclaredConstructor().newInstance());
         }
         return null;
     }

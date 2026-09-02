@@ -44,7 +44,7 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
 
     @Override
     protected T processResultRow(ResultSet resultSet) throws Exception {
-        ClassUtils.BeanWrapper<T> targetWrapper = ClassUtils.wrapper(beanClass.newInstance());
+        ClassUtils.BeanWrapper<T> targetWrapper = ClassUtils.wrapper(beanClass.getDeclaredConstructor().newInstance());
         for (int idx = 0; idx < getColumnCount(); idx++) {
             Object value = resultSet.getObject(idx + 1);
             if (value != null) {

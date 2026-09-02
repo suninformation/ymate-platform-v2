@@ -54,10 +54,10 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
     @Override
     @SuppressWarnings("unchecked")
     protected T processResultRow(ResultSet resultSet) throws Exception {
-        ClassUtils.BeanWrapper<T> targetWrapper = ClassUtils.wrapper(entityClass.newInstance());
+        ClassUtils.BeanWrapper<T> targetWrapper = ClassUtils.wrapper(entityClass.getDeclaredConstructor().newInstance());
         Object primaryKeyObject = null;
         if (entityMeta.isMultiplePrimaryKey()) {
-            primaryKeyObject = entityMeta.getPrimaryKeyClass().newInstance();
+            primaryKeyObject = entityMeta.getPrimaryKeyClass().getDeclaredConstructor().newInstance();
             //
             targetWrapper.getTargetObject().setId((Serializable) primaryKeyObject);
         }

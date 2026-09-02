@@ -143,7 +143,7 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
         if (createBean == null) {
             throw new NullArgumentException("createBean");
         }
-        ENTITY entity = ClassUtils.wrapper(createBean).duplicate(entityClass.newInstance());
+        ENTITY entity = ClassUtils.wrapper(createBean).duplicate(entityClass.getDeclaredConstructor().newInstance());
         ErrorCode errorCode = beforeCreate(owner, dataSourceName, entity, createBean);
         if (errorCode == null || errorCode.isSucceed()) {
             entity = doInsert(owner, dataSourceName, entity, filter);

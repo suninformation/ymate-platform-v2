@@ -41,7 +41,7 @@ public class DefaultApplicationCreator implements IApplicationCreator {
     static {
         try {
             for (Class<IApplicationInitializer> initializerClass : ClassUtils.getExtensionLoader(IApplicationInitializer.class, true).getExtensionClasses()) {
-                INITIALIZERS.add(initializerClass.newInstance());
+                INITIALIZERS.add(initializerClass.getDeclaredConstructor().newInstance());
             }
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {
