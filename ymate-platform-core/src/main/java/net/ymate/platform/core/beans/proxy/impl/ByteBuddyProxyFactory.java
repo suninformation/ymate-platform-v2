@@ -41,7 +41,7 @@ public class ByteBuddyProxyFactory extends AbstractProxyFactory {
 
     /**
      * 代理类缓存（避免重复为目标类生成代理类导致 Metaspace 泄漏）
-     *
+     * <p>
      * 注意：仅适用于 createProxy(targetClass, List) 版本，因为代理链拦截器编译进代理类时
      * 持有代理集合快照，需保证同一目标类的代理集合在应用生命周期内保持不变；
      * createProxy(targetClass, methodParamHandler) 版本的处理器每次调用均可能不同，

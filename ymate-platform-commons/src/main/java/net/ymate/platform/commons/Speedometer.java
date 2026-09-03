@@ -21,6 +21,7 @@ import net.ymate.platform.commons.util.ThreadUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
@@ -108,7 +109,7 @@ public class Speedometer implements AutoCloseable {
                 try {
                     while (Speedometer.this.listener != null) {
                         long historyTouchTimes = touchTimes;
-                        Thread.sleep(interval);
+                        org.apache.commons.io.ThreadUtils.sleep(Duration.ofMillis(interval));
                         long times = touchTimes - historyTouchTimes;
                         if (times > 0) {
                             data.add(times);

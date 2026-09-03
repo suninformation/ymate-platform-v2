@@ -66,7 +66,7 @@ public final class UUIDUtils {
      */
     public static String generateCharUUID(Object o) {
         long[] ids = generateIds(o);
-        return convert(ids[0]) + convert(ids[1]).replaceAll(StringUtils.SPACE, "o");
+        return convert(ids[0]) + convert(ids[1]).replace(StringUtils.SPACE, "o");
     }
 
     /**
@@ -105,7 +105,7 @@ public final class UUIDUtils {
     public static String generateRandomUUID() {
         long id1 = System.nanoTime() & 0x3FFFFFFFL;
         long id3 = randomLong(-0x80000000L, 0x80000000L) & 0x3FFFFFFFL;
-        return convert(id1) + convert(id3).replaceAll(StringUtils.SPACE, "o");
+        return convert(id1) + convert(id3).replace(StringUtils.SPACE, "o");
     }
 
     /**

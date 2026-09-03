@@ -305,7 +305,7 @@ public class XPathHelper {
                     } else {
                         Object childNode = StringUtils.isNotBlank(fieldNodeAnn.value()) ? getNode(parentNode, fieldNodeAnn.value()) : parentNode;
                         if (childNode != null) {
-                            Object childObject = null;
+                            Object childObject;
                             Object fieldValue = beanWrapper.getValue(field);
                             //
                             if (!INodeValueParser.class.equals(fieldNodeAnn.parser())) {

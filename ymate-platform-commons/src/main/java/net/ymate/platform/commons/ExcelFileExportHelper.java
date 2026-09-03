@@ -351,11 +351,11 @@ public final class ExcelFileExportHelper {
                         continue;
                     }
                     Object cellValue = null;
-                    Object originValue = null;
+                    Object originValue;
                     if (objectBeanWrapper != null) {
                         objectBeanWrapper = ClassUtils.wrapper(item);
                         originValue = objectBeanWrapper.getValue(fieldName);
-                    } else if (item instanceof Map) {
+                    } else {
                         originValue = ((Map<?, ?>) item).get(fieldName);
                     }
                     try {

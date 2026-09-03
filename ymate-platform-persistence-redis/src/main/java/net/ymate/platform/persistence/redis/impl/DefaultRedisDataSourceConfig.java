@@ -99,10 +99,10 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
             objectPoolConfig.setMaxWait(maxWaitMillis > 0 ? Duration.ofMillis(maxWaitMillis) : GenericObjectPoolConfig.DEFAULT_MAX_WAIT);
             //
             long minEvictableIdleTime = poolConfigReader.getLong(IRedisConfig.MIN_EVICTABLE_IDLE_TIME_MILLIS);
-            objectPoolConfig.setMinEvictableIdleTime(minEvictableIdleTime > 0 ? Duration.ofMillis(minEvictableIdleTime) : GenericObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_DURATION);
+            objectPoolConfig.setMinEvictableIdleDuration(minEvictableIdleTime > 0 ? Duration.ofMillis(minEvictableIdleTime) : GenericObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_DURATION);
             //
             long softMinEvictableIdleTimeMillis = poolConfigReader.getLong(IRedisConfig.SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
-            objectPoolConfig.setSoftMinEvictableIdleTime(softMinEvictableIdleTimeMillis > 0 ? Duration.ofMillis(softMinEvictableIdleTimeMillis) : GenericObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_DURATION);
+            objectPoolConfig.setSoftMinEvictableIdleDuration(softMinEvictableIdleTimeMillis > 0 ? Duration.ofMillis(softMinEvictableIdleTimeMillis) : GenericObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_DURATION);
             //
             objectPoolConfig.setTestOnBorrow(poolConfigReader.getBoolean(IRedisConfig.TEST_ON_BORROW, GenericObjectPoolConfig.DEFAULT_TEST_ON_BORROW));
             objectPoolConfig.setTestOnReturn(poolConfigReader.getBoolean(IRedisConfig.TEST_ON_RETURN, GenericObjectPoolConfig.DEFAULT_TEST_ON_RETURN));
@@ -111,7 +111,7 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
             objectPoolConfig.setNumTestsPerEvictionRun(poolConfigReader.getInt(IRedisConfig.NUM_TESTS_PER_EVICTION_RUN, GenericObjectPoolConfig.DEFAULT_NUM_TESTS_PER_EVICTION_RUN));
             //
             long timeBetweenEvictionRunsMillis = poolConfigReader.getLong(IRedisConfig.TIME_BETWEEN_EVICTION_RUNS_MILLIS);
-            objectPoolConfig.setTimeBetweenEvictionRuns(timeBetweenEvictionRunsMillis > 0 ? Duration.ofMillis(timeBetweenEvictionRunsMillis) : GenericObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS);
+            objectPoolConfig.setTimeBetweenEvictionRuns(timeBetweenEvictionRunsMillis > 0 ? Duration.ofMillis(timeBetweenEvictionRunsMillis) : GenericObjectPoolConfig.DEFAULT_DURATION_BETWEEN_EVICTION_RUNS);
         }
     }
 
@@ -268,12 +268,12 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
         }
 
         public Builder poolMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
-            config.getObjectPoolConfig().setMinEvictableIdleTime(minEvictableIdleTimeMillis > 0 ? Duration.ofMillis(minEvictableIdleTimeMillis) : GenericObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_DURATION);
+            config.getObjectPoolConfig().setMinEvictableIdleDuration(minEvictableIdleTimeMillis > 0 ? Duration.ofMillis(minEvictableIdleTimeMillis) : GenericObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_DURATION);
             return this;
         }
 
         public Builder poolSoftMinEvictableIdleTimeMillis(long softMinEvictableIdleTimeMillis) {
-            config.getObjectPoolConfig().setSoftMinEvictableIdleTime(softMinEvictableIdleTimeMillis > 0 ? Duration.ofMillis(softMinEvictableIdleTimeMillis) : GenericObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_DURATION);
+            config.getObjectPoolConfig().setSoftMinEvictableIdleDuration(softMinEvictableIdleTimeMillis > 0 ? Duration.ofMillis(softMinEvictableIdleTimeMillis) : GenericObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_DURATION);
             return this;
         }
 
@@ -303,7 +303,7 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
         }
 
         public Builder poolTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
-            config.getObjectPoolConfig().setTimeBetweenEvictionRuns(timeBetweenEvictionRunsMillis > 0 ? Duration.ofMillis(timeBetweenEvictionRunsMillis) : GenericObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS);
+            config.getObjectPoolConfig().setTimeBetweenEvictionRuns(timeBetweenEvictionRunsMillis > 0 ? Duration.ofMillis(timeBetweenEvictionRunsMillis) : GenericObjectPoolConfig.DEFAULT_DURATION_BETWEEN_EVICTION_RUNS);
             return this;
         }
 

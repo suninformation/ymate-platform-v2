@@ -260,9 +260,9 @@ public class CodecUtils {
 
     public static class RSACodecHelper extends CodecHelper {
 
-        private int maxEncryptBlockSize = 117;
+        private int maxEncryptBlockSize;
 
-        private int maxDecryptBlockSize = 128;
+        private int maxDecryptBlockSize;
 
         private final String signatureAlgorithm;
 
