@@ -164,7 +164,6 @@
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>oss</publishingServerId>
-                            <tokenAuth>true</tokenAuth>
                         </configuration>
                     </plugin>
                 </plugins>
